@@ -8,6 +8,10 @@ import HowItWorks from '../components/HowItWorks.jsx'
 import FeaturedCommunities from '../components/FeaturedCommunities.jsx'
 import ActivitiesHighlight from '../components/ActivitiesHighlight.jsx'
 import SkillsOpportunitiesPreview from '../components/SkillsOpportunitiesPreview.jsx'
+import SafetyGuidelines from '../components/SafetyGuidelines.jsx'
+import Testimonials from '../components/Testimonials.jsx'
+import FinalCTABanner from '../components/FinalCTABanner.jsx'
+import Footer from '../components/Footer.jsx'
 
 const Homepage = () => {
   return (
@@ -21,6 +25,10 @@ const Homepage = () => {
       <FeaturedCommunities />
       <ActivitiesHighlight />
       <SkillsOpportunitiesPreview />
+      <SafetyGuidelines />
+      <Testimonials />
+      <FinalCTABanner />
+      <Footer />
     </div>
   )
 }
