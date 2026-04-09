@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Add to your index.css or App.css */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* Adjust based on your navbar height */
+}

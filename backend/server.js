@@ -1,9 +1,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRoutes from './routes/userRoutes.js';
+import hireRoutes from './routes/hireRoutes.js';
+import anonymousRoutes from './routes/anonymousRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 import {
     notFound,
@@ -17,11 +21,36 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+];
+
+// ✅ CORS
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`❌ CORS blocked origin: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+}));
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 //Routes 
 app.use('/api/users', userRoutes);
+app.use('/api/hire', hireRoutes);
+app.use('/api/anonymous', anonymousRoutes);
+app.use('/api/admin', adminRoutes);
 
 //Error Middleware
 app.use(notFound);
