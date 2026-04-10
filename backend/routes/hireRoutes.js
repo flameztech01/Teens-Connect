@@ -9,7 +9,7 @@ import {
   searchTalents,
   getHireStats
 } from "../controllers/hireController.js";
-import { protect, adminProtect } from "../middleware/authMiddleware.js";
+import { protect, adminProtect } from "../Middleware/authMiddleware.js";
 
 const router = express.Router();
 

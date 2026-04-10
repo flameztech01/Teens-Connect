@@ -5,7 +5,7 @@ import {
   logoutAdmin,
   getAdminProfile,
 } from "../controllers/adminController.js";
-import { adminProtect } from "../middleware/authMiddleware.js";
+import { adminProtect } from "../Middleware/authMiddleware.js";
 
 const router = express.Router();
 

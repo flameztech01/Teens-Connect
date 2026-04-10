@@ -8,7 +8,7 @@ import {
   logout,
   deleteAccount,
 } from "../controllers/userController.js";
-import { protect, adminProtect } from "../middleware/authMiddleware.js";
+import { protect, adminProtect } from "../Middleware/authMiddleware.js";
 
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";

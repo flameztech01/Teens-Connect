@@ -14,7 +14,7 @@ import {
   unsubscribeFromPush,
   getUnreadCount,
 } from "../controllers/notificationsController.js";
-import { protect, adminProtect, unifiedProtect } from "../middleware/authMiddleware.js";
+import { protect, adminProtect, unifiedProtect } from "../Middleware/authMiddleware.js";
 
 const router = express.Router();
 

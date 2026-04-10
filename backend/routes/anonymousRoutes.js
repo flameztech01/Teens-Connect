@@ -11,7 +11,7 @@ import {
   getUnreadCount,
   deleteAnonymousPost
 } from "../controllers/anonymousController.js";
-import { protect, adminProtect } from "../middleware/authMiddleware.js";
+import { protect, adminProtect } from "../Middleware/authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
