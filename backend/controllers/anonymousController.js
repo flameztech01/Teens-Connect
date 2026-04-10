@@ -24,12 +24,21 @@ const uploadMediaToCloudinary = async (file, type = "image") => {
   });
 };
 
+// At the top of your anonymous controller file, import the notification trigger
+import { notifyNewAnonymousPost } from "../controllers/notificationsController.js";
+
+// OR create a notification service file if you have circular dependency issues
+
 // @desc    Create anonymous post (Logged in users only)
 // @route   POST /api/anonymous/post
 // @access  Private (Must be registered and logged in)
 const createAnonymousPost = asyncHandler(async (req, res) => {
   const { content, tags } = req.body;
   const userId = req.user._id;
+
+  console.log("📝 CREATE ANONYMOUS POST STARTED");
+  console.log("User ID:", userId.toString());
+  console.log("Content:", content?.substring(0, 50));
 
   if (!content) {
     res.status(400);
@@ -53,6 +62,8 @@ const createAnonymousPost = asyncHandler(async (req, res) => {
   // Generate unique anonymous ID
   const anonymousId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+  console.log("💾 Creating anonymous post in database...");
+
   const anonymousPost = await Anonymous.create({
     anonymousId,
     user: userId,
@@ -63,6 +74,23 @@ const createAnonymousPost = asyncHandler(async (req, res) => {
     isRead: false,
     readBy: []
   });
+
+  console.log("✅ Anonymous post created:", anonymousPost._id.toString());
+
+  // 🔥 TRIGGER NOTIFICATION TO ALL ADMINS
+  console.log("🔔 Starting notification process...");
+  
+  try {
+    // Check if notifyNewAnonymousPost is properly imported
+    console.log("notifyNewAnonymousPost type:", typeof notifyNewAnonymousPost);
+    
+    const result = await notifyNewAnonymousPost(anonymousPost);
+    console.log("✅ Notification process completed:", result);
+  } catch (notifyError) {
+    console.error("❌ Notification process failed:", notifyError.message);
+    console.error(notifyError.stack);
+    // Don't fail the post creation if notification fails
+  }
 
   res.status(201).json({
     success: true,

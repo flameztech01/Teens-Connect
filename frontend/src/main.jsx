@@ -20,6 +20,8 @@ import AdminLogin from "./screens/Adminlogin.js";
 import AdminDashboard from "./screens/AdminDashboard.js";
 import AdminUsers from "./screens/AdminUsers.js";
 import AdminAnonymous from "./screens/AdminAnonymous.js";
+import AdminSettings from "./screens/AdminSettings.js";
+import AdminNotifications from "./screens/AdminNotifications.js";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +41,8 @@ const router = createBrowserRouter([
       {path: '/admin/dashboard', element: <AdminDashboard /> },
       {path: '/admin/users', element: <AdminUsers /> },
       {path: '/admin/anonymous', element: <AdminAnonymous /> },
+      {path: '/admin/settings', element: <AdminSettings /> },
+      {path: '/admin/notifications', element: <AdminNotifications /> },
 
     ],
   },

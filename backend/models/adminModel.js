@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { notificationPreferencesSchema } from "./notificationsPreferencesSchema.js"
 
 const adminSchema = new mongoose.Schema(
   {
@@ -25,6 +26,48 @@ const adminSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    notificationPreferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      pushNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      soundEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      anonymousPostAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      responseAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      opportunityAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      messageAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      systemAlerts: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    pushSubscription: {
+      type: Object,
+      default: null,
+    },
+    deviceInfo: {
+      type: Object,
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -32,16 +75,18 @@ const adminSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-// Encrypt password before saving
-adminSchema.pre("save", async function (next) {
+// Encrypt password before saving - NO next() needed with async
+adminSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    next();
+    return; // Just return early, no next() needed
   }
+  
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  // No next() call - Mongoose handles it automatically when promise resolves
 });
 
 // Match password method
