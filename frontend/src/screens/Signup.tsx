@@ -20,13 +20,60 @@ import {
   User,
   Briefcase,
   Heart,
-  Save
+  Save,
+  ChevronDown
 } from 'lucide-react';
+
+// Country codes data
+const countryCodes = [
+  { code: '+234', country: 'Nigeria', flag: '🇳🇬', example: '8029292929' },
+  { code: '+1', country: 'USA/Canada', flag: '🇺🇸', example: '2125551234' },
+  { code: '+44', country: 'UK', flag: '🇬🇧', example: '7123456789' },
+  { code: '+233', country: 'Ghana', flag: '🇬🇭', example: '2029292929' },
+  { code: '+254', country: 'Kenya', flag: '🇰🇪', example: '712345678' },
+  { code: '+27', country: 'South Africa', flag: '🇿🇦', example: '712345678' },
+  { code: '+256', country: 'Uganda', flag: '🇺🇬', example: '712345678' },
+  { code: '+255', country: 'Tanzania', flag: '🇹🇿', example: '712345678' },
+  { code: '+260', country: 'Zambia', flag: '🇿🇲', example: '966123456' },
+  { code: '+263', country: 'Zimbabwe', flag: '🇿🇼', example: '712345678' },
+  { code: '+91', country: 'India', flag: '🇮🇳', example: '9876543210' },
+  { code: '+92', country: 'Pakistan', flag: '🇵🇰', example: '3123456789' },
+  { code: '+880', country: 'Bangladesh', flag: '🇧🇩', example: '1712345678' },
+  { code: '+94', country: 'Sri Lanka', flag: '🇱🇰', example: '712345678' },
+  { code: '+60', country: 'Malaysia', flag: '🇲🇾', example: '123456789' },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬', example: '91234567' },
+  { code: '+66', country: 'Thailand', flag: '🇹🇭', example: '812345678' },
+  { code: '+84', country: 'Vietnam', flag: '🇻🇳', example: '912345678' },
+  { code: '+63', country: 'Philippines', flag: '🇵🇭', example: '9123456789' },
+  { code: '+62', country: 'Indonesia', flag: '🇮🇩', example: '8123456789' },
+];
+
+// Helper function to format phone number
+const formatPhoneNumber = (countryCode: string, phoneNumber: string) => {
+  // Remove all non-digit characters
+  let cleaned = phoneNumber.replace(/\D/g, '');
+  
+  // Remove leading zero if present
+  if (cleaned.startsWith('0')) {
+    cleaned = cleaned.substring(1);
+  }
+  
+  // For Nigeria (+234), ensure it's 10 digits after removing leading zero
+  if (countryCode === '+234' && cleaned.length === 10) {
+    return countryCode + cleaned;
+  }
+  
+  // For other countries, just return code + cleaned number
+  return countryCode + cleaned;
+};
 
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [googleSignup, { isLoading }] = useGoogleSignupMutation();
+  
+  const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodes[0]);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   
   const [formData, setFormData] = useState({
     phone: '',
@@ -59,6 +106,11 @@ const Signup = () => {
       return;
     }
 
+    // Format phone number with country code
+    const formattedPhone = formatPhoneNumber(selectedCountryCode.code, formData.phone);
+    const formattedWhatsapp = formData.whatsappNumber ? 
+      formatPhoneNumber(selectedCountryCode.code, formData.whatsappNumber) : '';
+
     const validationErrors: Record<string, string> = {};
     if (!formData.phone) validationErrors.phone = 'Phone number is required';
     if (!formData.dateOfBirth) validationErrors.dateOfBirth = 'Date of birth is required';
@@ -79,11 +131,11 @@ const Signup = () => {
     try {
       const submitData = new FormData();
       submitData.append('token', googleToken);
-      submitData.append('phone', formData.phone);
+      submitData.append('phone', formattedPhone);
       submitData.append('dateOfBirth', formData.dateOfBirth);
       submitData.append('gender', formData.gender);
       submitData.append('location', formData.location);
-      submitData.append('whatsappNumber', formData.whatsappNumber || '');
+      submitData.append('whatsappNumber', formattedWhatsapp);
       submitData.append('portfolioLink', formData.portfolioLink || '');
       submitData.append('skills', JSON.stringify(formData.skills));
       submitData.append('interests', JSON.stringify(formData.interests));
@@ -112,6 +164,20 @@ const Signup = () => {
 
   const handleBlur = (field: string) => {
     setTouched({ ...touched, [field]: true });
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only digits
+    const digitsOnly = value.replace(/\D/g, '');
+    setFormData({ ...formData, phone: digitsOnly });
+  };
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only digits
+    const digitsOnly = value.replace(/\D/g, '');
+    setFormData({ ...formData, whatsappNumber: digitsOnly });
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,6 +240,7 @@ const Signup = () => {
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
     if (!formData.phone) errors.phone = 'Phone number is required';
+    if (formData.phone && formData.phone.length < 8) errors.phone = 'Please enter a valid phone number';
     if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
     if (!formData.gender) errors.gender = 'Gender is required';
     if (!formData.location) errors.location = 'Location is required';
@@ -187,14 +254,12 @@ const Signup = () => {
         backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
       }}
     >
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/70" />
       
-      {/* Content */}
       <div className="relative max-w-6xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-8 items-start min-h-[90vh]">
           
-          {/* Left Side - Brand Info (Hidden on mobile) */}
+          {/* Left Side - Brand Info */}
           <div className="hidden lg:block text-white sticky top-12">
             <div className="space-y-8">
               <div>
@@ -244,20 +309,17 @@ const Signup = () => {
 
           {/* Right Side - Form */}
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            {/* Success Message */}
             {showSuccess && (
-              <div className="absolute top-4 right-4 left-4 bg-green-500 text-white p-4 rounded-lg flex items-center gap-3 animate-fade-in">
+              <div className="absolute top-4 right-4 left-4 bg-green-500 text-white p-4 rounded-lg flex items-center gap-3 animate-fade-in z-10">
                 <CheckCircle size={20} />
                 <span>Account created successfully! Redirecting...</span>
               </div>
             )}
 
-            {/* Header */}
             <div className="bg-[#1d2b4f] px-6 py-5">
               <h2 className="text-white text-xl font-bold">Create Account</h2>
               <p className="text-gray-300 text-sm mt-1">Fill in your details to get started</p>
               
-              {/* Step Indicator */}
               <div className="flex gap-2 mt-4">
                 {[1, 2, 3].map((step) => (
                   <div key={step} className="flex-1">
@@ -282,22 +344,67 @@ const Signup = () => {
               {/* Step 1: Basic Information */}
               {activeStep === 1 && (
                 <div className="space-y-4">
-                  {/* Phone Number */}
+                  {/* Phone Number with Country Code */}
                   <div>
                     <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
                       Phone Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        onBlur={() => handleBlur('phone')}
-                        className={`w-full pl-10 pr-4 py-3 border ${touched.phone && errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
-                        placeholder="+234 123 456 7890"
-                      />
+                    <div className="flex gap-2">
+                      {/* Country Code Dropdown */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          className="flex items-center gap-2 px-3 py-3 border border-gray-300 rounded-lg bg-white hover:border-[#f4a825] transition-colors"
+                        >
+                          <span className="text-lg">{selectedCountryCode.flag}</span>
+                          <span className="text-sm font-medium">{selectedCountryCode.code}</span>
+                          <ChevronDown size={14} className={`text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {showCountryDropdown && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40"
+                              onClick={() => setShowCountryDropdown(false)}
+                            />
+                            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                              {countryCodes.map((country) => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedCountryCode(country);
+                                    setShowCountryDropdown(false);
+                                  }}
+                                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors text-left"
+                                >
+                                  <span className="text-lg">{country.flag}</span>
+                                  <span className="text-sm font-medium">{country.code}</span>
+                                  <span className="text-xs text-gray-500">{country.country}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Phone Number Input */}
+                      <div className="flex-1 relative">
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handlePhoneChange}
+                          onBlur={() => handleBlur('phone')}
+                          className={`w-full pl-10 pr-4 py-3 border ${touched.phone && errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
+                          placeholder={`e.g., ${selectedCountryCode.example}`}
+                        />
+                      </div>
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {selectedCountryCode.flag} {selectedCountryCode.code} example: {selectedCountryCode.example}
+                    </p>
                     {touched.phone && errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                   </div>
 
@@ -325,7 +432,7 @@ const Signup = () => {
                       Gender <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {['Male', 'Female',].map((option) => (
+                      {['Male', 'Female'].map((option) => (
                         <label key={option} className="flex items-center gap-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-[#f4a825] transition-colors">
                           <input
                             type="radio"
@@ -401,18 +508,28 @@ const Signup = () => {
                     </div>
                   </div>
 
-                  {/* WhatsApp Number */}
+                  {/* WhatsApp Number with Country Code */}
                   <div>
                     <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
                       WhatsApp Number
                     </label>
-                    <input
-                      type="tel"
-                      value={formData.whatsappNumber}
-                      onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
-                      placeholder="+234 123 456 7890"
-                    />
+                    <div className="flex gap-2">
+                      <div className="px-3 py-3 bg-gray-100 border border-gray-300 rounded-lg">
+                        <span className="text-sm font-medium">{selectedCountryCode.code}</span>
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="tel"
+                          value={formData.whatsappNumber}
+                          onChange={handleWhatsappChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
+                          placeholder={`e.g., ${selectedCountryCode.example}`}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {selectedCountryCode.flag} {selectedCountryCode.code} example: {selectedCountryCode.example}
+                    </p>
                   </div>
 
                   {/* Portfolio Link */}
