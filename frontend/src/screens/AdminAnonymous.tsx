@@ -21,15 +21,11 @@ import {
   Lock,
   Key,
   RefreshCw,
-  User,
   Mail,
   Phone,
   MapPin,
-  Award,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
-  Users
 } from "lucide-react";
 import { toBlob, toJpeg } from "html-to-image";
 
@@ -127,10 +123,10 @@ const AnonymousAvatar = () => {
   );
 };
 
-// Mobile-friendly Export Card Component
+// Mobile-friendly Export Card Component with Logo
 const ExportPostCard = ({ post }: { post: Post }) => {
   return (
-    <div className="w-[350px] max-w-full bg-white rounded-2xl overflow-hidden shadow-lg">
+    <div className="w-[380px] max-w-full bg-white rounded-2xl overflow-hidden shadow-lg">
       {/* Header */}
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-start gap-3">
@@ -158,16 +154,6 @@ const ExportPostCard = ({ post }: { post: Post }) => {
           </div>
         )}
         
-        {post.media && post.mediaType === "video" && (
-          <div className="mt-3 rounded-xl overflow-hidden bg-gray-100">
-            <video 
-              src={post.media} 
-              className="w-full max-h-[300px]"
-              preload="metadata"
-            />
-          </div>
-        )}
-        
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {post.tags.map((tag, idx) => (
@@ -179,13 +165,11 @@ const ExportPostCard = ({ post }: { post: Post }) => {
         )}
       </div>
       
-      {/* Footer */}
+      {/* Footer with Logo */}
       <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#f4a825]/20 rounded-full flex items-center justify-center">
-              <span className="text-[#f4a825] text-xs font-bold">TC</span>
-            </div>
+            <img src="/logo.png" alt="TeensConnect" className="h-6 w-auto" />
             <span className="text-xs text-gray-500">TeensConnect</span>
           </div>
           <p className="text-[#f4a825] text-xs font-medium">Anonymous Post</p>
@@ -287,10 +271,40 @@ const AdminAnonymous = () => {
     try {
       setGeneratingImage(postId);
 
+      // Mark as read when sharing
       if (!post.isRead) {
         await handleMarkAsRead(postId);
       }
 
+      // Use share if available, otherwise download
+      if (navigator.share && navigator.canShare) {
+        try {
+          const blob = await toBlob(exportNode, {
+            cacheBust: true,
+            pixelRatio: 2,
+            backgroundColor: "#ffffff",
+          });
+
+          if (blob) {
+            const file = new File([blob], `anonymous-post-${postId}.jpg`, {
+              type: "image/jpeg",
+            });
+
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: "Anonymous Post",
+              });
+              setGeneratingImage(null);
+              return;
+            }
+          }
+        } catch (shareError) {
+          console.log("Share cancelled or failed, falling back to download");
+        }
+      }
+
+      // Fallback to download
       const dataUrl = await toJpeg(exportNode, {
         cacheBust: true,
         pixelRatio: 2,
@@ -303,6 +317,7 @@ const AdminAnonymous = () => {
       link.href = dataUrl;
       link.click();
 
+      // Open WhatsApp after download
       setTimeout(() => {
         window.open("https://wa.me", "_blank");
       }, 500);
