@@ -325,7 +325,7 @@ const Signup = () => {
                       Gender <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {['Male', 'Female', 'Other', 'Prefer not to say'].map((option) => (
+                      {['Male', 'Female',].map((option) => (
                         <label key={option} className="flex items-center gap-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-[#f4a825] transition-colors">
                           <input
                             type="radio"
