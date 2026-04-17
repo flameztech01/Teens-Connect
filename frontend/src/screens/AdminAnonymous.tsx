@@ -127,6 +127,74 @@ const AnonymousAvatar = () => {
   );
 };
 
+// Mobile-friendly Export Card Component
+const ExportPostCard = ({ post }: { post: Post }) => {
+  return (
+    <div className="w-[350px] max-w-full bg-white rounded-2xl overflow-hidden shadow-lg">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-start gap-3">
+          <AnonymousAvatar />
+          <div>
+            <p className="font-semibold text-gray-900">Anonymous User</p>
+            <p className="text-xs text-gray-400 mt-0.5">{formatPostDateTime(post.createdAt)}</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="p-4">
+        <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap break-words">
+          {post.content}
+        </p>
+        
+        {post.media && post.mediaType === "image" && (
+          <div className="mt-3 rounded-xl overflow-hidden">
+            <img 
+              src={post.media} 
+              alt="Post media" 
+              className="w-full h-auto max-h-[300px] object-contain bg-gray-50"
+            />
+          </div>
+        )}
+        
+        {post.media && post.mediaType === "video" && (
+          <div className="mt-3 rounded-xl overflow-hidden bg-gray-100">
+            <video 
+              src={post.media} 
+              className="w-full max-h-[300px]"
+              preload="metadata"
+            />
+          </div>
+        )}
+        
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {post.tags.map((tag, idx) => (
+              <span key={idx} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-lg text-xs">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-[#f4a825]/20 rounded-full flex items-center justify-center">
+              <span className="text-[#f4a825] text-xs font-bold">TC</span>
+            </div>
+            <span className="text-xs text-gray-500">TeensConnect</span>
+          </div>
+          <p className="text-[#f4a825] text-xs font-medium">Anonymous Post</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminAnonymous = () => {
   const { adminInfo } = useSelector((state: RootState) => state.adminAuth);
 
@@ -193,7 +261,6 @@ const AdminAnonymous = () => {
       return;
     }
 
-    // Hardcoded code: 0000
     if (secretCode === "0000") {
       setIsCodeVerified(true);
       setSecretCodeError("");
@@ -220,36 +287,8 @@ const AdminAnonymous = () => {
     try {
       setGeneratingImage(postId);
 
-      // Mark as read when sharing
       if (!post.isRead) {
         await handleMarkAsRead(postId);
-      }
-
-      if (navigator.share && navigator.canShare) {
-        try {
-          const blob = await toBlob(exportNode, {
-            cacheBust: true,
-            pixelRatio: 2,
-            backgroundColor: "#ffffff",
-          });
-
-          if (blob) {
-            const file = new File([blob], `anonymous-post-${postId}.jpg`, {
-              type: "image/jpeg",
-            });
-
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                files: [file],
-                title: "Anonymous Post",
-              });
-              setGeneratingImage(null);
-              return;
-            }
-          }
-        } catch (shareError) {
-          console.log("Share cancelled or failed, falling back to download");
-        }
       }
 
       const dataUrl = await toJpeg(exportNode, {
@@ -300,15 +339,15 @@ const AdminAnonymous = () => {
       <div className="lg:ml-72">
         {/* Header */}
         <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-6">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                  <MessageCircle className="w-6 h-6 text-[#f4a825]" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#f4a825]" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Anonymous Posts</h1>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Anonymous Posts</h1>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
                     Manage anonymous community posts
                   </p>
                 </div>
@@ -316,7 +355,7 @@ const AdminAnonymous = () => {
 
               <div className="flex items-center gap-2">
                 {typedUnreadCount && typedUnreadCount.unreadCount > 0 && (
-                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  <div className="bg-red-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-semibold">
                     {typedUnreadCount.unreadCount} unread
                   </div>
                 )}
@@ -331,25 +370,25 @@ const AdminAnonymous = () => {
           </div>
         </div>
 
-        <div className="px-6 lg:px-8 py-6">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Stats Cards - Horizontal Scroll */}
           {typedPostsData?.stats && (
-            <div className="flex gap-4 overflow-x-auto pb-4 mb-6 hide-scrollbar">
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
+            <div className="flex gap-3 overflow-x-auto pb-4 mb-6 hide-scrollbar">
+              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
                 <p className="text-gray-500 text-xs">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{typedPostsData.stats.total}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{typedPostsData.stats.total}</p>
               </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
+              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
                 <p className="text-gray-500 text-xs">Read</p>
-                <p className="text-2xl font-bold text-green-600">{typedPostsData.stats.read}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">{typedPostsData.stats.read}</p>
               </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
+              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
                 <p className="text-gray-500 text-xs">Unread</p>
-                <p className="text-2xl font-bold text-orange-600">{typedPostsData.stats.unread}</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-600">{typedPostsData.stats.unread}</p>
               </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
+              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
                 <p className="text-gray-500 text-xs">Shared</p>
-                <p className="text-2xl font-bold text-purple-600">{typedPostsData.stats.shared}</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-600">{typedPostsData.stats.shared}</p>
               </div>
             </div>
           )}
@@ -428,7 +467,6 @@ const AdminAnonymous = () => {
                         !post.isRead ? "border-[#f4a825] ring-2 ring-[#f4a825]/20" : "border-gray-100"
                       }`}
                     >
-                      {/* Post Header */}
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 flex-1">
@@ -440,7 +478,7 @@ const AdminAnonymous = () => {
                                   Anonymous
                                 </span>
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
+                              <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5 flex-wrap">
                                 <span className="flex items-center gap-1">
                                   <Clock size={10} />
                                   {formatPostDateTime(post.createdAt)}
@@ -455,7 +493,6 @@ const AdminAnonymous = () => {
                             </div>
                           </div>
 
-                          {/* Action Buttons */}
                           <div className="flex gap-1 shrink-0">
                             {!post.isRead && (
                               <button
@@ -499,7 +536,6 @@ const AdminAnonymous = () => {
                         </div>
                       </div>
 
-                      {/* Post Content */}
                       <div className="p-4">
                         <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap break-words">
                           {post.content}
@@ -511,7 +547,7 @@ const AdminAnonymous = () => {
                               <img
                                 src={post.media}
                                 alt="Post media"
-                                className="w-full max-h-64 object-cover"
+                                className="w-full max-h-64 object-contain"
                                 crossOrigin="anonymous"
                               />
                             ) : (
@@ -742,33 +778,11 @@ const AdminAnonymous = () => {
         </>
       )}
 
-      {/* Hidden Export Elements */}
+      {/* Hidden Export Elements - Mobile Friendly */}
       <div className="fixed -left-[99999px] top-0 pointer-events-none">
         {typedPostsData && Object.values(typedPostsData.postsByDate).flat().map((post) => (
-          <div key={`export-${post.id}`} id={`post-export-${post.id}`} className="w-[800px] bg-white rounded-2xl overflow-hidden shadow-lg">
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-start gap-3">
-                <AnonymousAvatar />
-                <div>
-                  <p className="font-semibold text-gray-900">Anonymous User</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatPostDateTime(post.createdAt)}</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </p>
-              {post.media && post.mediaType === "image" && (
-                <img src={post.media} alt="Post media" className="mt-4 rounded-xl max-h-96 object-cover w-full" />
-              )}
-            </div>
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <img src="/logo.png" alt="TeensConnect" className="h-8" />
-                <p className="text-[#f4a825] font-semibold text-sm">TeensConnect</p>
-              </div>
-            </div>
+          <div key={`export-${post.id}`} id={`post-export-${post.id}`}>
+            <ExportPostCard post={post} />
           </div>
         ))}
       </div>
