@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Menu, X, Search, Phone, Mail, MapPin, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
@@ -93,15 +93,14 @@ const navLinks = [
                 ))}
               </div>
 
-              {/* Right actions */}
+              {/* Right actions - Signup and Signin buttons */}
               <div className="flex items-center gap-4 pl-3">
-                <button className="text-[#1d2b4f] hover:text-[#f4a825] transition-colors">
-                  <Search size={18} strokeWidth={2.2} />
-                </button>
-
-                <Link to='/signup' className="flex items-center gap-2 bg-[#f4a825] hover:bg-[#e79a13] text-white text-[12px] font-semibold uppercase tracking-[0.12em] px-5 h-11 rounded-full transition-colors shadow-sm">
-                  Join Now
-                  <ChevronDown size={14} />
+                <Link to='/signin' className="px-5 h-11 rounded-full border-2 border-[#f4a825] text-[#f4a825] hover:bg-[#f4a825] hover:text-white text-[12px] font-semibold uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-center">
+                  Sign In
+                </Link>
+                
+                <Link to='/signup' className="px-5 h-11 rounded-full bg-[#f4a825] hover:bg-[#e79a13] text-white text-[12px] font-semibold uppercase tracking-[0.12em] transition-all duration-300 shadow-sm flex items-center justify-center">
+                  Sign Up
                 </Link>
               </div>
             </div>
@@ -134,13 +133,13 @@ const navLinks = [
                 ))}
               </div>
 
-              <div className="pt-3 border-t border-[#edf0f5] flex items-center justify-between gap-3">
-                <button className="h-11 w-11 rounded-full border border-[#e8ecf3] flex items-center justify-center text-[#1d2b4f]">
-                  <Search size={18} />
-                </button>
-
-                <Link to='/signup' className="flex-1 bg-[#f4a825] hover:bg-[#e79a13] text-white text-[12px] font-semibold uppercase tracking-[0.12em] h-11 rounded-full transition-colors">
-                  Join Now
+              <div className="pt-3 border-t border-[#edf0f5] flex gap-3">
+                <Link to='/signin' className="flex-1 border-2 border-[#f4a825] text-[#f4a825] hover:bg-[#f4a825] hover:text-white text-[12px] font-semibold uppercase tracking-[0.12em] h-11 rounded-full transition-all duration-300 flex items-center justify-center">
+                  Sign In
+                </Link>
+                
+                <Link to='/signup' className="flex-1 bg-[#f4a825] hover:bg-[#e79a13] text-white text-[12px] font-semibold uppercase tracking-[0.12em] h-11 rounded-full transition-colors flex items-center justify-center">
+                  Sign Up
                 </Link>
               </div>
             </div>

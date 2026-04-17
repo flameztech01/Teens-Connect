@@ -12,7 +12,6 @@ import { protect, adminProtect } from "../Middleware/authMiddleware.js";
 
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const router = express.Router();
 
@@ -23,55 +22,25 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-// Storage for Profile Pictures
-const profileStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "user_profiles",
-    allowed_formats: ["jpg", "png", "jpeg", "webp", "avif"],
-    transformation: [{ width: 500, height: 500, crop: "limit" }],
-  },
-});
-
-// Storage for CV/Resume files
-const cvStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "user_cvs",
-    allowed_formats: ["pdf", "doc", "docx"],
-    resource_type: "raw", // For non-image files like PDFs
-  },
-});
-
-// Configure multer for multiple file uploads
+// Configure multer for memory storage
 const upload = multer({
-  storage: multer.memoryStorage(), // Use memory storage for better control
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit for profile pictures
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
 });
-
-// Custom upload handlers
-const uploadToCloudinary = async (file, folder, options = {}) => {
-  return new Promise((resolve, reject) => {
-    const uploadOptions = {
-      folder,
-      resource_type: "auto",
-      ...options,
-    };
-
-    cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
-      if (error) reject(error);
-      else resolve(result);
-    }).end(file.buffer);
-  });
-};
 
 // Optional: test connection
 cloudinary.api
   .ping()
   .then(() => console.log("✅ Cloudinary connected successfully"))
   .catch((err) => console.error("❌ Cloudinary not connected:", err.message));
+
+// ============= IMPORTANT: ORDER MATTERS =============
+// Put more specific routes BEFORE parameter routes
+
+// Admin routes (must come before the /:id route)
+router.get("/", getUsers);
 
 // Public routes
 router.post("/google/signup", 
@@ -83,9 +52,9 @@ router.post("/google/signup",
 );
 
 router.post("/google/login", googleLogin);
-router.get("/:id", getUserById);
 
-// Private routes
+// Private routes with ID parameter (must come AFTER specific routes)
+router.get("/:id", protect, getUserById);
 router.put("/profile", 
   protect, 
   upload.fields([
@@ -94,12 +63,7 @@ router.put("/profile",
   ]),
   updateProfile
 );
-router.get("/:id", protect, getUserById);
 router.post("/logout", protect, logout);
 router.delete("/account", protect, deleteAccount);
-
-// Admin routes
-router.get("/", adminProtect, getUsers);
-
 
 export default router;

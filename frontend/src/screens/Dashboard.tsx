@@ -8,21 +8,19 @@ import {
   Eye,
   Briefcase,
   Award,
-  Clock,
-  ChevronRight,
   Lock,
-  Send,
-  Image as ImageIcon,
-  TrendingUp,
-  Calendar,
-  User,
+  MessageCircle,
+  Heart,
+  MoreHorizontal,
+  Sparkles,
   Activity,
-  Star
+  Zap
 } from 'lucide-react';
 
 const Dashboard = () => {
   const { userInfo } = useSelector((state: any) => state.auth);
   const [greeting, setGreeting] = useState('');
+  const [selectedTab, setSelectedTab] = useState('overview');
   
   const { data: userData, isLoading: userLoading } = useGetUserByIdQuery(
     userInfo?._id,
@@ -39,320 +37,287 @@ const Dashboard = () => {
   }, []);
 
   const stats = [
-    {
-      title: 'Anonymous Posts',
-      value: anonymousPosts?.total || 0,
-      icon: Lock,
-      gradient: 'from-purple-600 to-purple-700',
-      bgGradient: 'from-purple-50 to-purple-100',
-      iconColor: 'text-purple-600',
-      link: '/anonymous'
-    },
-    {
-      title: 'Profile Views',
-      value: userData?.profileViews || 0,
-      icon: Eye,
-      gradient: 'from-blue-600 to-blue-700',
-      bgGradient: 'from-blue-50 to-blue-100',
-      iconColor: 'text-blue-600',
-      link: '/profile'
-    },
-    {
-      title: 'Skills',
-      value: userData?.skills?.length || 0,
-      icon: Award,
-      gradient: 'from-emerald-600 to-emerald-700',
-      bgGradient: 'from-emerald-50 to-emerald-100',
-      iconColor: 'text-emerald-600',
-      link: '/profile'
-    },
-    {
-      title: 'Applications',
-      value: userData?.applications?.length || 0,
-      icon: Briefcase,
-      gradient: 'from-orange-600 to-orange-700',
-      bgGradient: 'from-orange-50 to-orange-100',
-      iconColor: 'text-orange-600',
-      link: '/hire'
-    }
+    { label: 'Anonymous Posts', value: anonymousPosts?.total || 0, icon: Lock, color: '#f4a825', change: '+12%' },
+    { label: 'Profile Views', value: userData?.profileViews || 0, icon: Eye, color: '#3b82f6', change: '+5%' },
+    { label: 'Skills', value: userData?.skills?.length || 0, icon: Award, color: '#10b981', change: '+2' },
+    { label: 'Applications', value: userData?.applications?.length || 0, icon: Briefcase, color: '#ef4444', change: '0' }
+  ];
+
+  const recentActivities = [
+    { id: 1, type: 'post', message: 'You created an anonymous post', time: '2 hours ago', icon: Lock },
+    { id: 2, type: 'view', message: 'Your profile was viewed by 3 people', time: '5 hours ago', icon: Eye },
+    { id: 3, type: 'skill', message: 'You added "React Development" to skills', time: '1 day ago', icon: Award },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100/50">
+    <div className="min-h-screen bg-gray-50">
       <DashboardSidebar />
       
-      <div className="lg:ml-64 p-6 lg:p-8">
-        {/* Welcome Section with Brand Colors */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#1a2538] via-[#1d2b4f] to-[#0d6b57] rounded-2xl shadow-xl mb-8">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#f4a825]/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
-          
-          <div className="relative p-6 lg:p-8">
-            <div className="flex items-start justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-white/60 text-sm">
-                  <Calendar size={14} />
-                  <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                </div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">
+      <div className="lg:ml-72">
+        {/* Modern Header with Stats */}
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="px-6 lg:px-8 py-6">
+            {/* Welcome Row */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
                   {greeting}, <span className="text-[#f4a825]">{userData?.name?.split(' ')[0] || userInfo?.name?.split(' ')[0] || 'User'}</span>
                 </h1>
-                <p className="text-white/70 text-sm max-w-md">
-                  Welcome back to your dashboard. Track your activity, manage posts, and discover opportunities.
-                </p>
-                <div className="flex flex-wrap gap-3 pt-3">
-                  <Link
-                    to="/anonymous"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f4a825] text-[#1a2538] text-sm font-semibold rounded-lg hover:bg-[#e09e1a] transition-all hover:shadow-lg transform hover:-translate-y-0.5"
-                  >
-                    <Lock size={16} />
-                    Post Anonymously
-                  </Link>
-                  <Link
-                    to="/hire"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-white text-sm font-semibold rounded-lg hover:bg-white/20 transition-all border border-white/20"
-                  >
-                    <Briefcase size={16} />
-                    Find Opportunities
-                  </Link>
-                </div>
+                <p className="text-gray-500 text-sm mt-1">Here's what's happening with your account today</p>
               </div>
               
-              {userData?.profile || userInfo?.profile ? (
-                <img
-                  src={userData?.profile || userInfo?.profile}
-                  alt={userData?.name || userInfo?.name}
-                  className="w-16 h-16 lg:w-24 lg:h-24 rounded-full ring-4 ring-[#f4a825]/30 object-cover hidden sm:block shadow-xl"
-                />
-              ) : (
-                <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-gradient-to-br from-[#f4a825] to-[#e09e1a] flex items-center justify-center hidden sm:block shadow-xl">
-                  <span className="text-[#1a2538] font-bold text-3xl">
-                    {(userData?.name || userInfo?.name || 'U').charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Grid with Gradients */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Link
-                key={index}
-                to={stat.link}
-                className="group relative overflow-hidden bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.bgGradient} rounded-bl-full opacity-50`}></div>
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`bg-gradient-to-br ${stat.bgGradient} p-3 rounded-xl`}>
-                      <Icon className={`w-5 h-5 ${stat.iconColor}`} />
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#f4a825] group-hover:translate-x-1 transition-all" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{stat.title}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Anonymous Posts Section */}
-          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
-                    <Lock className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-white">Anonymous Posts</h2>
-                </div>
+              {/* Quick Action Buttons */}
+              <div className="hidden md:flex gap-3">
                 <Link
                   to="/anonymous"
-                  className="text-white/80 hover:text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#f4a825] text-white text-sm font-medium rounded-xl hover:bg-[#e09e1a] transition-all shadow-sm"
                 >
-                  View all →
+                  <Lock size={16} />
+                  Post Anonymously
                 </Link>
               </div>
             </div>
-            
-            <div className="p-6">
-              {postsLoading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-purple-600"></div>
-                  <p className="text-gray-500 text-sm mt-3">Loading posts...</p>
-                </div>
-              ) : anonymousPosts?.posts?.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Lock className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <p className="text-gray-600 mb-4">No anonymous posts yet</p>
-                  <Link
-                    to="/anonymous"
-                    className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium"
-                  >
-                    Create your first post →
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {anonymousPosts?.posts?.slice(0, 3).map((post: any) => (
-                    <div key={post.id} className="border-l-4 border-purple-200 pl-4 py-2 hover:border-purple-400 transition-colors">
-                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-2">{post.content}</p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                          <Clock size={12} />
-                          {new Date(post.createdAt).toLocaleDateString()}
-                        </span>
-                        {post.media && (
-                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <ImageIcon size={12} />
-                            Media
-                          </span>
-                        )}
+
+            {/* Stats Row - Horizontal Scroll on Mobile (No scrollbar) */}
+            <div className="flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible hide-scrollbar">
+              {stats.map((stat, idx) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={idx} className="flex-shrink-0 w-64 lg:w-auto bg-gray-50 rounded-2xl p-4 hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                        <Icon size={20} style={{ color: stat.color }} />
                       </div>
+                      <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        {stat.change}
+                      </span>
                     </div>
-                  ))}
-                  {anonymousPosts?.total > 3 && (
-                    <Link
-                      to="/anonymous"
-                      className="block text-center text-sm text-purple-600 hover:text-purple-700 font-medium pt-3 transition-colors"
-                    >
-                      View all {anonymousPosts.total} posts →
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Profile Overview with Brand Color Header */}
-            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-              <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
-                    <User className="w-5 h-5 text-white" />
+                    <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+                    <p className="text-gray-500 text-sm mt-1">{stat.label}</p>
                   </div>
-                  <h2 className="text-lg font-semibold text-white">Profile Overview</h2>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">Full name</span>
-                    <span className="text-sm font-semibold text-gray-900">{userData?.name || userInfo?.name}</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">Email address</span>
-                    <span className="text-sm font-medium text-gray-700">{userData?.email || userInfo?.email}</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">Phone number</span>
-                    <span className="text-sm font-medium text-gray-700">{userData?.phone || userInfo?.phone || '—'}</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">Location</span>
-                    <span className="text-sm font-medium text-gray-700">{userData?.location || userInfo?.location || '—'}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Skills</span>
-                    <span className="text-sm font-semibold text-[#f4a825]">{userData?.skills?.length || 0} skills listed</span>
-                  </div>
-                </div>
-
-                <Link
-                  to="/profile"
-                  className="mt-6 w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-                >
-                  Edit Profile
-                </Link>
-              </div>
-            </div>
-
-            {/* Quick Action Card with Brand Color */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#f4a825]/10 via-[#f4a825]/5 to-transparent rounded-xl shadow-md p-6 border border-[#f4a825]/20">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#f4a825]/20 rounded-full blur-2xl"></div>
-              <div className="relative flex items-start gap-4">
-                <div className="bg-[#f4a825] p-3 rounded-xl shadow-lg">
-                  <Send className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-1">Share anonymously</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Have something to share? Post anonymously and connect with the community.
-                  </p>
-                  <Link
-                    to="/anonymous"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#f4a825] hover:text-[#e09e1a] transition-colors"
-                  >
-                    Create post
-                    <ChevronRight size={14} />
-                  </Link>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Recent Activity Section */}
-        {anonymousPosts?.posts?.length > 0 && (
-          <div className="mt-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-white" />
+        {/* Main Content */}
+        <div className="px-6 lg:px-8 py-6">
+          {/* Tab Navigation */}
+          <div className="flex gap-6 border-b border-gray-200 mb-6 overflow-x-auto hide-scrollbar">
+            {['overview', 'posts', 'activity'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                className={`pb-3 text-sm font-medium transition-colors capitalize whitespace-nowrap ${
+                  selectedTab === tab 
+                    ? 'text-[#f4a825] border-b-2 border-[#f4a825]' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {selectedTab === 'overview' && (
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Left Column - Posts Feed */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Featured Card */}
+                <div className="relative overflow-hidden bg-gradient-to-r from-[#1a2538] to-[#1d2b4f] rounded-2xl p-6 text-white">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-[#f4a825]/10 rounded-full blur-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles size={20} className="text-[#f4a825]" />
+                      <span className="text-xs font-semibold uppercase tracking-wide">Featured</span>
+                    </div>
+                    <h2 className="text-xl font-bold mb-2">Share your story anonymously</h2>
+                    <p className="text-gray-300 text-sm mb-4">Connect with others in a safe space. Your identity stays protected.</p>
+                    <Link
+                      to="/anonymous"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#f4a825] text-[#1a2538] text-sm font-semibold rounded-xl hover:bg-[#e09e1a] transition-all"
+                    >
+                      <Lock size={16} />
+                      Create Anonymous Post
+                    </Link>
+                  </div>
                 </div>
-                <h2 className="text-lg font-semibold text-white">Recent activity</h2>
+
+                {/* Recent Posts */}
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle size={18} className="text-[#f4a825]" />
+                      <h3 className="font-semibold text-gray-900">Recent Anonymous Posts</h3>
+                    </div>
+                    <Link to="/anonymous" className="text-xs text-[#f4a825] hover:underline">
+                      View all
+                    </Link>
+                  </div>
+                  
+                  <div className="divide-y divide-gray-100">
+                    {postsLoading ? (
+                      <div className="p-8 text-center">
+                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-[#f4a825]" />
+                        <p className="text-gray-500 text-sm mt-3">Loading posts...</p>
+                      </div>
+                    ) : anonymousPosts?.posts?.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Lock size={20} className="text-gray-400" />
+                        </div>
+                        <p className="text-gray-500 text-sm">No anonymous posts yet</p>
+                        <Link to="/anonymous" className="text-[#f4a825] text-sm mt-2 inline-block">
+                          Create your first post →
+                        </Link>
+                      </div>
+                    ) : (
+                      anonymousPosts?.posts?.slice(0, 3).map((post: any) => (
+                        <div key={post.id} className="p-5 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                              <Lock size={14} className="text-gray-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-gray-800 text-sm leading-relaxed">{post.content}</p>
+                              <div className="flex items-center gap-4 mt-2">
+                                <span className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
+                                <div className="flex items-center gap-3">
+                                  <button className="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors">
+                                    <Heart size={12} />
+                                    <span className="text-xs">0</span>
+                                  </button>
+                                  <button className="flex items-center gap-1 text-gray-400 hover:text-blue-500 transition-colors">
+                                    <MessageCircle size={12} />
+                                    <span className="text-xs">0</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <button className="text-gray-400 hover:text-gray-600">
+                              <MoreHorizontal size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Simplified */}
+              <div className="space-y-6">
+                {/* Recent Activity */}
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Activity size={18} className="text-[#f4a825]" />
+                      <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {recentActivities.map((activity) => {
+                      const Icon = activity.icon;
+                      return (
+                        <div key={activity.id} className="px-6 py-3 flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                            <Icon size={14} className="text-gray-500" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-800">{activity.message}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quick Tip */}
+                <div className="bg-gradient-to-r from-[#f4a825]/10 to-transparent rounded-2xl p-5 border border-[#f4a825]/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#f4a825]/20 flex items-center justify-center">
+                      <Zap size={14} className="text-[#f4a825]" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm">Pro Tip</h4>
+                      <p className="text-gray-600 text-xs mt-1">
+                        Complete your profile to get discovered by employers looking for your skills.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b-2 border-gray-100">
-                      <th className="text-left text-xs font-semibold text-gray-500 pb-3">Content</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 pb-3">Date</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 pb-3">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {anonymousPosts.posts.slice(0, 5).map((post: any) => (
-                      <tr key={post.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                        <td className="py-3">
-                          <p className="text-sm text-gray-700 line-clamp-1">{post.content}</p>
-                        </td>
-                        <td className="py-3">
+          )}
+
+          {selectedTab === 'posts' && (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900">All Anonymous Posts</h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {anonymousPosts?.posts?.map((post: any) => (
+                  <div key={post.id} className="p-5 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <Lock size={14} className="text-gray-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-gray-800">{post.content}</p>
+                        <div className="flex items-center gap-4 mt-2">
                           <span className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
-                        </td>
-                        <td className="py-3">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                            post.status === 'approved' 
-                              ? 'bg-green-100 text-green-700' 
-                              : post.status === 'rejected'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-amber-100 text-amber-700'
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            post.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                           }`}>
                             {post.status || 'Pending'}
                           </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {selectedTab === 'activity' && (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900">All Activity</h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {recentActivities.map((activity) => {
+                  const Icon = activity.icon;
+                  return (
+                    <div key={activity.id} className="px-6 py-4 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <Icon size={16} className="text-gray-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-gray-800">{activity.message}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Hide scrollbar styles */}
+      <style>{`
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };

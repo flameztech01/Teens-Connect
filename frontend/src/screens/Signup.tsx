@@ -16,7 +16,11 @@ import {
   Users,
   Sparkles,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  User,
+  Briefcase,
+  Heart,
+  Save
 } from 'lucide-react';
 
 const Signup = () => {
@@ -44,6 +48,8 @@ const Signup = () => {
   const [interestInput, setInterestInput] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [activeStep, setActiveStep] = useState(1);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     const googleToken = credentialResponse.credential;
@@ -53,7 +59,6 @@ const Signup = () => {
       return;
     }
 
-    // Validate required fields
     const validationErrors: Record<string, string> = {};
     if (!formData.phone) validationErrors.phone = 'Phone number is required';
     if (!formData.dateOfBirth) validationErrors.dateOfBirth = 'Date of birth is required';
@@ -93,7 +98,8 @@ const Signup = () => {
 
       const result = await googleSignup(submitData).unwrap();
       dispatch(setCredentials(result));
-      navigate('/dashboard');
+      setShowSuccess(true);
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (error: any) {
       console.error('Signup failed:', error);
       setErrors({ submit: error.data?.message || 'Signup failed. Please try again.' });
@@ -147,355 +153,431 @@ const Signup = () => {
     setFormData({ ...formData, interests: formData.interests.filter(i => i !== interest) });
   };
 
+  const nextStep = () => {
+    if (activeStep === 1) {
+      const step1Errors = validateStep1();
+      if (Object.keys(step1Errors).length === 0) {
+        setActiveStep(2);
+      } else {
+        setErrors(step1Errors);
+        setTouched({ phone: true, dateOfBirth: true, gender: true, location: true });
+      }
+    } else {
+      setActiveStep(3);
+    }
+  };
+
+  const prevStep = () => {
+    setActiveStep(activeStep - 1);
+  };
+
+  const validateStep1 = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.phone) errors.phone = 'Phone number is required';
+    if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
+    if (!formData.gender) errors.gender = 'Gender is required';
+    if (!formData.location) errors.location = 'Location is required';
+    return errors;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1d2b4f] via-[#0d6b57] to-[#f4a825] relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#f4a825] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#0d6b57] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#1d2b4f] rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
-      </div>
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      style={{
+        backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/70" />
+      
+      {/* Content */}
+      <div className="relative max-w-6xl mx-auto px-4 py-8 lg:py-12">
+        <div className="grid lg:grid-cols-2 gap-8 items-start min-h-[90vh]">
+          
+          {/* Left Side - Brand Info (Hidden on mobile) */}
+          <div className="hidden lg:block text-white sticky top-12">
+            <div className="space-y-8">
+              <div>
+                <img src="/logo.png" alt="TeensConnect" className="h-16 w-auto mb-6" />
+                <h1 className="text-5xl font-bold mb-4 leading-tight">
+                  Join the<br />
+                  <span className="text-[#f4a825]">Future of Talent</span>
+                </h1>
+                <p className="text-gray-300 text-lg leading-relaxed">
+                  Create your account and unlock opportunities to showcase your skills, connect with mentors, and grow your career.
+                </p>
+              </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side - Brand Info */}
-          <div className="text-white space-y-8">
-            <div className="animate-fade-in-up">
-              <div className="flex items-center gap-3 mb-6">
-                <img src="/logo.png" alt="TeensConnect" className="h-12 w-auto" />
-                <div>
-                  <h1 className="text-3xl font-bold">TeensConnect</h1>
-                  <p className="text-sm opacity-90">Connect • Discover • Grow</p>
+              <div className="space-y-6 pt-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-[#f4a825]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Award className="w-5 h-5 text-[#f4a825]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Showcase Your Talent</h3>
+                    <p className="text-gray-400 text-sm">Get discovered by top companies and mentors</p>
+                  </div>
                 </div>
-              </div>
-              
-              <h2 className="text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                Join the Future of
-                <span className="text-[#f4a825]"> Teen Talent</span>
-              </h2>
-              
-              <p className="text-lg opacity-90 mb-8">
-                Create your account and unlock opportunities to showcase your skills, connect with mentors, and grow your career.
-              </p>
-            </div>
-
-            <div className="space-y-6 animate-fade-in-up delay-200">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#f4a825] bg-opacity-20 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-[#f4a825]" />
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-[#f4a825]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-[#f4a825]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Build Your Network</h3>
+                    <p className="text-gray-400 text-sm">Connect with like-minded teens and industry experts</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Showcase Your Talent</h3>
-                  <p className="text-sm opacity-80">Get discovered by top companies and mentors</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#f4a825] bg-opacity-20 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-[#f4a825]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Build Your Network</h3>
-                  <p className="text-sm opacity-80">Connect with like-minded teens and industry experts</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#f4a825] bg-opacity-20 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-[#f4a825]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Access Opportunities</h3>
-                  <p className="text-sm opacity-80">Find internships, scholarships, and events</p>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-[#f4a825]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-[#f4a825]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Access Opportunities</h3>
+                    <p className="text-gray-400 text-sm">Find internships, scholarships, and events</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Side - Signup Form */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-10 animate-fade-in-up delay-300">
-            <div className="mb-6 text-center">
-              <h3 className="text-2xl font-bold text-[#1d2b4f] mb-2">Create Account</h3>
-              <p className="text-gray-600">Fill in your details to get started</p>
+          {/* Right Side - Form */}
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {/* Success Message */}
+            {showSuccess && (
+              <div className="absolute top-4 right-4 left-4 bg-green-500 text-white p-4 rounded-lg flex items-center gap-3 animate-fade-in">
+                <CheckCircle size={20} />
+                <span>Account created successfully! Redirecting...</span>
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="bg-[#1d2b4f] px-6 py-5">
+              <h2 className="text-white text-xl font-bold">Create Account</h2>
+              <p className="text-gray-300 text-sm mt-1">Fill in your details to get started</p>
+              
+              {/* Step Indicator */}
+              <div className="flex gap-2 mt-4">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex-1">
+                    <div className={`h-1 rounded-full transition-all ${activeStep >= step ? 'bg-[#f4a825]' : 'bg-white/20'}`} />
+                    <p className={`text-xs mt-1 ${activeStep >= step ? 'text-[#f4a825]' : 'text-white/40'}`}>
+                      {step === 1 && 'Basic Info'}
+                      {step === 2 && 'Profile'}
+                      {step === 3 && 'Skills & Bio'}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {errors.submit && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+              <div className="mx-6 mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                 {errors.submit}
               </div>
             )}
 
-            <div className="space-y-5 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-              {/* Profile Picture Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Profile Picture
-                </label>
-                <div className="flex items-center gap-4">
-                  {profilePreview ? (
+            <div className="p-6">
+              {/* Step 1: Basic Information */}
+              {activeStep === 1 && (
+                <div className="space-y-4">
+                  {/* Phone Number */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
                     <div className="relative">
-                      <img 
-                        src={profilePreview} 
-                        alt="Profile preview" 
-                        className="w-20 h-20 rounded-full object-cover border-2 border-[#f4a825]"
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onBlur={() => handleBlur('phone')}
+                        className={`w-full pl-10 pr-4 py-3 border ${touched.phone && errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
+                        placeholder="+234 123 456 7890"
+                      />
+                    </div>
+                    {touched.phone && errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                  </div>
+
+                  {/* Date of Birth */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Date of Birth <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                        onBlur={() => handleBlur('dateOfBirth')}
+                        className={`w-full pl-10 pr-4 py-3 border ${touched.dateOfBirth && errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
+                      />
+                    </div>
+                    {touched.dateOfBirth && errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['Male', 'Female', 'Other', 'Prefer not to say'].map((option) => (
+                        <label key={option} className="flex items-center gap-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-[#f4a825] transition-colors">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value={option.toLowerCase()}
+                            checked={formData.gender === option.toLowerCase()}
+                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                            className="text-[#f4a825] focus:ring-[#f4a825]"
+                          />
+                          <span className="text-sm">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {touched.gender && errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Location <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        onBlur={() => handleBlur('location')}
+                        className={`w-full pl-10 pr-4 py-3 border ${touched.location && errors.location ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
+                        placeholder="City, Country"
+                      />
+                    </div>
+                    {touched.location && errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Profile Information */}
+              {activeStep === 2 && (
+                <div className="space-y-4">
+                  {/* Profile Picture */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Profile Picture
+                    </label>
+                    <div className="flex items-center gap-4">
+                      {profilePreview ? (
+                        <div className="relative">
+                          <img 
+                            src={profilePreview} 
+                            alt="Profile preview" 
+                            className="w-20 h-20 rounded-full object-cover border-2 border-[#f4a825]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProfilePicture(null);
+                              setProfilePreview('');
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-[#f4a825] transition-colors">
+                          <Upload className="w-6 h-6 text-gray-400" />
+                          <span className="text-[10px] text-gray-400 mt-1">Upload</span>
+                          <input type="file" accept="image/*" onChange={handleProfilePictureChange} className="hidden" />
+                        </label>
+                      )}
+                      <p className="text-xs text-gray-500">Optional</p>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Number */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      WhatsApp Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.whatsappNumber}
+                      onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
+                      placeholder="+234 123 456 7890"
+                    />
+                  </div>
+
+                  {/* Portfolio Link */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Portfolio Link
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="url"
+                        value={formData.portfolioLink}
+                        onChange={(e) => setFormData({ ...formData, portfolioLink: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
+                        placeholder="https://your-portfolio.com"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CV Upload */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Upload CV
+                    </label>
+                    <label className="flex items-center gap-3 p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#f4a825] transition-colors">
+                      <FileText className="w-6 h-6 text-gray-400" />
+                      <span className="text-sm text-gray-600">{cvName || 'Click to upload CV (PDF, DOC, DOCX)'}</span>
+                      <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvChange} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Skills & Bio */}
+              {activeStep === 3 && (
+                <div className="space-y-4">
+                  {/* Skills */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Skills
+                    </label>
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
+                        placeholder="Type a skill and press Enter"
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          setProfilePicture(null);
-                          setProfilePreview('');
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        onClick={addSkill}
+                        className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
                       >
-                        <X size={14} />
+                        Add
                       </button>
                     </div>
-                  ) : (
-                    <label className="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#f4a825] transition-colors">
-                      <Upload className="w-6 h-6 text-gray-400" />
-                      <input type="file" accept="image/*" onChange={handleProfilePictureChange} className="hidden" />
+                    <div className="flex flex-wrap gap-2 min-h-[80px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      {formData.skills.length === 0 ? (
+                        <p className="text-gray-400 text-sm">No skills added yet</p>
+                      ) : (
+                        formData.skills.map((skill) => (
+                          <span key={skill} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f4a825] text-white rounded-lg text-sm font-medium">
+                            <Briefcase size={14} />
+                            {skill}
+                            <button type="button" onClick={() => removeSkill(skill)} className="hover:text-gray-200 transition-colors">
+                              <X size={14} />
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Interests */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Interests
                     </label>
-                  )}
-                  <p className="text-xs text-gray-500">Upload a profile picture (optional)</p>
-                </div>
-              </div>
-
-              {/* Phone Number */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Phone Number <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    onBlur={() => handleBlur('phone')}
-                    className={`w-full pl-10 pr-4 py-3 border ${touched.phone && errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
-                    placeholder="+234 123 456 7890"
-                  />
-                </div>
-                {touched.phone && errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-              </div>
-
-              {/* Date of Birth */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Date of Birth <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                    onBlur={() => handleBlur('dateOfBirth')}
-                    className={`w-full pl-10 pr-4 py-3 border ${touched.dateOfBirth && errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
-                  />
-                </div>
-                {touched.dateOfBirth && errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
-              </div>
-
-              {/* Gender */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Gender <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-wrap gap-4">
-                  {['male', 'female', 'other', 'prefer-not-to-say'].map((option) => (
-                    <label key={option} className="flex items-center gap-2">
+                    <div className="flex gap-2 mb-3">
                       <input
-                        type="radio"
-                        name="gender"
-                        value={option}
-                        checked={formData.gender === option}
-                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                        onBlur={() => handleBlur('gender')}
-                        className="text-[#f4a825] focus:ring-[#f4a825]"
+                        type="text"
+                        value={interestInput}
+                        onChange={(e) => setInterestInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addInterest()}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
+                        placeholder="Type an interest and press Enter"
                       />
-                      <span className="text-sm capitalize">{option.replace('-', ' ')}</span>
+                      <button
+                        type="button"
+                        onClick={addInterest}
+                        className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 min-h-[80px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      {formData.interests.length === 0 ? (
+                        <p className="text-gray-400 text-sm">No interests added yet</p>
+                      ) : (
+                        formData.interests.map((interest) => (
+                          <span key={interest} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#0d6b57] text-white rounded-lg text-sm font-medium">
+                            <Heart size={14} />
+                            {interest}
+                            <button type="button" onClick={() => removeInterest(interest)} className="hover:text-gray-200 transition-colors">
+                              <X size={14} />
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
+                      Bio
                     </label>
-                  ))}
-                </div>
-                {touched.gender && errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Location <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    onBlur={() => handleBlur('location')}
-                    className={`w-full pl-10 pr-4 py-3 border ${touched.location && errors.location ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors`}
-                    placeholder="City, Country"
-                  />
-                </div>
-                {touched.location && errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
-              </div>
-
-              {/* WhatsApp Number */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  WhatsApp Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.whatsappNumber}
-                  onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
-                  placeholder="+234 123 456 7890"
-                />
-              </div>
-
-              {/* Portfolio Link */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Portfolio Link
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="url"
-                    value={formData.portfolioLink}
-                    onChange={(e) => setFormData({ ...formData, portfolioLink: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
-                    placeholder="https://your-portfolio.com"
-                  />
-                </div>
-              </div>
-
-              {/* CV Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Upload CV
-                </label>
-                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#f4a825] transition-colors">
-                  <FileText className="w-6 h-6 text-gray-400" />
-                  <span className="text-sm text-gray-600">{cvName || 'Click to upload CV (PDF, DOC, DOCX)'}</span>
-                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvChange} className="hidden" />
-                </label>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Skills
-                </label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
-                    placeholder="Type a skill and press Enter"
-                  />
-                  <button
-                    type="button"
-                    onClick={addSkill}
-                    className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill) => (
-                    <span key={skill} className="px-3 py-1 bg-[#f4a825] bg-opacity-10 text-[#f4a825] rounded-full text-sm flex items-center gap-2">
-                      {skill}
-                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500 transition-colors">
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Interests */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Interests
-                </label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={interestInput}
-                    onChange={(e) => setInterestInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addInterest()}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors"
-                    placeholder="Type an interest and press Enter"
-                  />
-                  <button
-                    type="button"
-                    onClick={addInterest}
-                    className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.interests.map((interest) => (
-                    <span key={interest} className="px-3 py-1 bg-[#0d6b57] bg-opacity-10 text-[#0d6b57] rounded-full text-sm flex items-center gap-2">
-                      {interest}
-                      <button type="button" onClick={() => removeInterest(interest)} className="hover:text-red-500 transition-colors">
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="block text-sm font-semibold text-[#1d2b4f] mb-2">
-                  Bio
-                </label>
-                <textarea
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors resize-none"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-            </div>
-
-            {/* Google Signup Button */}
-            <div className="pt-6 mt-4 border-t border-gray-200">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Complete signup with</span>
-                </div>
-              </div>
-
-              <div className="flex justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  useOneTap={false}
-                  theme="filled_blue"
-                  size="large"
-                  text="signup_with"
-                  shape="rectangular"
-                  width="100%"
-                />
-              </div>
-              
-              {isLoading && (
-                <div className="mt-4 text-center text-[#0d6b57] font-semibold flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-[#0d6b57] border-t-transparent rounded-full animate-spin"></div>
-                  Creating your account...
+                    <textarea
+                      value={formData.bio}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825] focus:ring-opacity-20 transition-colors resize-none"
+                      placeholder="Tell us about yourself, your passions, and what you're looking for..."
+                    />
+                  </div>
                 </div>
               )}
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-3 mt-8">
+                {activeStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-[#f4a825] hover:text-[#f4a825] transition-colors"
+                  >
+                    Back
+                  </button>
+                )}
+                
+                {activeStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="flex-1 px-6 py-3 bg-[#f4a825] text-white font-semibold rounded-lg hover:bg-[#e79a13] transition-colors"
+                  >
+                    Continue
+                  </button>
+                ) : (
+                  <div className="flex-1">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      useOneTap={false}
+                      theme="filled_blue"
+                      size="large"
+                      text="signup_with"
+                      shape="rectangular"
+                      width="100%"
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Sign In Link */}
               <div className="mt-6 text-center">
@@ -511,61 +593,16 @@ const Signup = () => {
                 </p>
               </div>
 
-              {/* Terms Info */}
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-400">
-                  By signing up, you agree to our Terms of Service and Privacy Policy
-                </p>
-              </div>
+              {isLoading && (
+                <div className="mt-4 text-center text-[#0d6b57] font-semibold flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#0d6b57] border-t-transparent rounded-full animate-spin"></div>
+                  Creating your account...
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out forwards;
-        }
-        
-        .delay-200 {
-          animation-delay: 0.2s;
-          opacity: 0;
-        }
-        
-        .delay-300 {
-          animation-delay: 0.3s;
-          opacity: 0;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #0d6b57;
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #0a5545;
-        }
-      `}</style>
     </div>
   );
 };

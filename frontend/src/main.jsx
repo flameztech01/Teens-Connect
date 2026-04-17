@@ -8,7 +8,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import store from "./store";
 import Homepage from "./screens/Homepage.jsx";
 import Signup from "./screens/Signup";
-import Signin from "./screens/Signin"
+import Signin from "./screens/Signin";
+import Help from "./screens/Help.js";
 
 import Dashboard from "./screens/Dashboard.js";
 import Anonymous from "./screens/Anonymous.js";
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       {path: '/hire', element: <Hire /> },
       {path: '/profile', element: <Profile /> },
       {path: '/settings', element: <Settings /> },
+      {path: '/help', element: <Help /> },
 
       {path: '/admin/login', element: <AdminLogin /> },
       {path: '/admin/dashboard', element: <AdminDashboard /> },

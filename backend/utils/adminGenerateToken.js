@@ -5,10 +5,11 @@ const adminGenerateToken = (res, adminId) => {
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie('adminJwt', token, {
+  // Change cookie name to 'admin_jwt' to match adminProtect middleware
+  res.cookie('admin_jwt', token, {  // Changed from 'adminJwt' to 'admin_jwt'
     httpOnly: true,
-    secure: isProd,  // true in production, false in development
-    sameSite: isProd ? 'none' : 'lax',  // 'none' for cross-origin, 'lax' for same-origin
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/',
   });

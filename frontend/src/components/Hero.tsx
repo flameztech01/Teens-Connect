@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Hero = () => {
   return (
     <section className="relative h-[92vh] min-h-[680px] w-full overflow-hidden">
@@ -38,11 +40,21 @@ const Hero = () => {
               what they do, and unlock meaningful opportunities.
             </p>
 
-            {/* CTA + avatars */}
+            {/* CTA Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-5">
-              <button className="inline-flex items-center justify-center h-12 px-7 rounded-full bg-[#f4a825] hover:bg-[#e79a13] text-white text-sm font-semibold tracking-[0.04em] transition-colors shadow-lg shadow-black/20">
+              <Link 
+                to="/signup" 
+                className="inline-flex items-center justify-center h-12 px-7 rounded-full bg-[#f4a825] hover:bg-[#e79a13] text-white text-sm font-semibold tracking-[0.04em] transition-colors shadow-lg shadow-black/20"
+              >
                 Join Our Community
-              </button>
+              </Link>
+
+              <Link 
+                to="/explore" 
+                className="inline-flex items-center justify-center h-12 px-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white text-sm font-semibold tracking-[0.04em] transition-colors border border-white/30"
+              >
+                View Talents
+              </Link>
 
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-3">

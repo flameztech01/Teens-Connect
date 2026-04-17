@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import DashboardSidebar from "../components/DashbordSidebar"
 import {
   useGetTalentsQuery,
-  useGetFeaturedTalentsQuery,
   useGetTalentContactQuery,
   useGenerateWhatsAppMessageMutation
 } from '../slices/hireApiSlice';
@@ -14,8 +13,6 @@ import {
   Mail,
   Phone,
   Link as LinkIcon,
-  Star,
-  Filter,
   X,
   Send,
   UserCircle,
@@ -25,13 +22,7 @@ import {
   Camera,
   PenTool,
   TrendingUp,
-  Award,
-  Clock,
-  CheckCircle,
-  ExternalLink,
   MessageCircle,
-  ChevronDown,
-  ChevronUp,
   FileText,
   Smartphone,
   Shield,
@@ -51,7 +42,7 @@ const Hire = () => {
   const [tempSelectedSkill, setTempSelectedSkill] = useState('');
   const [tempSelectedLocation, setTempSelectedLocation] = useState('');
 
-  const { data: talentsData, isLoading, refetch } = useGetTalentsQuery({
+  const { data: talentsData, isLoading } = useGetTalentsQuery({
     page,
     limit: 12,
     search: searchTerm,
@@ -59,7 +50,6 @@ const Hire = () => {
     location: selectedLocation
   });
 
-  const { data: featuredTalents } = useGetFeaturedTalentsQuery(6);
   const { data: talentContact, refetch: refetchContact } = useGetTalentContactQuery(
     selectedTalent?._id,
     { skip: !selectedTalent?._id }
@@ -111,12 +101,12 @@ const Hire = () => {
 
   const getSkillIcon = (skill: string) => {
     const skillLower = skill.toLowerCase();
-    if (skillLower.includes('design') || skillLower.includes('ui') || skillLower.includes('ux')) return <Palette size={14} />;
-    if (skillLower.includes('code') || skillLower.includes('programming') || skillLower.includes('developer') || skillLower.includes('react') || skillLower.includes('javascript')) return <Code size={14} />;
-    if (skillLower.includes('music') || skillLower.includes('sing')) return <Mic size={14} />;
-    if (skillLower.includes('photo') || skillLower.includes('video')) return <Camera size={14} />;
-    if (skillLower.includes('write') || skillLower.includes('content')) return <PenTool size={14} />;
-    return <TrendingUp size={14} />;
+    if (skillLower.includes('design') || skillLower.includes('ui') || skillLower.includes('ux')) return <Palette size={12} />;
+    if (skillLower.includes('code') || skillLower.includes('programming') || skillLower.includes('developer') || skillLower.includes('react') || skillLower.includes('javascript')) return <Code size={12} />;
+    if (skillLower.includes('music') || skillLower.includes('sing')) return <Mic size={12} />;
+    if (skillLower.includes('photo') || skillLower.includes('video')) return <Camera size={12} />;
+    if (skillLower.includes('write') || skillLower.includes('content')) return <PenTool size={12} />;
+    return <TrendingUp size={12} />;
   };
 
   const popularSkills = ['React', 'JavaScript', 'UI/UX Design', 'Graphic Design', 'Content Writing', 'Video Editing', 'Digital Marketing', 'Python'];
@@ -124,41 +114,25 @@ const Hire = () => {
   const hasActiveFilters = searchTerm || selectedSkill || selectedLocation;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100/50">
+    <div className="min-h-screen bg-gray-50">
       <DashboardSidebar />
       
-      <div className="lg:ml-64">
-        {/* Main Content */}
-        <div className="px-6 lg:px-8 py-6 lg:py-8">
-          {/* Header with Search Icon */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-                <Briefcase className="w-8 h-8 text-[#f4a825]" />
-                Hire Talent
-              </h1>
-              <p className="text-gray-500 text-sm">
-                Discover and connect with talented teens ready to work on your projects
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Active Filters Indicator */}
-              {hasActiveFilters && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-[#f4a825]/10 rounded-lg">
-                  <span className="text-xs text-[#f4a825] font-medium">
-                    {searchTerm && `Search: ${searchTerm}`}
-                    {selectedSkill && `${searchTerm ? ' • ' : ''}Skill: ${selectedSkill}`}
-                    {selectedLocation && `${(searchTerm || selectedSkill) ? ' • ' : ''}Location: ${selectedLocation}`}
-                  </span>
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-[#f4a825] hover:text-[#e09e1a]"
-                  >
-                    <X size={14} />
-                  </button>
+      <div className="lg:ml-72">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-[#f4a825]" />
                 </div>
-              )}
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Hire Talent</h1>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Discover and connect with talented teens ready to work on your projects
+                  </p>
+                </div>
+              </div>
               
               {/* Search Button */}
               <button
@@ -168,66 +142,55 @@ const Hire = () => {
                   setTempSelectedLocation(selectedLocation);
                   setIsSearchModalOpen(true);
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#f4a825] to-[#e09e1a] text-white rounded-lg font-semibold hover:shadow-md transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#f4a825] text-white rounded-xl font-semibold hover:bg-[#e09e1a] transition-all shadow-sm"
               >
                 <Search size={18} />
-                <span className="hidden sm:inline">Search & Filter</span>
-                <Sliders size={16} className="hidden sm:inline" />
+                <span>Search & Filter</span>
+                <Sliders size={16} />
               </button>
             </div>
+
+            {/* Active Filters */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                <span className="text-xs text-gray-500">Active filters:</span>
+                {searchTerm && (
+                  <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-lg">
+                    Search: {searchTerm}
+                    <button onClick={() => setSearchTerm('')} className="hover:text-red-500">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+                {selectedSkill && (
+                  <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-lg">
+                    Skill: {selectedSkill}
+                    <button onClick={() => setSelectedSkill('')} className="hover:text-red-500">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+                {selectedLocation && (
+                  <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-lg">
+                    Location: {selectedLocation}
+                    <button onClick={() => setSelectedLocation('')} className="hover:text-red-500">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+                <button
+                  onClick={handleClearFilters}
+                  className="text-xs text-[#f4a825] hover:underline ml-2"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Featured Talents Section */}
-          {featuredTalents && featuredTalents.length > 0 && !hasActiveFilters && (
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Award className="w-5 h-5 text-[#f4a825]" />
-                <h2 className="text-lg font-semibold text-gray-900">Featured Talents</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {featuredTalents.slice(0, 3).map((talent: any) => (
-                  <div key={talent._id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 overflow-hidden group">
-                    <div className="relative bg-gradient-to-r from-[#1a2538] to-[#1d2b4f] p-4">
-                      <div className="flex items-center gap-3">
-                        {talent.profile ? (
-                          <img src={talent.profile} alt={talent.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-[#f4a825]/40" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-[#f4a825]/20 flex items-center justify-center ring-2 ring-[#f4a825]/40">
-                            <UserCircle className="w-7 h-7 text-[#f4a825]" />
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="font-semibold text-white">{talent.name}</h3>
-                          <p className="text-xs text-white/60">{talent.location || 'Location not specified'}</p>
-                        </div>
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <Star className="w-4 h-4 text-[#f4a825] fill-[#f4a825]" />
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {talent.skills?.slice(0, 3).map((skill: string, idx: number) => (
-                          <span key={idx} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                            {getSkillIcon(skill)}
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => handleContactTalent(talent)}
-                        className="w-full bg-gradient-to-r from-[#f4a825] to-[#e09e1a] text-white py-2 rounded-lg text-sm font-semibold hover:shadow-md transition-all"
-                      >
-                        Contact Talent
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Talents Scrollable Container */}
+        <div className="px-6 lg:px-8 py-6">
+          {/* Talents Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">
@@ -237,12 +200,12 @@ const Hire = () => {
             </div>
 
             {isLoading ? (
-              <div className="text-center py-16 bg-white rounded-xl">
+              <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
                 <div className="inline-block w-10 h-10 border-3 border-gray-200 border-t-[#f4a825] rounded-full animate-spin"></div>
                 <p className="text-gray-500 mt-4">Loading talents...</p>
               </div>
             ) : talentsData?.talents?.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-100">
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
                 <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">No talents found</h3>
                 <p className="text-gray-400 text-sm">Try adjusting your search or filters</p>
@@ -255,15 +218,15 @@ const Hire = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[calc(100vh-280px)] overflow-y-auto pr-2 custom-scrollbar pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {talentsData?.talents?.map((talent: any) => (
-                    <div key={talent._id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group">
+                    <div key={talent._id} className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden group">
                       <div className="p-5">
                         <div className="flex items-start gap-4 mb-4">
                           {talent.profile ? (
                             <img src={talent.profile} alt={talent.name} className="w-14 h-14 rounded-full object-cover ring-2 ring-[#f4a825]/20 group-hover:ring-[#f4a825]/40 transition-all" />
                           ) : (
-                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
                               <UserCircle className="w-8 h-8 text-gray-400" />
                             </div>
                           )}
@@ -296,7 +259,7 @@ const Hire = () => {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex items-center gap-3 mb-4">
                           {talent.portfolioLink && (
                             <a
                               href={talent.portfolioLink}
@@ -323,7 +286,7 @@ const Hire = () => {
 
                         <button
                           onClick={() => handleContactTalent(talent)}
-                          className="w-full bg-gradient-to-r from-[#f4a825] to-[#e09e1a] text-white py-2.5 rounded-lg font-semibold hover:shadow-md transition-all flex items-center justify-center gap-2"
+                          className="w-full bg-[#f4a825] text-white py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all flex items-center justify-center gap-2"
                         >
                           <MessageCircle size={16} />
                           Contact on WhatsApp
@@ -339,7 +302,7 @@ const Hire = () => {
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm font-medium"
+                      className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm font-medium"
                     >
                       Previous
                     </button>
@@ -360,7 +323,7 @@ const Hire = () => {
                           <button
                             key={pageNum}
                             onClick={() => setPage(pageNum)}
-                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
+                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${
                               page === pageNum
                                 ? 'bg-[#f4a825] text-white shadow-sm'
                                 : 'border border-gray-200 text-gray-600 hover:border-[#f4a825] hover:text-[#f4a825]'
@@ -374,7 +337,7 @@ const Hire = () => {
                     <button
                       onClick={() => setPage(p => Math.min(talentsData.pages, p + 1))}
                       disabled={page === talentsData.pages}
-                      className="px-4 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm font-medium"
+                      className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm font-medium"
                     >
                       Next
                     </button>
@@ -389,8 +352,8 @@ const Hire = () => {
       {/* Search & Filter Modal */}
       {isSearchModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
-            <div className="bg-gradient-to-r from-[#1a2538] to-[#1d2b4f] px-6 py-4 rounded-t-xl sticky top-0">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-[#1a2538] px-6 py-4 rounded-t-2xl sticky top-0">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <Search className="w-5 h-5 text-[#f4a825]" />
@@ -418,7 +381,7 @@ const Hire = () => {
                     placeholder="Search talents..."
                     value={tempSearchTerm}
                     onChange={(e) => setTempSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
                   />
                 </div>
               </div>
@@ -433,7 +396,7 @@ const Hire = () => {
                   placeholder="Enter a skill..."
                   value={tempSelectedSkill}
                   onChange={(e) => setTempSelectedSkill(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all mb-3"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all mb-3"
                 />
                 <div className="flex flex-wrap gap-2">
                   {popularSkills.map(skill => (
@@ -464,55 +427,22 @@ const Hire = () => {
                     placeholder="City, state, or country..."
                     value={tempSelectedLocation}
                     onChange={(e) => setTempSelectedLocation(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
                   />
                 </div>
               </div>
-
-              {/* Active Filters Preview */}
-              {(tempSearchTerm || tempSelectedSkill || tempSelectedLocation) && (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-gray-500 mb-2">Active filters:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {tempSearchTerm && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full border border-gray-200">
-                        Search: {tempSearchTerm}
-                        <button onClick={() => setTempSearchTerm('')} className="text-gray-400 hover:text-gray-600">
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-                    {tempSelectedSkill && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full border border-gray-200">
-                        Skill: {tempSelectedSkill}
-                        <button onClick={() => setTempSelectedSkill('')} className="text-gray-400 hover:text-gray-600">
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-                    {tempSelectedLocation && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full border border-gray-200">
-                        Location: {tempSelectedLocation}
-                        <button onClick={() => setTempSelectedLocation('')} className="text-gray-400 hover:text-gray-600">
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button
                   onClick={handleResetFilters}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                 >
                   Reset All
                 </button>
                 <button
                   onClick={handleApplyFilters}
-                  className="flex-1 bg-gradient-to-r from-[#f4a825] to-[#e09e1a] text-white py-2.5 rounded-lg font-semibold hover:shadow-md transition-all"
+                  className="flex-1 bg-[#f4a825] text-white py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all"
                 >
                   Apply Filters
                 </button>
@@ -525,8 +455,8 @@ const Hire = () => {
       {/* Contact Modal */}
       {selectedTalent && talentContact && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
-            <div className="bg-gradient-to-r from-[#1a2538] to-[#1d2b4f] px-6 py-4 rounded-t-xl">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-[#1a2538] px-6 py-4 rounded-t-2xl">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <MessageCircle className="w-5 h-5 text-[#f4a825]" />
@@ -542,7 +472,7 @@ const Hire = () => {
             </div>
 
             <div className="p-6 space-y-5">
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Contact Information</p>
                 <div className="space-y-2.5">
                   {talentContact.whatsappNumber && (
@@ -580,7 +510,7 @@ const Hire = () => {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all resize-none"
                   placeholder="Write your message here..."
                 />
               </div>
@@ -588,7 +518,7 @@ const Hire = () => {
               <button
                 onClick={handleSendWhatsApp}
                 disabled={isGenerating}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isGenerating ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -608,56 +538,6 @@ const Hire = () => {
           </div>
         </div>
       )}
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-        
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes zoom-in {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        
-        .animate-in {
-          animation-duration: 0.2s;
-          animation-fill-mode: both;
-        }
-        
-        .fade-in {
-          animation-name: fade-in;
-        }
-        
-        .zoom-in {
-          animation-name: zoom-in;
-        }
-      `}</style>
     </div>
   );
 };

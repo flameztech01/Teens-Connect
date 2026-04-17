@@ -11,7 +11,9 @@ import {
   Menu,
   X,
   HelpCircle,
-  ChevronLeft
+  ChevronLeft,
+  ChevronRight,
+  Award
 } from 'lucide-react';
 import { logout } from '../slices/authSlice';
 
@@ -53,45 +55,56 @@ const DashboardSidebar = () => {
   const displayImage = userInfo?.profilePicture || userInfo?.profile || null;
 
   const SidebarContent = () => (
-    <div className="h-full flex flex-col bg-[#1a2538] shadow-xl">
+    <div className="h-full flex flex-col bg-gradient-to-b from-[#1a2538] to-[#0f172a] shadow-2xl">
       {/* Logo Section */}
-      <div className={`border-b border-gray-700/50 ${isCollapsed ? 'px-2 py-5' : 'px-5 py-6'}`}>
+      <div className={`border-b border-white/10 ${isCollapsed ? 'px-2 py-5' : 'px-6 py-6'}`}>
         {!isCollapsed ? (
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+            <div className="relative">
+              <img src="/logo.png" alt="Logo" className="h-9 w-9" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f4a825] rounded-full animate-pulse" />
+            </div>
             <div>
-              <h1 className="text-white font-semibold text-lg tracking-tight">TeensConnect</h1>
-              <p className="text-gray-400 text-[11px] tracking-wide">Dashboard</p>
+              <h1 className="text-white font-bold text-xl tracking-tight">TeensConnect</h1>
+              <p className="text-gray-400 text-[10px] tracking-wider uppercase">Dashboard</p>
             </div>
           </div>
         ) : (
-          <div className="flex justify-center">
-            <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+          <div className="flex justify-center relative">
+            <img src="/logo.png" alt="Logo" className="h-9 w-9" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#f4a825] rounded-full animate-pulse" />
           </div>
         )}
       </div>
 
       {/* User Profile */}
-      <div className={`border-b border-gray-700/50 ${isCollapsed ? 'py-4 px-2' : 'p-5'}`}>
+      <div className={`border-b border-white/10 ${isCollapsed ? 'py-5 px-2' : 'p-6'}`}>
         <div className={`flex items-center ${isCollapsed ? 'flex-col' : 'gap-3'}`}>
-          {displayImage ? (
-            <img
-              src={displayImage}
-              alt={displayName}
-              className="w-10 h-10 rounded-full object-cover ring-1 ring-[#f4a825]/40"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-[#f4a825]/10 flex items-center justify-center ring-1 ring-[#f4a825]/40">
-              <span className="text-[#f4a825] font-medium text-sm">
-                {displayName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          <div className="relative">
+            {displayImage ? (
+              <img
+                src={displayImage}
+                alt={displayName}
+                className="w-11 h-11 rounded-full object-cover ring-2 ring-[#f4a825]/60 shadow-lg"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f4a825] to-[#e79a13] flex items-center justify-center ring-2 ring-[#f4a825]/60 shadow-lg">
+                <span className="text-white font-bold text-lg">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
+          </div>
           
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-white font-medium text-sm truncate">{displayName}</p>
+              <p className="text-white font-semibold text-sm truncate">{displayName}</p>
               <p className="text-gray-400 text-xs truncate">{displayEmail}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Award size={10} className="text-[#f4a825]" />
+                <span className="text-[10px] text-gray-500">Member</span>
+              </div>
             </div>
           )}
         </div>
@@ -102,7 +115,6 @@ const DashboardSidebar = () => {
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
           const Icon = link.icon;
-          const isHovered = hoveredItem === link.name;
           
           return (
             <Link
@@ -111,20 +123,23 @@ const DashboardSidebar = () => {
               onMouseEnter={() => setHoveredItem(link.name)}
               onMouseLeave={() => setHoveredItem(null)}
               className={`
-                group flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200
+                group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#f4a825]/10 text-[#f4a825] border-l-2 border-[#f4a825]' 
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border-l-2 border-transparent'
+                  ? 'bg-[#f4a825]/15 text-[#f4a825] shadow-lg shadow-[#f4a825]/5' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }
                 ${isCollapsed ? 'justify-center' : ''}
               `}
               title={isCollapsed ? link.name : ''}
             >
-              <Icon size={18} className={`transition-colors ${isActive ? 'text-[#f4a825]' : 'text-gray-400 group-hover:text-white'}`} />
+              <Icon size={20} className={`transition-all duration-200 ${isActive ? 'text-[#f4a825] scale-110' : 'text-gray-400 group-hover:text-white group-hover:scale-110'}`} />
               {!isCollapsed && (
                 <span className={`text-sm font-medium transition-colors ${isActive ? 'text-[#f4a825]' : 'text-gray-300 group-hover:text-white'}`}>
                   {link.name}
                 </span>
+              )}
+              {isActive && !isCollapsed && (
+                <div className="absolute right-3 w-1 h-8 bg-[#f4a825] rounded-full" />
               )}
             </Link>
           );
@@ -132,30 +147,30 @@ const DashboardSidebar = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="px-3 py-4 border-t border-gray-700/50 space-y-1">
+      <div className="px-3 py-4 border-t border-white/10 space-y-1">
         <Link
           to="/help"
           className={`
-            group flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200
-            text-gray-400 hover:text-white hover:bg-gray-700/30
+            group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+            text-gray-400 hover:text-white hover:bg-white/5
             ${isCollapsed ? 'justify-center' : ''}
           `}
           title={isCollapsed ? 'Help & Support' : ''}
         >
-          <HelpCircle size={18} className="transition-colors group-hover:text-white" />
+          <HelpCircle size={20} className="transition-all group-hover:scale-110" />
           {!isCollapsed && <span className="text-sm">Help & Support</span>}
         </Link>
         
         <button
           onClick={handleLogout}
           className={`
-            group w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200
+            group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
             text-gray-400 hover:text-red-400 hover:bg-red-400/10
             ${isCollapsed ? 'justify-center' : ''}
           `}
           title={isCollapsed ? 'Logout' : ''}
         >
-          <LogOut size={18} className="transition-colors group-hover:text-red-400" />
+          <LogOut size={20} className="transition-all group-hover:scale-110" />
           {!isCollapsed && <span className="text-sm">Logout</span>}
         </button>
       </div>
@@ -163,42 +178,46 @@ const DashboardSidebar = () => {
       {/* Collapse Toggle */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1 shadow-md hover:shadow-lg transition-all duration-200"
+        className="hidden lg:flex absolute -right-3 top-20 bg-[#1a2538] border border-white/20 rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110"
       >
-        <ChevronLeft size={14} className={`text-gray-600 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+        {isCollapsed ? (
+          <ChevronRight size={14} className="text-white" />
+        ) : (
+          <ChevronLeft size={14} className="text-white" />
+        )}
       </button>
     </div>
   );
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Floating Action Button */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-md text-gray-700 p-2 rounded-md hover:bg-gray-50 transition-colors"
+        className="lg:hidden fixed bottom-6 right-6 z-50 bg-[#f4a825] text-white shadow-xl rounded-full p-4 hover:bg-[#e79a13] transition-all duration-300 hover:scale-110 active:scale-95"
       >
-        <Menu size={20} />
+        <Menu size={24} />
       </button>
 
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Sidebar */}
       <div className={`
-        lg:hidden fixed top-0 left-0 h-full w-72 z-50 transform transition-transform duration-300 ease-out shadow-xl
+        lg:hidden fixed top-0 left-0 h-full w-80 z-50 transform transition-transform duration-300 ease-out shadow-2xl
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="relative h-full">
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 bg-white rounded-md p-1.5 shadow-sm hover:shadow transition-all"
+            className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
           <SidebarContent />
         </div>
@@ -206,14 +225,14 @@ const DashboardSidebar = () => {
 
       {/* Desktop Sidebar */}
       <div className={`
-        hidden lg:block fixed left-0 top-0 h-full transition-all duration-300 z-40 shadow-lg
-        ${isCollapsed ? 'w-16' : 'w-64'}
+        hidden lg:block fixed left-0 top-0 h-full transition-all duration-300 z-40 shadow-2xl
+        ${isCollapsed ? 'w-20' : 'w-72'}
       `}>
         <SidebarContent />
       </div>
 
       {/* Main Content Spacing */}
-      <div className={`hidden lg:block transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`} />
+      <div className={`hidden lg:block transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-72'}`} />
     </>
   );
 };
