@@ -727,7 +727,7 @@ const Dashboard = () => {
                     {/* ============= NOTIFICATIONS TAB ============= */}
                     {selectedTab === 'notifications' && (
                         <CardShell glow className="p-0 overflow-hidden">
-                            <div className="p-4 sm:p-6 border-b" style={{ borderColor: BORDER }}>
+                            <div className="p-3 sm:p-4 border-b" style={{ borderColor: BORDER }}>
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="min-w-0">
                                         <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Notifications</h3>
@@ -757,7 +757,7 @@ const Dashboard = () => {
                                     </div>
                                 ) : (
                                     notificationsData?.notifications?.map((notification) => (
-                                        <div key={notification._id} className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 transition-all hover:bg-white/5">
+                                        <div key={notification._id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 transition-all hover:bg-white/5">
                                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: notification.read ? 'rgba(255,255,255,0.03)' : GOLD_TINT }}>
                                                 <Bell size={14} className="sm:w-[16px] sm:h-[16px]" style={{ color: notification.read ? MUTED : GOLD }} />
                                             </div>
@@ -779,7 +779,7 @@ const Dashboard = () => {
                     {/* ============= MY POSTS TAB ============= */}
                     {selectedTab === 'posts' && (
                         <CardShell glow className="p-0 overflow-hidden">
-                            <div className="p-4 sm:p-6 border-b" style={{ borderColor: BORDER }}>
+                            <div className="p-3 sm:p-4 border-b" style={{ borderColor: BORDER }}>
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="min-w-0">
                                         <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>My Anonymous Posts</h3>
@@ -812,7 +812,7 @@ const Dashboard = () => {
                                     </div>
                                 ) : (
                                     anonymousPostsData?.posts?.map((post) => (
-                                        <div key={post._id} className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 transition-all hover:bg-white/5">
+                                        <div key={post._id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 transition-all hover:bg-white/5">
                                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
                                                 <Lock size={14} className="sm:w-[16px] sm:h-[16px]" style={{ color: BLUE }} />
                                             </div>
