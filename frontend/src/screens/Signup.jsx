@@ -974,7 +974,7 @@ const Signup = () => {
                     onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                     rows={3}
                     className={`${fieldBase} ${fieldOk} resize-none`}
-                    placeholder="Tell us about yourself..."
+                    placeholder="Tell us about yourself...."
                   />
                 </div>
 
