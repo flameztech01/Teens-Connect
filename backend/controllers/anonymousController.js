@@ -2,6 +2,7 @@ import Anonymous from "../models/anonymousModel.js";
 import User from "../models/userModel.js";
 import asyncHandler from "express-async-handler";
 import { v2 as cloudinary } from "cloudinary";
+import { notifyNewAnonymousPost } from "../controllers/notificationsController.js";
 
 // Helper function to upload media to Cloudinary
 const uploadMediaToCloudinary = async (file, type = "image") => {
@@ -24,21 +25,12 @@ const uploadMediaToCloudinary = async (file, type = "image") => {
   });
 };
 
-// At the top of your anonymous controller file, import the notification trigger
-import { notifyNewAnonymousPost } from "../controllers/notificationsController.js";
-
-// OR create a notification service file if you have circular dependency issues
-
-// @desc    Create anonymous post (Logged in users only)
+// @desc    Create anonymous post
 // @route   POST /api/anonymous/post
-// @access  Private (Must be registered and logged in)
+// @access  Private
 const createAnonymousPost = asyncHandler(async (req, res) => {
   const { content, tags } = req.body;
   const userId = req.user._id;
-
-  console.log("📝 CREATE ANONYMOUS POST STARTED");
-  console.log("User ID:", userId.toString());
-  console.log("Content:", content?.substring(0, 50));
 
   if (!content) {
     res.status(400);
@@ -59,10 +51,7 @@ const createAnonymousPost = asyncHandler(async (req, res) => {
     }
   }
 
-  // Generate unique anonymous ID
   const anonymousId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  console.log("💾 Creating anonymous post in database...");
 
   const anonymousPost = await Anonymous.create({
     anonymousId,
@@ -75,21 +64,11 @@ const createAnonymousPost = asyncHandler(async (req, res) => {
     readBy: []
   });
 
-  console.log("✅ Anonymous post created:", anonymousPost._id.toString());
-
-  // 🔥 TRIGGER NOTIFICATION TO ALL ADMINS
-  console.log("🔔 Starting notification process...");
-  
+  // Trigger notification to admins
   try {
-    // Check if notifyNewAnonymousPost is properly imported
-    console.log("notifyNewAnonymousPost type:", typeof notifyNewAnonymousPost);
-    
-    const result = await notifyNewAnonymousPost(anonymousPost);
-    console.log("✅ Notification process completed:", result);
+    await notifyNewAnonymousPost(anonymousPost);
   } catch (notifyError) {
-    console.error("❌ Notification process failed:", notifyError.message);
-    console.error(notifyError.stack);
-    // Don't fail the post creation if notification fails
+    console.error("Notification failed:", notifyError.message);
   }
 
   res.status(201).json({
@@ -141,7 +120,6 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
   
   if (isRead !== undefined) query.isRead = isRead === "true";
   
-  // Filter by date
   if (date) {
     const startDate = new Date(date);
     const endDate = new Date(date);
@@ -158,7 +136,6 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
 
   const total = await Anonymous.countDocuments(query);
 
-  // Group posts by date
   const postsByDate = {};
   posts.forEach(post => {
     const dateKey = post.createdAt.toISOString().split('T')[0];
@@ -187,7 +164,6 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
     });
   });
 
-  // Stats
   const totalPosts = await Anonymous.countDocuments();
   const readPosts = await Anonymous.countDocuments({ isRead: true });
   const unreadPosts = await Anonymous.countDocuments({ isRead: false });
@@ -209,13 +185,15 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Mark anonymous post as read (Admin)
+// @desc    Mark anonymous post as read (Admin) - FIXED: use req.user
 // @route   PUT /api/anonymous/admin/:id/read
 // @access  Private/Admin
 const markAsRead = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const adminId = req.admin._id;
-  const adminName = req.admin.name;
+  
+  // FIX: Use req.user instead of req.admin
+  const adminId = req.user._id;
+  const adminName = req.user.name;
 
   const post = await Anonymous.findOne({ anonymousId: id });
 
@@ -242,9 +220,8 @@ const markAsRead = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Post marked as read",
-    readBy: post.readBy,
-    message: `Post marked as read by ${adminName}`
+    message: `Post marked as read by ${adminName}`,
+    readBy: post.readBy
   });
 });
 
@@ -280,14 +257,16 @@ const viewPoster = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Share anonymous post to WhatsApp (Admin)
+// @desc    Share anonymous post to WhatsApp (Admin) - FIXED: use req.user
 // @route   POST /api/anonymous/admin/:id/share-whatsapp
 // @access  Private/Admin
 const shareToWhatsApp = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { whatsappGroupLink, customMessage } = req.body;
-  const adminId = req.admin._id;
-  const adminName = req.admin.name;
+  
+  // FIX: Use req.user instead of req.admin
+  const adminId = req.user._id;
+  const adminName = req.user.name;
 
   const post = await Anonymous.findOne({ anonymousId: id }).populate("user", "name");
 
@@ -301,12 +280,10 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
     throw new Error("This post has already been shared to WhatsApp");
   }
 
-  // Prepare WhatsApp message
   const message = customMessage || `📢 *New Anonymous Message from TeensConnect Community*\n\n${post.content}\n\n👤 From: Anonymous Community Member\n📅 Date: ${new Date(post.createdAt).toLocaleDateString()}\n\nReply in the group to help! 🙏`;
   
   const encodedMessage = encodeURIComponent(message);
   
-  // Use provided group link or default
   const groupLink = whatsappGroupLink || process.env.WHATSAPP_GROUP_LINK;
   
   if (!groupLink) {
@@ -314,13 +291,23 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
     throw new Error("WhatsApp group link is required");
   }
 
-  // Generate WhatsApp link
   const whatsappLink = `${groupLink}?text=${encodedMessage}`;
 
   // Mark as shared
   post.sharedToWhatsApp = true;
   post.sharedAt = new Date();
   post.sharedBy = adminId;
+  
+  // ALSO mark as read when shared
+  const alreadyRead = post.readBy.some(read => read.adminId.toString() === adminId.toString());
+  if (!alreadyRead) {
+    post.isRead = true;
+    post.readBy.push({
+      adminId: adminId,
+      readAt: new Date()
+    });
+  }
+  
   await post.save();
 
   res.status(200).json({
@@ -332,14 +319,16 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Share poster info to WhatsApp (Admin)
+// @desc    Share poster info to WhatsApp (Admin) - FIXED: use req.user
 // @route   POST /api/anonymous/admin/:id/share-poster-whatsapp
 // @access  Private/Admin
 const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { whatsappGroupLink, customMessage } = req.body;
-  const adminId = req.admin._id;
-  const adminName = req.admin.name;
+  
+  // FIX: Use req.user instead of req.admin
+  const adminId = req.user._id;
+  const adminName = req.user.name;
 
   const post = await Anonymous.findOne({ anonymousId: id }).populate("user", "name email username phone profile location skills");
 
@@ -348,7 +337,6 @@ const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
     throw new Error("Anonymous post not found");
   }
 
-  // Prepare WhatsApp message with poster info
   const message = customMessage || `📢 *Anonymous Poster Information - TeensConnect*\n\n📝 *Original Post:*\n${post.content}\n\n👤 *Poster Details:*\nName: ${post.user.name}\nEmail: ${post.user.email}\nUsername: ${post.user.username}\nPhone: ${post.user.phone || "Not provided"}\nLocation: ${post.user.location || "Not provided"}\nSkills: ${post.user.skills?.join(", ") || "Not specified"}\n\n📅 Posted on: ${new Date(post.createdAt).toLocaleDateString()}\n\nYou can now reach out to help! 🤝`;
   
   const encodedMessage = encodeURIComponent(message);
@@ -362,6 +350,17 @@ const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
 
   const whatsappLink = `${groupLink}?text=${encodedMessage}`;
 
+  // Also mark as read when sharing poster info
+  const alreadyRead = post.readBy.some(read => read.adminId.toString() === adminId.toString());
+  if (!alreadyRead) {
+    post.isRead = true;
+    post.readBy.push({
+      adminId: adminId,
+      readAt: new Date()
+    });
+    await post.save();
+  }
+
   res.status(200).json({
     success: true,
     message: `Poster information shared to WhatsApp by ${adminName}`,
@@ -374,13 +373,13 @@ const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get unread posts count (Admin)
+// @desc    Get unread posts count (Admin) - FIXED: use req.user
 // @route   GET /api/anonymous/admin/unread-count
 // @access  Private/Admin
 const getUnreadCount = asyncHandler(async (req, res) => {
-  const adminId = req.admin._id;
+  // FIX: Use req.user instead of req.admin
+  const adminId = req.user._id;
   
-  // Count posts not read by this admin
   const unreadPosts = await Anonymous.countDocuments({
     isRead: false
   });
@@ -404,7 +403,6 @@ const deleteAnonymousPost = asyncHandler(async (req, res) => {
     throw new Error("Anonymous post not found");
   }
 
-  // Delete media from Cloudinary if exists
   if (post.media) {
     const publicId = post.media.split('/').pop().split('.')[0];
     await cloudinary.uploader.destroy(`anonymous_posts/${publicId}`);
