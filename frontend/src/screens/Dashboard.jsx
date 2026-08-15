@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardSidebar from '../components/DashbordSidebar';
 import { useGetMyAnonymousPostsQuery } from '../slices/anonymousApiSlice';
 import { useGetProfileQuery } from '../slices/userApiSlice';
@@ -21,9 +21,10 @@ import {
     ChevronRight,
     Sparkles,
     Zap,
+    AlertCircle,
 } from 'lucide-react';
 
-// ---- design tokens - dark theme matching signin ----
+// ---- design tokens ----
 const BG = '#0c0c0d';
 const CARD = '#141416';
 const INK = '#ffffff';
@@ -84,7 +85,18 @@ const StatCard = ({ icon: Icon, label, value, trend, trendValue, color = GOLD })
     </div>
 );
 
+// Helper to check if profile is complete
+const isProfileComplete = (user) => {
+    if (!user) return false;
+    const required = ['dateOfBirth', 'gender', 'location'];
+    for (const field of required) {
+        if (!user[field] || user[field] === '') return false;
+    }
+    return true;
+};
+
 const Dashboard = () => {
+    const navigate = useNavigate();
     const { userInfo } = useSelector((state) => state.auth);
     const [greeting, setGreeting] = useState('');
     const [selectedTab, setSelectedTab] = useState('dashboard');
@@ -209,6 +221,10 @@ const Dashboard = () => {
         skills: userData?.skills?.length || 0,
         talents: talentsData?.total || 0,
     };
+
+    // ---- Check if profile is complete ----
+    const profileComplete = isProfileComplete(userData);
+    const showWarning = !profileComplete;
 
     // ---- For the chart ----
     const weeklyActivity = computedStats.weeklyActivity;
@@ -344,6 +360,34 @@ const Dashboard = () => {
 
                 {/* Main Content */}
                 <div className="px-3 sm:px-4 lg:px-6 pb-8 pt-4 sm:pt-6">
+                    {/* ---- Incomplete Profile Warning Banner ---- */}
+                    {showWarning && (
+                        <div
+                            className="mb-4 p-4 rounded-xl flex items-start gap-3"
+                            style={{
+                                backgroundColor: 'rgba(244,168,37,0.08)',
+                                border: `1px solid ${GOLD}44`,
+                            }}
+                        >
+                            <AlertCircle size={20} style={{ color: GOLD }} className="flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="font-semibold" style={{ color: GOLD }}>
+                                    Complete Your Profile
+                                </p>
+                                <p className="text-sm" style={{ color: MUTED }}>
+                                    To be discovered by potential collaborators and receive exclusive deals, please complete your profile by filling in your date of birth, gender, and location.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80 flex-shrink-0"
+                                style={{ backgroundColor: GOLD, color: BG }}
+                            >
+                                Edit Now
+                            </button>
+                        </div>
+                    )}
+
                     {/* ============= DASHBOARD TAB ============= */}
                     {selectedTab === 'dashboard' && (
                         <div className="space-y-4 sm:space-y-6">

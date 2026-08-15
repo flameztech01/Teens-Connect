@@ -50,8 +50,32 @@ const DashboardSidebar = () => {
   }, []);
 
   const handleLogout = () => {
+    // 1. Dispatch logout to clear Redux state
     dispatch(logout());
+
+    // 2. Clear localStorage completely (or remove specific keys)
+    localStorage.clear();
+
+    // 3. Clear sessionStorage completely
+    sessionStorage.clear();
+
+    // 4. Clear cookies (delete all cookies)
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // 5. Clear any IndexedDB (if you use it) - optional
+    if (window.indexedDB) {
+      // You can delete specific databases if needed, but not necessary for most cases.
+    }
+
+    // 6. Navigate to home page
     navigate('/');
+
+    // 7. Force a full page reload to reset any cached application state
+    window.location.reload();
   };
 
   const baseLinks = [
@@ -255,8 +279,8 @@ const DashboardSidebar = () => {
         onClick={() => setIsMobileMenuOpen(true)}
         className="lg:hidden fixed z-50 rounded-2xl flex items-center justify-center transition-all hover:scale-105 hover:shadow-glow"
         style={{
-          bottom: '5rem', // same as plus button bottom-20
-          right: '1rem', // same as plus button right-4
+          bottom: '5rem',
+          right: '1rem',
           width: '3rem',
           height: '3rem',
           background: `linear-gradient(135deg, ${GOLD_DEEP}, ${GOLD})`,

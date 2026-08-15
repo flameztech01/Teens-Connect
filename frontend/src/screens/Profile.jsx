@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import DashboardSidebar from '../components/DashbordSidebar';
 import { useGetUserByIdQuery, useUpdateProfileMutation } from '../slices/userApiSlice';
 import { setCredentials } from '../slices/authSlice';
@@ -21,7 +22,7 @@ import {
   AlertCircle,
   Heart,
   Sparkles,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 // ---- design tokens ----
@@ -52,13 +53,24 @@ const CardShell = ({ children, className = '', glow = false }) => (
   </div>
 );
 
+// Helper to check if profile is complete
+const isProfileComplete = (user) => {
+  if (!user) return false;
+  const required = ['dateOfBirth', 'gender', 'location'];
+  for (const field of required) {
+    if (!user[field] || user[field] === '') return false;
+  }
+  return true;
+};
+
 const Profile = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { userInfo } = useSelector((state) => state.auth);
   const [isEditing, setIsEditing] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePreview, setProfilePreview] = useState('');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -72,7 +84,7 @@ const Profile = () => {
     whatsappNumber: '',
     dateOfBirth: '',
     gender: '',
-    profile: ''
+    profile: '',
   });
 
   const [newSkill, setNewSkill] = useState('');
@@ -80,11 +92,10 @@ const Profile = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { data: userData, isLoading, refetch } = useGetUserByIdQuery(
-    userInfo?._id,
-    { skip: !userInfo?._id }
-  );
-  
+  const { data: userData, isLoading, refetch } = useGetUserByIdQuery(userInfo?._id, {
+    skip: !userInfo?._id,
+  });
+
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
   useEffect(() => {
@@ -102,7 +113,7 @@ const Profile = () => {
         whatsappNumber: userData.whatsappNumber || '',
         dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth.split('T')[0] : '',
         gender: userData.gender || '',
-        profile: userData.profile || userData.profilePicture || ''
+        profile: userData.profile || userData.profilePicture || '',
       });
     }
   }, [userData]);
@@ -110,7 +121,7 @@ const Profile = () => {
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -127,7 +138,7 @@ const Profile = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skills: [...formData.skills, newSkill.trim()]
+        skills: [...formData.skills, newSkill.trim()],
       });
       setNewSkill('');
     }
@@ -136,7 +147,7 @@ const Profile = () => {
   const removeSkill = (skill) => {
     setFormData({
       ...formData,
-      skills: formData.skills.filter(s => s !== skill)
+      skills: formData.skills.filter((s) => s !== skill),
     });
   };
 
@@ -144,7 +155,7 @@ const Profile = () => {
     if (newInterest.trim() && !formData.interests.includes(newInterest.trim())) {
       setFormData({
         ...formData,
-        interests: [...formData.interests, newInterest.trim()]
+        interests: [...formData.interests, newInterest.trim()],
       });
       setNewInterest('');
     }
@@ -153,7 +164,7 @@ const Profile = () => {
   const removeInterest = (interest) => {
     setFormData({
       ...formData,
-      interests: formData.interests.filter(i => i !== interest)
+      interests: formData.interests.filter((i) => i !== interest),
     });
   };
 
@@ -175,20 +186,20 @@ const Profile = () => {
       submitData.append('whatsappNumber', formData.whatsappNumber);
       submitData.append('dateOfBirth', formData.dateOfBirth);
       submitData.append('gender', formData.gender);
-      
+
       if (profilePicture) {
         submitData.append('profilePicture', profilePicture);
       }
 
       const result = await updateProfile(submitData).unwrap();
       dispatch(setCredentials({ ...userInfo, ...result }));
-      
+
       setSuccessMessage('Profile updated successfully!');
       setIsEditing(false);
       setProfilePicture(null);
       setProfilePreview('');
       refetch();
-      
+
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       setErrorMessage(error.data?.message || 'Failed to update profile');
@@ -198,8 +209,17 @@ const Profile = () => {
 
   const getInitials = (name) => {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
+
+  // Check if profile is complete
+  const profileComplete = isProfileComplete(userData);
+  const showWarning = !profileComplete;
 
   if (isLoading) {
     return (
@@ -207,7 +227,10 @@ const Profile = () => {
         <DashboardSidebar />
         <div className="lg:ml-72 flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4" style={{ borderColor: BORDER, borderTopColor: GOLD }} />
+            <div
+              className="inline-block animate-spin rounded-full h-12 w-12 border-4"
+              style={{ borderColor: BORDER, borderTopColor: GOLD }}
+            />
             <p className="mt-4 text-sm" style={{ color: MUTED }}>Loading profile...</p>
           </div>
         </div>
@@ -220,24 +243,32 @@ const Profile = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
-      
+
       <div className="lg:ml-72 relative">
         {/* Header – dark theme */}
-        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+        <div
+          className="sticky top-0 z-30"
+          style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}
+        >
           <div className="px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                <div
+                  className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: GOLD_TINT }}
+                >
                   <UserCircle className="w-5 h-5" style={{ color: GOLD }} />
                 </div>
                 <div>
-                  <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>My Profile</h1>
+                  <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>
+                    My Profile
+                  </h1>
                   <p className="text-[11px] sm:text-xs" style={{ color: MUTED }}>
                     Manage your personal information and preferences
                   </p>
                 </div>
               </div>
-              
+
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
@@ -254,17 +285,72 @@ const Profile = () => {
 
         {/* Main content */}
         <div className="px-3 sm:px-6 py-4 sm:py-6 max-w-6xl mx-auto">
+          {/* Incomplete Profile Warning Banner */}
+          {showWarning && (
+            <div
+              className="mb-4 p-4 rounded-xl flex items-start gap-3"
+              style={{
+                backgroundColor: 'rgba(244,168,37,0.08)',
+                border: `1px solid ${GOLD}44`,
+              }}
+            >
+              <AlertCircle size={20} style={{ color: GOLD }} className="flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold" style={{ color: GOLD }}>
+                  Complete Your Profile
+                </p>
+                <p className="text-sm" style={{ color: MUTED }}>
+                  To be discovered by potential collaborators and receive exclusive deals, please complete your profile by filling in your date of birth, gender, and location.
+                </p>
+                {location.state?.incomplete && (
+                  <p className="text-xs mt-1" style={{ color: MUTED }}>
+                    You were redirected here to finish setting up your account.
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  // Scroll to the form after a short delay
+                  setTimeout(() => {
+                    document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80 flex-shrink-0"
+                style={{ backgroundColor: GOLD, color: BG }}
+              >
+                Edit Now
+              </button>
+            </div>
+          )}
+
           {/* Success/Error Messages */}
           {successMessage && (
-            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: `1px solid rgba(34,197,94,0.2)` }}>
+            <div
+              className="mb-4 p-3 rounded-xl flex items-center gap-2"
+              style={{
+                backgroundColor: 'rgba(34,197,94,0.08)',
+                border: `1px solid rgba(34,197,94,0.2)`,
+              }}
+            >
               <CheckCircle size={18} style={{ color: GREEN }} />
-              <span className="text-sm font-medium" style={{ color: GREEN }}>{successMessage}</span>
+              <span className="text-sm font-medium" style={{ color: GREEN }}>
+                {successMessage}
+              </span>
             </div>
           )}
           {errorMessage && (
-            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: `1px solid rgba(239,68,68,0.2)` }}>
+            <div
+              className="mb-4 p-3 rounded-xl flex items-center gap-2"
+              style={{
+                backgroundColor: 'rgba(239,68,68,0.08)',
+                border: `1px solid rgba(239,68,68,0.2)`,
+              }}
+            >
               <AlertCircle size={18} style={{ color: RED }} />
-              <span className="text-sm font-medium" style={{ color: RED }}>{errorMessage}</span>
+              <span className="text-sm font-medium" style={{ color: RED }}>
+                {errorMessage}
+              </span>
             </div>
           )}
 
@@ -278,17 +364,27 @@ const Profile = () => {
                       <img
                         src={displayImage}
                         alt={formData.name}
-                        className="w-24 h-24 rounded-full object-cover ring-2" style={{ ringColor: GOLD_TINT }}
+                        className="w-24 h-24 rounded-full object-cover ring-2"
+                        style={{ ringColor: GOLD_TINT }}
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center ring-2" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_DEEP})`, ringColor: GOLD_TINT }}>
+                      <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center ring-2"
+                        style={{
+                          background: `linear-gradient(135deg, ${GOLD}, ${GOLD_DEEP})`,
+                          ringColor: GOLD_TINT,
+                        }}
+                      >
                         <span className="text-white font-bold text-2xl">
                           {getInitials(formData.name)}
                         </span>
                       </div>
                     )}
                     {isEditing && (
-                      <label className="absolute bottom-0 right-0 p-1.5 rounded-full cursor-pointer transition-colors ring-2" style={{ backgroundColor: GOLD, ringColor: BG }}>
+                      <label
+                        className="absolute bottom-0 right-0 p-1.5 rounded-full cursor-pointer transition-colors ring-2"
+                        style={{ backgroundColor: GOLD, ringColor: BG }}
+                      >
                         <Camera size={12} style={{ color: BG }} />
                         <input
                           type="file"
@@ -299,24 +395,43 @@ const Profile = () => {
                       </label>
                     )}
                   </div>
-                  
+
                   <div className="text-center mt-4">
-                    <h2 className="text-xl font-bold" style={{ color: INK }}>{formData.name}</h2>
-                    <p className="text-sm" style={{ color: MUTED }}>@{formData.username}</p>
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>
+                      {formData.name}
+                    </h2>
+                    <p className="text-sm" style={{ color: MUTED }}>
+                      @{formData.username}
+                    </p>
                   </div>
 
-                  <div className="flex justify-around w-full mt-6 pt-4 border-t" style={{ borderColor: BORDER }}>
+                  <div
+                    className="flex justify-around w-full mt-6 pt-4 border-t"
+                    style={{ borderColor: BORDER }}
+                  >
                     <div className="text-center">
-                      <p className="text-xl font-bold" style={{ color: INK }}>{formData.skills.length}</p>
-                      <p className="text-xs" style={{ color: MUTED }}>Skills</p>
+                      <p className="text-xl font-bold" style={{ color: INK }}>
+                        {formData.skills.length}
+                      </p>
+                      <p className="text-xs" style={{ color: MUTED }}>
+                        Skills
+                      </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xl font-bold" style={{ color: INK }}>{formData.interests.length}</p>
-                      <p className="text-xs" style={{ color: MUTED }}>Interests</p>
+                      <p className="text-xl font-bold" style={{ color: INK }}>
+                        {formData.interests.length}
+                      </p>
+                      <p className="text-xs" style={{ color: MUTED }}>
+                        Interests
+                      </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xl font-bold" style={{ color: INK }}>{userData?.profileViews || 0}</p>
-                      <p className="text-xs" style={{ color: MUTED }}>Views</p>
+                      <p className="text-xl font-bold" style={{ color: INK }}>
+                        {userData?.profileViews || 0}
+                      </p>
+                      <p className="text-xs" style={{ color: MUTED }}>
+                        Views
+                      </p>
                     </div>
                   </div>
 
@@ -367,7 +482,9 @@ const Profile = () => {
             <div className="lg:col-span-2">
               <CardShell glow>
                 <div className="border-b pb-4 mb-5" style={{ borderColor: BORDER }}>
-                  <h3 className="font-semibold" style={{ color: INK }}>Profile Information</h3>
+                  <h3 className="font-semibold" style={{ color: INK }}>
+                    Profile Information
+                  </h3>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -491,11 +608,24 @@ const Profile = () => {
                           focusRing: GOLD,
                         }}
                       >
-                        <option value="" style={{ backgroundColor: CARD, color: MUTED }}>Select gender</option>
-                        <option value="male" style={{ backgroundColor: CARD, color: INK }}>Male</option>
-                        <option value="female" style={{ backgroundColor: CARD, color: INK }}>Female</option>
-                        <option value="other" style={{ backgroundColor: CARD, color: INK }}>Other</option>
-                        <option value="prefer-not-to-say" style={{ backgroundColor: CARD, color: INK }}>Prefer not to say</option>
+                        <option value="" style={{ backgroundColor: CARD, color: MUTED }}>
+                          Select gender
+                        </option>
+                        <option value="male" style={{ backgroundColor: CARD, color: INK }}>
+                          Male
+                        </option>
+                        <option value="female" style={{ backgroundColor: CARD, color: INK }}>
+                          Female
+                        </option>
+                        <option value="other" style={{ backgroundColor: CARD, color: INK }}>
+                          Other
+                        </option>
+                        <option
+                          value="prefer-not-to-say"
+                          style={{ backgroundColor: CARD, color: INK }}
+                        >
+                          Prefer not to say
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -693,9 +823,11 @@ const Profile = () => {
                               interests: userData.interests || [],
                               portfolioLink: userData.portfolioLink || '',
                               whatsappNumber: userData.whatsappNumber || '',
-                              dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth.split('T')[0] : '',
+                              dateOfBirth: userData.dateOfBirth
+                                ? userData.dateOfBirth.split('T')[0]
+                                : '',
                               gender: userData.gender || '',
-                              profile: userData.profile || ''
+                              profile: userData.profile || '',
                             });
                           }
                         }}
@@ -712,7 +844,10 @@ const Profile = () => {
                       >
                         {isUpdating ? (
                           <>
-                            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: BG, borderTopColor: 'transparent' }} />
+                            <div
+                              className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                              style={{ borderColor: BG, borderTopColor: 'transparent' }}
+                            />
                             Saving...
                           </>
                         ) : (

@@ -13,12 +13,23 @@ import {
   LogIn,
 } from 'lucide-react';
 
-// Shared field styles (copy from Signup)
+// Shared field styles
 const fieldBase =
   'w-full px-4 py-3 bg-white/[0.04] border rounded-lg text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#f4a825] focus:ring-1 focus:ring-[#f4a825]/40 transition-all';
 const fieldOk = 'border-white/10';
 const fieldErr = 'border-red-400/70';
 const labelCls = 'block text-xs font-medium text-white/50 tracking-wide mb-1.5';
+
+// Helper to check if profile is complete
+const isProfileComplete = (user) => {
+  if (!user) return false;
+  // Required fields from signup step 3
+  const required = ['dateOfBirth', 'gender', 'location'];
+  for (const field of required) {
+    if (!user[field] || user[field] === '') return false;
+  }
+  return true;
+};
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -49,7 +60,6 @@ const Signin = () => {
     setErrorMessage('');
     setSuccessMessage('');
 
-    // Validate
     const newErrors = {};
     if (!email) newErrors.email = 'Email is required';
     if (!password) newErrors.password = 'Password is required';
@@ -63,7 +73,13 @@ const Signin = () => {
       const result = await login({ email, password }).unwrap();
       dispatch(setCredentials(result));
       setSuccessMessage('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1000);
+
+      // Check if profile is complete
+      if (isProfileComplete(result)) {
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        setTimeout(() => navigate('/profile', { state: { incomplete: true } }), 1000);
+      }
     } catch (err) {
       setErrorMessage(err.data?.message || 'Login failed. Please try again.');
     }
@@ -82,7 +98,12 @@ const Signin = () => {
       const result = await googleLogin({ token: googleToken }).unwrap();
       dispatch(setCredentials(result));
       setSuccessMessage('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1000);
+
+      if (isProfileComplete(result)) {
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        setTimeout(() => navigate('/profile', { state: { incomplete: true } }), 1000);
+      }
     } catch (err) {
       setErrorMessage(err.data?.message || 'Google login failed. Please try again.');
     }

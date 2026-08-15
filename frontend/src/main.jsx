@@ -26,30 +26,48 @@ import AdminAnonymous from "./screens/AdminAnonymous.jsx";
 import AdminSettings from "./screens/AdminSettings.jsx";
 import AdminNotifications from "./screens/AdminNotifications.jsx";
 
+import PrivateRoute from "./components/PrivateRoute.jsx";
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
+      // ----- Public routes (no authentication required) -----
       { index: true, element: <Homepage /> },
       { path: "/signup", element: <Signup /> },
       { path: "/signin", element: <Signin /> },
-      { path: "/dashboard", element: <Dashboard /> },
-      { path: "/anonymous", element: <Anonymous /> },
-      { path: "/hire", element: <Hire /> },
-      { path: "/profile", element: <Profile /> },
-      { path: "/settings", element: <Settings /> },
-      { path: "/help", element: <Help /> },
-      { path: "/explore", element: <Talents /> },
-      {path: "/talents", element: <Talents /> },
-      {path: "/talents/:id", element: <TalentId /> },
-
       { path: "/admin/login", element: <AdminLogin /> },
-      { path: "/admin/dashboard", element: <AdminDashboard /> },
-      { path: "/admin/users", element: <AdminUsers /> },
-      { path: "/admin/anonymous", element: <AdminAnonymous /> },
-      { path: "/admin/settings", element: <AdminSettings /> },
-      { path: "/admin/notifications", element: <AdminNotifications /> },
+      
+      // Talent browsing - public (viewing only, contact requires login via modal)
+      { path: "/explore", element: <Talents /> },
+      { path: "/talents", element: <Talents /> },
+      { path: "/talents/:id", element: <TalentId /> },
+
+      // ----- Protected routes (user must be authenticated) -----
+      {
+        element: <PrivateRoute />,
+        children: [
+          { path: "/dashboard", element: <Dashboard /> },
+          { path: "/anonymous", element: <Anonymous /> },
+          { path: "/hire", element: <Hire /> },
+          { path: "/profile", element: <Profile /> },
+          { path: "/settings", element: <Settings /> },
+          { path: "/help", element: <Help /> },
+
+          // ----- Admin-only routes (requires admin or super_admin role) -----
+          {
+            element: <PrivateRoute adminOnly />,
+            children: [
+              { path: "/admin/dashboard", element: <AdminDashboard /> },
+              { path: "/admin/users", element: <AdminUsers /> },
+              { path: "/admin/anonymous", element: <AdminAnonymous /> },
+              { path: "/admin/settings", element: <AdminSettings /> },
+              { path: "/admin/notifications", element: <AdminNotifications /> },
+            ],
+          },
+        ],
+      },
     ],
   },
 ]);
@@ -61,5 +79,5 @@ createRoot(document.getElementById("root")).render(
         <RouterProvider router={router} />
       </StrictMode>
     </Provider>
-  </GoogleOAuthProvider>,
+  </GoogleOAuthProvider>
 );

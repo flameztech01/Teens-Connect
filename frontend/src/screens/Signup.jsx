@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux'; // Added useSelector
 import {
   Eye,
   EyeOff,
@@ -18,7 +18,7 @@ import {
 import { useSignupMutation, useVerifyOTPMutation, useResendOTPMutation, useUpdateProfileMutation } from '../slices/userApiSlice';
 import { setCredentials } from '../slices/authSlice';
 
-// Country codes data
+// Country codes data (unchanged)
 const countryCodes = [
   { code: '+234', country: 'Nigeria', flag: '🇳🇬', example: '8029292929' },
   { code: '+1', country: 'USA/Canada', flag: '🇺🇸', example: '2125551234' },
@@ -42,7 +42,7 @@ const countryCodes = [
   { code: '+62', country: 'Indonesia', flag: '🇮🇩', example: '8123456789' },
 ];
 
-// Helper function to format phone number
+// Helper function to format phone number (unchanged)
 const formatPhoneNumber = (countryCode, phoneNumber) => {
   let cleaned = phoneNumber.replace(/\D/g, '');
   if (cleaned.startsWith('0')) {
@@ -54,7 +54,7 @@ const formatPhoneNumber = (countryCode, phoneNumber) => {
   return countryCode + cleaned;
 };
 
-// Shared minimal field classes
+// Shared minimal field classes (unchanged)
 const fieldBase =
   'w-full px-4 py-3 bg-white/[0.04] border rounded-lg text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#f4a825] focus:ring-1 focus:ring-[#f4a825]/40 transition-all';
 const fieldOk = 'border-white/10';
@@ -64,6 +64,14 @@ const labelCls = 'block text-xs font-medium text-white/50 tracking-wide mb-1.5';
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth); // Get userInfo
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (userInfo) {
+      navigate('/dashboard');
+    }
+  }, [userInfo, navigate]);
 
   // Step management
   const [step, setStep] = useState(1);
@@ -205,33 +213,25 @@ const Signup = () => {
     setOtpSuccess('');
     setErrorMessage('');
 
-    // Validate OTP
     if (!otp || otp.length !== 6) {
       setOtpError('Please enter a valid 6-digit OTP');
       return;
     }
 
     try {
-      console.log('Verifying OTP for:', otpEmail);
-      
-      const result = await verifyOTP({ 
-        email: otpEmail, 
-        otp: otp 
+      const result = await verifyOTP({
+        email: otpEmail,
+        otp: otp,
       }).unwrap();
-      
-      console.log('Verification successful:', result);
-      
+
       dispatch(setCredentials(result));
       setOtpSuccess('Email verified successfully!');
-      
-      // Move to profile completion step
+
       setTimeout(() => {
         setStep(3);
       }, 1000);
-      
     } catch (error) {
       console.error('OTP Verification Error:', error);
-      // Check if error has response data
       if (error.data) {
         setOtpError(error.data.message || 'Invalid OTP. Please try again.');
       } else if (error.status) {
@@ -368,20 +368,17 @@ const Signup = () => {
   return (
     <div className="h-screen bg-[#0c0c0d] flex">
       {/* LEFT SIDE - IMAGE */}
-      <div 
+      <div
         className="relative hidden lg:block w-1/2 h-full bg-cover bg-center flex-shrink-0"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0d] via-[#0c0c0d]/20 to-transparent" />
         <div className="absolute bottom-12 left-10 right-10">
           <div className="flex items-center gap-3 mb-4">
-            <img 
-              src="/logo.png" 
-              alt="Teens Connect Logo" 
-              className="w-12 h-12 object-contain"
-            />
+            <img src="/logo.png" alt="Teens Connect Logo" className="w-12 h-12 object-contain" />
             <span className="text-white text-2xl font-medium">Teens Connect</span>
           </div>
           <h1 className="text-white text-3xl lg:text-4xl font-medium leading-snug">
@@ -393,16 +390,12 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE - FORM - Always scrollable from top */}
+      {/* RIGHT SIDE - FORM */}
       <div className="flex-1 h-full overflow-y-auto px-6 sm:px-10 lg:px-16 py-6 sm:py-8 lg:py-10">
         <div className="w-full max-w-md mx-auto">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
-            <img 
-              src="/logo.png" 
-              alt="Teens Connect Logo" 
-              className="w-10 h-10 object-contain"
-            />
+            <img src="/logo.png" alt="Teens Connect Logo" className="w-10 h-10 object-contain" />
             <span className="text-white text-xl font-medium">Teens Connect</span>
           </div>
 
