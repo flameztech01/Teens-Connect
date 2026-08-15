@@ -23,7 +23,8 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
 // Middleware
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://teens-connect.vercel.app'
+  'https://teens-connect.vercel.app',
+  'https://teensconnect.flameztech.online'
 ];
 
 // ✅ CORS
