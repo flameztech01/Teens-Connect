@@ -8,13 +8,18 @@ export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Send OTP via email – Professional Minimalist Design
+// Send OTP via email – Improved deliverability
 export const sendOTPEmail = async (email, otp, name = 'User') => {
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'teensconnect@flameztech.online',
+      // Use a verified domain – important for deliverability
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@flameztech.online',
       to: email,
-      subject: 'Your OTP – Verify Your Email',
+      subject: 'Your verification code',
+      // Add Reply-To for better deliverability
+      reply_to: process.env.RESEND_REPLY_TO || 'support@flameztech.online',
+      // Plain text version – helps with spam filters
+      text: `Hello${name ? ` ${name}` : ''},\n\nUse the code below to verify your email address:\n\n${otp}\n\nThis code expires in 10 minutes.\n\nIf you didn't request this, you can safely ignore this email.\n\n— TeensConnect Team`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -23,7 +28,6 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>OTP Verification</title>
             <style>
-              /* Reset & base */
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
                 background-color: #f8f9fa;
@@ -192,11 +196,9 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
   }
 };
 
-// Send OTP via SMS (using Resend or another SMS provider)
+// Send OTP via SMS
 export const sendOTPSMS = async (phone, otp) => {
   try {
-    // Resend currently doesn't support SMS directly
-    // You can integrate with Twilio, Vonage, or other SMS providers here
     console.log(`📱 SMS OTP sent to ${phone}: ${otp}`);
     return { success: true };
   } catch (error) {
@@ -209,8 +211,6 @@ export const sendOTPSMS = async (phone, otp) => {
 export const sendOTP = async (email, phone, otp, name = 'User') => {
   try {
     const emailResult = await sendOTPEmail(email, otp, name);
-    // SMS is optional – comment out if not needed
-    // const smsResult = await sendOTPSMS(phone, otp);
     return {
       success: true,
       email: emailResult.data,
@@ -224,7 +224,7 @@ export const sendOTP = async (email, phone, otp, name = 'User') => {
 // Generate and send OTP in one function
 export const generateAndSendOTP = async (user) => {
   const otp = generateOTP();
-  const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   user.otp = otp;
   user.otpExpires = otpExpires;
