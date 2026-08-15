@@ -5,16 +5,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Generate a random 6-digit OTP
 export const generateOTP = () => {
-  return Math.floor(100000 + Math.random()  * 900000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Send OTP via email
+// Send OTP via email – Professional Minimalist Design
 export const sendOTPEmail = async (email, otp, name = 'User') => {
   try {
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'teensconnect@flameztech.online',
       to: email,
-      subject: 'Verify Your Email - OTP Code',
+      subject: 'Your OTP – Verify Your Email',
       html: `
         <!DOCTYPE html>
         <html>
@@ -23,99 +23,156 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>OTP Verification</title>
             <style>
+              /* Reset & base */
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                background-color: #f6f9fc;
+                background-color: #f8f9fa;
                 margin: 0;
                 padding: 0;
+                line-height: 1.6;
+                color: #1a1a2e;
               }
               .container {
-                max-width: 600px;
+                max-width: 520px;
                 margin: 0 auto;
                 padding: 40px 20px;
+                background-color: #f8f9fa;
+              }
+              .card {
                 background-color: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                border-radius: 16px;
+                padding: 40px 32px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+                border: 1px solid #eaeef0;
               }
-              .header {
+              .brand {
                 text-align: center;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #f0f0f0;
+                margin-bottom: 32px;
               }
-              .header h1 {
-                color: #1a1a2e;
-                font-size: 24px;
+              .brand h2 {
+                font-size: 22px;
+                font-weight: 600;
                 margin: 0;
+                color: #1a1a2e;
+                letter-spacing: -0.3px;
               }
-              .content {
-                padding: 30px 0;
-                text-align: center;
+              .brand h2 span {
+                color: #f4a825;
               }
-              .content p {
+              .brand p {
+                font-size: 13px;
+                color: #8b8b8b;
+                margin: 4px 0 0;
+              }
+              .divider {
+                height: 1px;
+                background: #eaeef0;
+                margin: 24px 0;
+              }
+              .greeting {
+                font-size: 15px;
+                color: #1a1a2e;
+                margin: 0 0 8px;
+                font-weight: 500;
+              }
+              .message {
+                font-size: 14px;
                 color: #4a4a4a;
-                font-size: 16px;
-                line-height: 1.6;
-                margin-bottom: 20px;
+                margin: 0 0 24px;
+              }
+              .otp-box {
+                background: #f8faff;
+                border-radius: 12px;
+                padding: 20px 24px;
+                text-align: center;
+                border: 1px solid #eaeef0;
+                margin: 16px 0 24px;
               }
               .otp-code {
-                font-size: 48px;
-                font-weight: bold;
-                color: #4f46e5;
-                background-color: #f0f4ff;
-                padding: 20px 40px;
-                border-radius: 12px;
-                display: inline-block;
-                letter-spacing: 8px;
-                margin: 20px 0;
+                font-size: 40px;
+                font-weight: 700;
+                letter-spacing: 12px;
+                color: #1a1a2e;
                 font-family: 'Courier New', monospace;
+                display: inline-block;
+                padding: 4px 0;
               }
-              .otp-expiry {
-                color: #888;
-                font-size: 14px;
-                margin-top: 10px;
+              .otp-label {
+                display: block;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #8b8b8b;
+                margin-bottom: 8px;
+              }
+              .expiry {
+                font-size: 13px;
+                color: #8b8b8b;
+                text-align: center;
+                margin: 0 0 24px;
+              }
+              .expiry strong {
+                color: #1a1a2e;
+                font-weight: 500;
+              }
+              .note {
+                font-size: 13px;
+                color: #8b8b8b;
+                text-align: center;
+                margin: 16px 0 0;
               }
               .footer {
                 text-align: center;
-                padding-top: 20px;
-                border-top: 2px solid #f0f0f0;
-                color: #888;
-                font-size: 14px;
+                margin-top: 24px;
+                font-size: 12px;
+                color: #b0b0b0;
               }
               .footer a {
-                color: #4f46e5;
+                color: #f4a825;
                 text-decoration: none;
+                font-weight: 500;
               }
-              .button {
-                display: inline-block;
-                background-color: #4f46e5;
-                color: #ffffff;
-                padding: 12px 30px;
-                border-radius: 6px;
-                text-decoration: none;
-                font-weight: 600;
-                margin-top: 20px;
+              @media (max-width: 480px) {
+                .card {
+                  padding: 28px 20px;
+                }
+                .otp-code {
+                  font-size: 32px;
+                  letter-spacing: 8px;
+                }
+                .brand h2 {
+                  font-size: 20px;
+                }
               }
             </style>
           </head>
           <body>
             <div class="container">
-              <div class="header">
-                <h1>🔐 Email Verification</h1>
-              </div>
-              <div class="content">
-                <p>Hello <strong>${name}</strong>,</p>
-                <p>Thank you for signing up! Please use the verification code below to complete your registration.</p>
-                <div class="otp-code">${otp}</div>
-                <p class="otp-expiry">This code will expire in <strong>10 minutes</strong></p>
-                <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                  If you didn't request this, please ignore this email.
+              <div class="card">
+                <div class="brand">
+                  <h2>Teens<span>Connect</span></h2>
+                  <p>Verification</p>
+                </div>
+
+                <p class="greeting">Hello${name ? ` ${name}` : ''},</p>
+                <p class="message">
+                  Use the code below to verify your email address and complete your registration.
                 </p>
-              </div>
-              <div class="footer">
-                <p>&copy; 2026 Your Company. All rights reserved.</p>
-                <p>
-                  <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}">Visit our website</a>
-                </p>
+
+                <div class="otp-box">
+                  <span class="otp-label">One‑Time Password</span>
+                  <span class="otp-code">${otp}</span>
+                </div>
+
+                <p class="expiry">This code expires in <strong>10 minutes</strong>.</p>
+                <p class="note">If you didn't request this, you can safely ignore this email.</p>
+
+                <div class="divider"></div>
+
+                <div class="footer">
+                  &copy; ${new Date().getFullYear()} TeensConnect &bull;
+                  <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}">Visit website</a>
+                </div>
               </div>
             </div>
           </body>
@@ -140,15 +197,6 @@ export const sendOTPSMS = async (phone, otp) => {
   try {
     // Resend currently doesn't support SMS directly
     // You can integrate with Twilio, Vonage, or other SMS providers here
-    
-    // Example using Twilio (you'd need to install twilio package)
-    // const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    // await twilioClient.messages.create({
-    //   body: `Your verification code is: ${otp}. Valid for 10 minutes.`,
-    //   from: process.env.TWILIO_PHONE_NUMBER,
-    //   to: phone,
-    // });
-
     console.log(`📱 SMS OTP sent to ${phone}: ${otp}`);
     return { success: true };
   } catch (error) {
@@ -161,13 +209,11 @@ export const sendOTPSMS = async (phone, otp) => {
 export const sendOTP = async (email, phone, otp, name = 'User') => {
   try {
     const emailResult = await sendOTPEmail(email, otp, name);
-    // SMS is optional - comment out if not needed
+    // SMS is optional – comment out if not needed
     // const smsResult = await sendOTPSMS(phone, otp);
-    
     return {
       success: true,
       email: emailResult.data,
-      // sms: smsResult,
     };
   } catch (error) {
     console.error('Error sending OTP:', error);
@@ -180,12 +226,10 @@ export const generateAndSendOTP = async (user) => {
   const otp = generateOTP();
   const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-  // Update user with OTP
   user.otp = otp;
   user.otpExpires = otpExpires;
   await user.save();
 
-  // Send OTP via email (and optionally SMS)
   await sendOTP(user.email, user.phone, otp, user.name);
 
   return { otp, otpExpires };
