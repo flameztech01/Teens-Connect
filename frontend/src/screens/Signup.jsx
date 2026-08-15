@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux'; // Added useSelector
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Eye,
   EyeOff,
@@ -14,11 +14,12 @@ import {
   CheckCircle,
   AlertCircle,
   ArrowLeft,
+  Clock,
 } from 'lucide-react';
 import { useSignupMutation, useVerifyOTPMutation, useResendOTPMutation, useUpdateProfileMutation } from '../slices/userApiSlice';
 import { setCredentials } from '../slices/authSlice';
 
-// Country codes data (unchanged)
+// Country codes data
 const countryCodes = [
   { code: '+234', country: 'Nigeria', flag: '🇳🇬', example: '8029292929' },
   { code: '+1', country: 'USA/Canada', flag: '🇺🇸', example: '2125551234' },
@@ -42,7 +43,7 @@ const countryCodes = [
   { code: '+62', country: 'Indonesia', flag: '🇮🇩', example: '8123456789' },
 ];
 
-// Helper function to format phone number (unchanged)
+// Helper function to format phone number
 const formatPhoneNumber = (countryCode, phoneNumber) => {
   let cleaned = phoneNumber.replace(/\D/g, '');
   if (cleaned.startsWith('0')) {
@@ -54,7 +55,7 @@ const formatPhoneNumber = (countryCode, phoneNumber) => {
   return countryCode + cleaned;
 };
 
-// Shared minimal field classes (unchanged)
+// Shared minimal field classes
 const fieldBase =
   'w-full px-4 py-3 bg-white/[0.04] border rounded-lg text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#f4a825] focus:ring-1 focus:ring-[#f4a825]/40 transition-all';
 const fieldOk = 'border-white/10';
@@ -64,7 +65,7 @@ const labelCls = 'block text-xs font-medium text-white/50 tracking-wide mb-1.5';
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userInfo } = useSelector((state) => state.auth); // Get userInfo
+  const { userInfo } = useSelector((state) => state.auth);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -99,6 +100,7 @@ const Signup = () => {
   const [otpSuccess, setOtpSuccess] = useState('');
   const [isResending, setIsResending] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [otpSentTime, setOtpSentTime] = useState(null); // Track when OTP was sent
 
   // Profile completion state
   const [profileData, setProfileData] = useState({
@@ -194,6 +196,8 @@ const Signup = () => {
       }).unwrap();
 
       setOtpEmail(signupData.email);
+      const now = new Date();
+      setOtpSentTime(now); // Record the time OTP was sent
       setSuccessMessage('OTP sent to your email! Please verify to continue.');
       setStep(2);
       setResendTimer(60);
@@ -251,6 +255,8 @@ const Signup = () => {
 
     try {
       await resendOTP({ email: otpEmail }).unwrap();
+      const now = new Date();
+      setOtpSentTime(now); // Update sent time on resend
       setOtpSuccess('New OTP sent to your email!');
       setResendTimer(60);
       setTimeout(() => setOtpSuccess(''), 3000);
@@ -633,18 +639,37 @@ const Signup = () => {
             </>
           )}
 
-          {/* ==================== STEP 2: OTP VERIFICATION ==================== */}
+          {/* ==================== STEP 2: OTP VERIFICATION (UPDATED) ==================== */}
           {step === 2 && (
             <>
               <div className="w-11 h-11 bg-[#f4a825]/15 rounded-xl flex items-center justify-center mb-5">
                 <Key size={20} className="text-[#f4a825]" />
               </div>
               <h2 className="text-2xl font-medium text-white">Verify your email</h2>
-              <p className="text-white/40 text-sm mt-2 mb-6 leading-relaxed">
+              <p className="text-white/40 text-sm mt-2 leading-relaxed">
                 We sent a 6-digit code to <span className="text-white/70">{otpEmail}</span>
               </p>
 
-              <form onSubmit={handleVerifyOTP} className="space-y-4">
+              {/* Timestamp */}
+              <p className="text-white/30 text-xs mt-1 flex items-center gap-1">
+                <Clock size={12} />
+                {otpSentTime ? `Sent at ${otpSentTime.toLocaleTimeString()}` : 'Sending...'}
+                <span className="text-white/20 mx-1">•</span>
+                <span>Expires in 10 minutes</span>
+              </p>
+
+              {/* Spam warning */}
+              <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-2">
+                <AlertCircle size={16} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-yellow-400 text-xs font-medium">Didn't receive the email?</p>
+                  <p className="text-yellow-300/70 text-[11px] leading-relaxed">
+                    Check your spam or junk folder. If you still don't see it, click the button below to open Gmail.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleVerifyOTP} className="space-y-4 mt-2">
                 <div>
                   <label className={labelCls}>Enter OTP code</label>
                   <input
@@ -685,7 +710,7 @@ const Signup = () => {
                   )}
                 </button>
 
-                <div className="text-center pt-1">
+                <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
                     onClick={handleResendOTP}
@@ -694,6 +719,19 @@ const Signup = () => {
                   >
                     {isResendingOTP ? 'Sending...' : resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
                   </button>
+
+                  {/* Open Gmail button */}
+                  <a
+                    href="https://mail.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.283 4.5H3.717C2.447 4.5 1.5 5.447 1.5 6.717v10.566c0 1.27.947 2.217 2.217 2.217h16.566c1.27 0 2.217-.947 2.217-2.217V6.717c0-1.27-.947-2.217-2.217-2.217zM12 12.609L3.717 7.5h16.566L12 12.609zM3 7.5v9.783l4.8-4.8L3 7.5zm4.8 5.283l-4.2 4.2h16.8l-4.2-4.2L12 15.391l-4.2-2.608zm6.4-.483l4.8 4.8V7.5l-4.8 4.8z"/>
+                    </svg>
+                    Open Gmail
+                  </a>
                 </div>
               </form>
             </>
