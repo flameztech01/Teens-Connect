@@ -41,6 +41,7 @@ const router = createBrowserRouter([
       { path: "/settings", element: <Settings /> },
       { path: "/help", element: <Help /> },
       { path: "/explore", element: <Talents /> },
+      {path: "/talents", element: <Talents /> },
       {path: "/talents/:id", element: <TalentId /> },
 
       { path: "/admin/login", element: <AdminLogin /> },
