@@ -1,29 +1,29 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
 import App from "./App.jsx";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import store from "./store";
 import Homepage from "./screens/Homepage.jsx";
-import Signup from "./screens/Signup";
-import Signin from "./screens/Signin";
-import Help from "./screens/Help.js";
-import Talents from "./screens/Talents.js";
+import Signup from "./screens/Signup.jsx";
+import Signin from "./screens/Signin.jsx";
+import Help from "./screens/Help.jsx";
+import Talents from "./screens/Talents.jsx";
 
-import Dashboard from "./screens/Dashboard.js";
-import Anonymous from "./screens/Anonymous.js";
-import Hire from "./screens/Hire.js";
-import Profile from "./screens/Profile.js";
-import Settings from "./screens/Settings.js";
+import Dashboard from "./screens/Dashboard.jsx";
+import Anonymous from "./screens/Anonymous.jsx";
+import Hire from "./screens/Hire.jsx";
+import Profile from "./screens/Profile.jsx";
+import Settings from "./screens/Settings.jsx";
 
-import AdminLogin from "./screens/Adminlogin.js";
-import AdminDashboard from "./screens/AdminDashboard.js";
-import AdminUsers from "./screens/AdminUsers.js";
-import AdminAnonymous from "./screens/AdminAnonymous.js";
-import AdminSettings from "./screens/AdminSettings.js";
-import AdminNotifications from "./screens/AdminNotifications.js";
+import AdminLogin from "./screens/Adminlogin.jsx";
+import AdminDashboard from "./screens/AdminDashboard.jsx";
+import AdminUsers from "./screens/AdminUsers.jsx";
+import AdminAnonymous from "./screens/AdminAnonymous.jsx";
+import AdminSettings from "./screens/AdminSettings.jsx";
+import AdminNotifications from "./screens/AdminNotifications.jsx";
 
 const router = createBrowserRouter([
   {
@@ -32,22 +32,21 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Homepage /> },
       { path: "/signup", element: <Signup /> },
-      {path: "/signin", element: <Signin /> },
-      {path: '/dashboard', element: <Dashboard /> },
-      {path: '/anonymous', element: <Anonymous /> },
-      {path: '/hire', element: <Hire /> },
-      {path: '/profile', element: <Profile /> },
-      {path: '/settings', element: <Settings /> },
-      {path: '/help', element: <Help /> },
-      {path: '/explore', element: <Talents /> },
+      { path: "/signin", element: <Signin /> },
+      { path: "/dashboard", element: <Dashboard /> },
+      { path: "/anonymous", element: <Anonymous /> },
+      { path: "/hire", element: <Hire /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/settings", element: <Settings /> },
+      { path: "/help", element: <Help /> },
+      { path: "/explore", element: <Talents /> },
 
-      {path: '/admin/login', element: <AdminLogin /> },
-      {path: '/admin/dashboard', element: <AdminDashboard /> },
-      {path: '/admin/users', element: <AdminUsers /> },
-      {path: '/admin/anonymous', element: <AdminAnonymous /> },
-      {path: '/admin/settings', element: <AdminSettings /> },
-      {path: '/admin/notifications', element: <AdminNotifications /> },
-
+      { path: "/admin/login", element: <AdminLogin /> },
+      { path: "/admin/dashboard", element: <AdminDashboard /> },
+      { path: "/admin/users", element: <AdminUsers /> },
+      { path: "/admin/anonymous", element: <AdminAnonymous /> },
+      { path: "/admin/settings", element: <AdminSettings /> },
+      { path: "/admin/notifications", element: <AdminNotifications /> },
     ],
   },
 ]);
@@ -59,5 +58,5 @@ createRoot(document.getElementById("root")).render(
         <RouterProvider router={router} />
       </StrictMode>
     </Provider>
-  </GoogleOAuthProvider>
+  </GoogleOAuthProvider>,
 );

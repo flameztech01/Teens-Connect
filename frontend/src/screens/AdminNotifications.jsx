@@ -33,9 +33,9 @@ import {
 } from 'lucide-react';
 
 const AdminNotifications = () => {
-  const { adminInfo } = useSelector((state: any) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
   const [page, setPage] = useState(1);
-  const [selectedNotification, setSelectedNotification] = useState<any>(null);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const previousUnreadCount = useRef(0);
 
@@ -50,6 +50,31 @@ const AdminNotifications = () => {
   const [deleteNotification] = useDeleteNotificationMutation();
   const [deleteAllNotifications] = useDeleteAllAdminNotificationsMutation();
 
+  // Check if user is admin
+  if (!userInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">Please login to access this page</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+        </div>
+      </div>
+    );
+  }
+
   // Play sound for new notifications
   useEffect(() => {
     if (unreadData?.unreadCount > previousUnreadCount.current && unreadData?.unreadCount > 0) {
@@ -59,7 +84,7 @@ const AdminNotifications = () => {
     previousUnreadCount.current = unreadData?.unreadCount || 0;
   }, [unreadData?.unreadCount]);
 
-  const handleMarkAsRead = async (id: string) => {
+  const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id).unwrap();
       refetch();
@@ -82,7 +107,7 @@ const AdminNotifications = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     if (!confirm('Delete this notification?')) return;
     try {
       await deleteNotification(id).unwrap();
@@ -110,7 +135,7 @@ const AdminNotifications = () => {
     }
   };
 
-  const handleViewNotification = (notification: any) => {
+  const handleViewNotification = (notification) => {
     setSelectedNotification(notification);
     setIsDrawerOpen(true);
   };
@@ -120,7 +145,7 @@ const AdminNotifications = () => {
     setTimeout(() => setSelectedNotification(null), 300);
   };
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type) => {
     switch (type) {
       case 'anonymous_post':
         return <MessageCircle className="w-5 h-5 text-purple-500" />;
@@ -139,7 +164,7 @@ const AdminNotifications = () => {
     }
   };
 
-  const getTimeAgo = (date: string) => {
+  const getTimeAgo = (date) => {
     const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
     
     let interval = seconds / 31536000;
@@ -159,8 +184,6 @@ const AdminNotifications = () => {
     
     return Math.floor(seconds) + ' seconds ago';
   };
-
-  if (!adminInfo) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -273,7 +296,7 @@ const AdminNotifications = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {notificationsData?.notifications?.map((notification: any) => (
+              {notificationsData?.notifications?.map((notification) => (
                 <div
                   key={notification._id}
                   onClick={() => handleViewNotification(notification)}

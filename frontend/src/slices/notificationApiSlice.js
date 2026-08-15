@@ -1,4 +1,4 @@
-// slices/notificationsApiSlice.js
+// slices/notificationApiSlice.js
 import { apiSlice } from './apiSlice';
 
 const NOTIFICATIONS_URL = '/notifications';

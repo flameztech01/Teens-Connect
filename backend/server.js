@@ -7,7 +7,6 @@ import mongoose from 'mongoose';
 import userRoutes from './routes/userRoutes.js';
 import hireRoutes from './routes/hireRoutes.js';
 import anonymousRoutes from './routes/anonymousRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
 import notificationsRoutes from './routes/notificationsRoutes.js';
 
 import {
@@ -57,7 +56,6 @@ app.get("/", (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/hire', hireRoutes);
 app.use('/api/anonymous', anonymousRoutes);
-app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
 //Error Middleware

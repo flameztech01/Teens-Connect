@@ -23,16 +23,17 @@ import {
   Award,
   Heart,
   Link as LinkIcon,
-  Smartphone
+  Smartphone,
+  Lock
 } from 'lucide-react';
 
 const AdminUsers = () => {
   const navigate = useNavigate();
-  const { adminInfo } = useSelector((state: any) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { data: usersData, isLoading } = useGetUsersQuery({
@@ -41,9 +42,29 @@ const AdminUsers = () => {
     search: searchTerm
   });
 
-  if (!adminInfo) {
-    navigate('/admin/login');
-    return null;
+  // Check if user is admin
+  if (!userInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">Please login to access this page</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+        </div>
+      </div>
+    );
   }
 
   const handleSearch = () => {
@@ -51,7 +72,7 @@ const AdminUsers = () => {
     setPage(1);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -63,7 +84,7 @@ const AdminUsers = () => {
     setPage(1);
   };
 
-  const handleViewUser = (user: any) => {
+  const handleViewUser = (user) => {
     setSelectedUser(user);
     setIsDrawerOpen(true);
   };
@@ -73,14 +94,14 @@ const AdminUsers = () => {
     setTimeout(() => setSelectedUser(null), 300);
   };
 
-  const getAuthMethodBadge = (method: string) => {
+  const getAuthMethodBadge = (method) => {
     if (method === 'google') {
       return <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg text-xs font-medium">Google</span>;
     }
     return <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg text-xs font-medium">Email</span>;
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -125,7 +146,7 @@ const AdminUsers = () => {
             <div className="flex-shrink-0 w-40 bg-white rounded-2xl border border-gray-100 p-4">
               <p className="text-gray-500 text-xs">Google Users</p>
               <p className="text-2xl font-bold text-gray-900">
-                {usersData?.users?.filter((u: any) => u.authMethod === 'google').length || 0}
+                {usersData?.users?.filter((u) => u.authMethod === 'google').length || 0}
               </p>
             </div>
           </div>
@@ -174,7 +195,7 @@ const AdminUsers = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {usersData?.users?.map((user: any) => (
+              {usersData?.users?.map((user) => (
                 <div
                   key={user._id}
                   onClick={() => handleViewUser(user)}
@@ -390,7 +411,7 @@ const AdminUsers = () => {
                     Skills ({selectedUser.skills.length})
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedUser.skills.slice(0, 15).map((skill: string, idx: number) => (
+                    {selectedUser.skills.slice(0, 15).map((skill, idx) => (
                       <span key={idx} className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg text-xs">
                         {skill}
                       </span>
@@ -410,7 +431,7 @@ const AdminUsers = () => {
                     Interests ({selectedUser.interests.length})
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedUser.interests.slice(0, 15).map((interest: string, idx: number) => (
+                    {selectedUser.interests.slice(0, 15).map((interest, idx) => (
                       <span key={idx} className="bg-pink-50 text-pink-700 px-2.5 py-1 rounded-lg text-xs">
                         {interest}
                       </span>

@@ -25,6 +25,7 @@
     "mongoose": "^9.1.5",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "resend": "^6.20.0",
     "web-push": "^3.6.7"
   }
 }

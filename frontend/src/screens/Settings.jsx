@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import DashboardSidebar from "../components/DashbordSidebar"
+import DashboardSidebar from '../components/DashbordSidebar';
 import { useUpdateProfileMutation, useDeleteAccountMutation } from '../slices/userApiSlice';
 import { logout } from '../slices/authSlice';
 import {
@@ -24,7 +24,7 @@ import {
 const Settings = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userInfo } = useSelector((state: any) => state.auth);
+  const { userInfo } = useSelector((state) => state.auth);
   
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
@@ -112,7 +112,7 @@ const Settings = () => {
     }
   };
   
-  const handleProfileUpdate = async (e: React.FormEvent) => {
+  const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -130,13 +130,13 @@ const Settings = () => {
       await updateProfile(formData).unwrap();
       setSuccessMessage('Profile updated successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage(error.data?.message || 'Failed to update profile');
       setTimeout(() => setErrorMessage(''), 3000);
     }
   };
   
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -164,7 +164,7 @@ const Settings = () => {
         confirmPassword: ''
       });
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage(error.data?.message || 'Failed to change password');
       setTimeout(() => setErrorMessage(''), 3000);
     }
@@ -178,7 +178,7 @@ const Settings = () => {
       localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
       setSuccessMessage('Notification settings saved!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage('Failed to save settings');
       setTimeout(() => setErrorMessage(''), 3000);
     }
@@ -192,7 +192,7 @@ const Settings = () => {
       localStorage.setItem('privacySettings', JSON.stringify(privacySettings));
       setSuccessMessage('Privacy settings saved!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage('Failed to save settings');
       setTimeout(() => setErrorMessage(''), 3000);
     }
@@ -208,7 +208,7 @@ const Settings = () => {
       await deleteAccount().unwrap();
       dispatch(logout());
       navigate('/');
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage(error.data?.message || 'Failed to delete account');
     }
   };

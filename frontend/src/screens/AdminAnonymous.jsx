@@ -26,73 +26,12 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 import { toBlob, toJpeg } from "html-to-image";
 
-interface Post {
-  id: string;
-  content: string;
-  media?: string;
-  mediaType?: string;
-  tags?: string[];
-  isRead: boolean;
-  readBy?: Array<{ adminId: string; readAt: string }>;
-  sharedToWhatsApp?: boolean;
-  viewCount?: number;
-  shareCount?: number;
-  createdAt: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    username: string;
-    profile?: string;
-    phone?: string;
-    location?: string;
-    skills?: string[];
-  };
-}
-
-interface PostsData {
-  postsByDate: Record<string, Post[]>;
-  page: number;
-  pages: number;
-  total: number;
-  stats?: {
-    total: number;
-    read: number;
-    unread: number;
-    shared: number;
-    notShared: number;
-  };
-}
-
-interface UnreadCountData {
-  unreadCount: number;
-}
-
-interface PosterInfo {
-  poster: {
-    name: string;
-    email: string;
-    username: string;
-    phone?: string;
-    profile?: string;
-    location?: string;
-    skills?: string[];
-  };
-  post: {
-    content: string;
-  };
-}
-
-type RootState = {
-  adminAuth: {
-    adminInfo: unknown;
-  };
-};
-
-const formatPostDateTime = (date: string) =>
+const formatPostDateTime = (date) =>
   new Date(date).toLocaleString("en-US", {
     day: "2-digit",
     month: "2-digit",
@@ -102,7 +41,7 @@ const formatPostDateTime = (date: string) =>
     hour12: false,
   });
 
-const formatGroupDate = (date: string) =>
+const formatGroupDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -110,7 +49,7 @@ const formatGroupDate = (date: string) =>
     year: "numeric",
   });
 
-const getInitials = (name: string) => {
+const getInitials = (name) => {
   if (!name) return "U";
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
@@ -124,7 +63,7 @@ const AnonymousAvatar = () => {
 };
 
 // Mobile-friendly Export Card Component with Logo
-const ExportPostCard = ({ post }: { post: Post }) => {
+const ExportPostCard = ({ post }) => {
   return (
     <div className="w-[380px] max-w-full bg-white rounded-2xl overflow-hidden shadow-lg">
       {/* Header */}
@@ -180,17 +119,20 @@ const ExportPostCard = ({ post }: { post: Post }) => {
 };
 
 const AdminAnonymous = () => {
-  const { adminInfo } = useSelector((state: RootState) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
 
   const [page, setPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState("");
   const [showRead, setShowRead] = useState("");
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [showPosterDrawer, setShowPosterDrawer] = useState(false);
   const [secretCode, setSecretCode] = useState("");
   const [secretCodeError, setSecretCodeError] = useState("");
   const [isCodeVerified, setIsCodeVerified] = useState(false);
-  const [generatingImage, setGeneratingImage] = useState<string | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(null);
+
+  // Custom dropdown state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const {
     data: postsData,
@@ -218,11 +160,33 @@ const AdminAnonymous = () => {
     skip: !showPosterDrawer || !isCodeVerified || !selectedPost?.id,
   });
 
-  const typedPostsData = postsData as PostsData | undefined;
-  const typedUnreadCount = unreadCount as UnreadCountData | undefined;
-  const typedPosterInfo = posterInfo as PosterInfo | undefined;
+  // Check if user is admin - redirect or show access denied
+  if (!userInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">Please login to access this page</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleMarkAsRead = async (postId: string) => {
+  if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Handlers (ALL UNCHANGED) ----------
+  const handleMarkAsRead = async (postId) => {
     try {
       await markAsRead(postId).unwrap();
       await Promise.all([refetch(), refetchUnread()]);
@@ -231,7 +195,7 @@ const AdminAnonymous = () => {
     }
   };
 
-  const handleViewPoster = (post: Post) => {
+  const handleViewPoster = (post) => {
     setSelectedPost(post);
     setSecretCode("");
     setSecretCodeError("");
@@ -264,7 +228,7 @@ const AdminAnonymous = () => {
     setSelectedPost(null);
   };
 
-  const downloadPostAsImage = async (postId: string, post: Post) => {
+  const downloadPostAsImage = async (postId, post) => {
     const exportNode = document.getElementById(`post-export-${postId}`);
     if (!exportNode) return;
 
@@ -329,7 +293,7 @@ const AdminAnonymous = () => {
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
+  const handleDeletePost = async (postId) => {
     const shouldDelete = confirm(
       "Are you sure you want to delete this post? This action cannot be undone."
     );
@@ -345,8 +309,49 @@ const AdminAnonymous = () => {
     }
   };
 
-  if (!adminInfo) return null;
+  // Quick date presets
+  const setDatePreset = (daysOffset) => {
+    const date = new Date();
+    if (daysOffset === 0) {
+      // Today
+      // no change
+    } else if (daysOffset === -1) {
+      // Yesterday
+      date.setDate(date.getDate() - 1);
+    } else if (daysOffset === 'thisWeek') {
+      // Monday of this week
+      const day = date.getDay(); // 0=Sun
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      date.setDate(diff);
+    } else if (daysOffset === 'lastWeek') {
+      // Monday of last week
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1) - 7;
+      date.setDate(diff);
+    } else if (daysOffset === 'lastMonth') {
+      // 1st of last month
+      date.setMonth(date.getMonth() - 1);
+      date.setDate(1);
+    } else {
+      // custom offset (negative days)
+      date.setDate(date.getDate() + daysOffset);
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    setSelectedDate(`${year}-${month}-${day}`);
+    setPage(1);
+  };
 
+  // Filter dropdown options
+  const filterOptions = [
+    { value: "", label: "All Posts" },
+    { value: "false", label: "Unread Only" },
+    { value: "true", label: "Read Only" },
+  ];
+  const currentFilterLabel = filterOptions.find(opt => opt.value === showRead)?.label || "All Posts";
+
+  // ---------- Render ----------
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar />
@@ -369,9 +374,9 @@ const AdminAnonymous = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                {typedUnreadCount && typedUnreadCount.unreadCount > 0 && (
+                {unreadCount && unreadCount.unreadCount > 0 && (
                   <div className="bg-red-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-semibold">
-                    {typedUnreadCount.unreadCount} unread
+                    {unreadCount.unreadCount} unread
                   </div>
                 )}
                 <button
@@ -386,31 +391,116 @@ const AdminAnonymous = () => {
         </div>
 
         <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          {/* Stats Cards - Horizontal Scroll */}
-          {typedPostsData?.stats && (
-            <div className="flex gap-3 overflow-x-auto pb-4 mb-6 hide-scrollbar">
-              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
-                <p className="text-gray-500 text-xs">Total</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{typedPostsData.stats.total}</p>
+          {/* Stats Cards - Modern Grid */}
+          {postsData?.stats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{postsData.stats.total}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <FileText size={20} className="text-blue-500" />
+                  </div>
+                </div>
               </div>
-              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
-                <p className="text-gray-500 text-xs">Read</p>
-                <p className="text-xl sm:text-2xl font-bold text-green-600">{typedPostsData.stats.read}</p>
+
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Read</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">{postsData.stats.read}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+                    <CheckCircle size={20} className="text-green-500" />
+                  </div>
+                </div>
               </div>
-              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
-                <p className="text-gray-500 text-xs">Unread</p>
-                <p className="text-xl sm:text-2xl font-bold text-orange-600">{typedPostsData.stats.unread}</p>
+
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Unread</p>
+                    <p className="text-2xl font-bold text-orange-600 mt-1">{postsData.stats.unread}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                    <MessageCircle size={20} className="text-orange-500" />
+                  </div>
+                </div>
               </div>
-              <div className="flex-shrink-0 w-[100px] sm:w-36 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
-                <p className="text-gray-500 text-xs">Shared</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-600">{typedPostsData.stats.shared}</p>
+
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Shared</p>
+                    <p className="text-2xl font-bold text-purple-600 mt-1">{postsData.stats.shared}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                    <Share2 size={20} className="text-purple-500" />
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Filters */}
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6">
+            {/* Quick Date Presets */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                onClick={() => setDatePreset(0)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                  selectedDate === new Date().toISOString().split('T')[0]
+                    ? 'bg-[#f4a825] text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setDatePreset(-1)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                  selectedDate === new Date(Date.now() - 86400000).toISOString().split('T')[0]
+                    ? 'bg-[#f4a825] text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Yesterday
+              </button>
+              <button
+                onClick={() => setDatePreset('thisWeek')}
+                className="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                This Week (Mon)
+              </button>
+              <button
+                onClick={() => setDatePreset('lastWeek')}
+                className="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                Last Week (Mon)
+              </button>
+              <button
+                onClick={() => setDatePreset('lastMonth')}
+                className="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                Last Month (1st)
+              </button>
+              {selectedDate && (
+                <button
+                  onClick={() => {
+                    setSelectedDate("");
+                    setPage(1);
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                >
+                  Clear Date
+                </button>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3">
+              {/* Date Picker */}
               <div className="flex-1">
                 <input
                   type="date"
@@ -422,20 +512,52 @@ const AdminAnonymous = () => {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 text-sm"
                 />
               </div>
-              <div className="w-full sm:w-40">
-                <select
-                  value={showRead}
-                  onChange={(e) => {
-                    setShowRead(e.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] text-sm"
+
+              {/* Custom Dropdown for Read Filter */}
+              <div className="w-full sm:w-44 relative">
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 text-sm bg-white hover:border-gray-300 transition-colors"
                 >
-                  <option value="">All Posts</option>
-                  <option value="false">Unread Only</option>
-                  <option value="true">Read Only</option>
-                </select>
+                  <span className="text-gray-700">{currentFilterLabel}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-400 transition-transform duration-200 ${
+                      isFilterOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isFilterOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsFilterOpen(false)}
+                    />
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
+                      {filterOptions.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => {
+                            setShowRead(opt.value);
+                            setPage(1);
+                            setIsFilterOpen(false);
+                          }}
+                          className={`w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors ${
+                            showRead === opt.value
+                              ? "bg-[#f4a825]/10 text-[#f4a825] font-medium"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
+
               {(selectedDate || showRead) && (
                 <button
                   onClick={() => {
@@ -445,7 +567,7 @@ const AdminAnonymous = () => {
                   }}
                   className="px-4 py-2.5 text-sm text-gray-500 hover:text-[#f4a825] transition-colors"
                 >
-                  Clear
+                  Clear All
                 </button>
               )}
             </div>
@@ -457,14 +579,14 @@ const AdminAnonymous = () => {
               <Loader className="w-8 h-8 text-[#f4a825] animate-spin mx-auto mb-2" />
               <p className="text-gray-500 text-sm">Loading posts...</p>
             </div>
-          ) : !typedPostsData?.postsByDate || Object.keys(typedPostsData.postsByDate).length === 0 ? (
+          ) : !postsData?.postsByDate || Object.keys(postsData.postsByDate).length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
               <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No anonymous posts found</p>
             </div>
           ) : (
             <div className="space-y-6">
-              {Object.entries(typedPostsData.postsByDate).map(([date, posts]) => (
+              {Object.entries(postsData.postsByDate).map(([date, posts]) => (
                 <div key={date} className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-[#f4a825]/10 flex items-center justify-center">
@@ -597,21 +719,21 @@ const AdminAnonymous = () => {
           )}
 
           {/* Pagination */}
-          {typedPostsData && typedPostsData.pages > 1 && (
+          {postsData && postsData.pages > 1 && (
             <div className="flex justify-center gap-2 mt-6">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={typedPostsData.page === 1}
+                disabled={postsData.page === 1}
                 className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm"
               >
                 <ChevronLeft size={16} />
               </button>
               <span className="px-4 py-2 text-sm text-gray-600">
-                Page {typedPostsData.page} of {typedPostsData.pages}
+                Page {postsData.page} of {postsData.pages}
               </span>
               <button
-                onClick={() => setPage((p) => Math.min(typedPostsData.pages, p + 1))}
-                disabled={typedPostsData.page === typedPostsData.pages}
+                onClick={() => setPage((p) => Math.min(postsData.pages, p + 1))}
+                disabled={postsData.page === postsData.pages}
                 className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all text-sm"
               >
                 <ChevronRight size={16} />
@@ -695,28 +817,28 @@ const AdminAnonymous = () => {
                   <Loader className="w-8 h-8 text-[#f4a825] animate-spin mx-auto" />
                   <p className="text-gray-500 mt-3">Loading poster information...</p>
                 </div>
-              ) : typedPosterInfo ? (
+              ) : posterInfo ? (
                 <div className="space-y-5">
                   <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                    {typedPosterInfo.poster.profile ? (
+                    {posterInfo.poster.profile ? (
                       <img
-                        src={typedPosterInfo.poster.profile}
-                        alt={typedPosterInfo.poster.name}
+                        src={posterInfo.poster.profile}
+                        alt={posterInfo.poster.name}
                         className="w-16 h-16 rounded-full object-cover"
                       />
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f4a825] to-[#e09e1a] flex items-center justify-center">
                         <span className="text-white font-bold text-xl">
-                          {getInitials(typedPosterInfo.poster.name)}
+                          {getInitials(posterInfo.poster.name)}
                         </span>
                       </div>
                     )}
                     <div>
                       <h3 className="font-bold text-lg text-gray-900">
-                        {typedPosterInfo.poster.name}
+                        {posterInfo.poster.name}
                       </h3>
                       <p className="text-gray-500 text-sm">
-                        @{typedPosterInfo.poster.username}
+                        @{posterInfo.poster.username}
                       </p>
                     </div>
                   </div>
@@ -728,41 +850,41 @@ const AdminAnonymous = () => {
                       </label>
                       <div className="flex items-center gap-2">
                         <Mail size={14} className="text-gray-400" />
-                        <p className="text-gray-900 text-sm">{typedPosterInfo.poster.email}</p>
+                        <p className="text-gray-900 text-sm">{posterInfo.poster.email}</p>
                       </div>
                     </div>
 
-                    {typedPosterInfo.poster.phone && (
+                    {posterInfo.poster.phone && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                           Phone
                         </label>
                         <div className="flex items-center gap-2">
                           <Phone size={14} className="text-gray-400" />
-                          <p className="text-gray-900 text-sm">{typedPosterInfo.poster.phone}</p>
+                          <p className="text-gray-900 text-sm">{posterInfo.poster.phone}</p>
                         </div>
                       </div>
                     )}
 
-                    {typedPosterInfo.poster.location && (
+                    {posterInfo.poster.location && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                           Location
                         </label>
                         <div className="flex items-center gap-2">
                           <MapPin size={14} className="text-gray-400" />
-                          <p className="text-gray-900 text-sm">{typedPosterInfo.poster.location}</p>
+                          <p className="text-gray-900 text-sm">{posterInfo.poster.location}</p>
                         </div>
                       </div>
                     )}
 
-                    {typedPosterInfo.poster.skills && typedPosterInfo.poster.skills.length > 0 && (
+                    {posterInfo.poster.skills && posterInfo.poster.skills.length > 0 && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                           Skills
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {typedPosterInfo.poster.skills.slice(0, 5).map((skill, idx) => (
+                          {posterInfo.poster.skills.slice(0, 5).map((skill, idx) => (
                             <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-xs">
                               {skill}
                             </span>
@@ -778,7 +900,7 @@ const AdminAnonymous = () => {
                     </label>
                     <div className="bg-gray-50 rounded-xl p-4">
                       <p className="text-gray-800 text-sm whitespace-pre-wrap">
-                        {typedPosterInfo.post.content}
+                        {posterInfo.post.content}
                       </p>
                     </div>
                   </div>
@@ -795,7 +917,7 @@ const AdminAnonymous = () => {
 
       {/* Hidden Export Elements - Mobile Friendly */}
       <div className="fixed -left-[99999px] top-0 pointer-events-none">
-        {typedPostsData && Object.values(typedPostsData.postsByDate).flat().map((post) => (
+        {postsData && Object.values(postsData.postsByDate).flat().map((post) => (
           <div key={`export-${post.id}`} id={`post-export-${post.id}`}>
             <ExportPostCard post={post} />
           </div>

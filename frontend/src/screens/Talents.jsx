@@ -37,7 +37,7 @@ const Talents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSkill, setSelectedSkill] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [selectedTalent, setSelectedTalent] = useState<any>(null);
+  const [selectedTalent, setSelectedTalent] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -59,7 +59,7 @@ const Talents = () => {
   );
   const [generateWhatsAppMessage, { isLoading: isGenerating }] = useGenerateWhatsAppMessageMutation();
 
-  const handleContactTalent = async (talent: any) => {
+  const handleContactTalent = async (talent) => {
     setSelectedTalent(talent);
     setMessageText(`Hi ${talent.name}, I came across your profile on TeensConnect and I'm really impressed by your skills in ${talent.skills?.slice(0, 2).join(', ')}. Would love to discuss potential collaboration!`);
     await refetchContact();
@@ -75,7 +75,7 @@ const Talents = () => {
       }).unwrap();
       
       window.open(result.whatsappLink, '_blank');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error generating WhatsApp link:', error);
       alert(error.data?.message || 'Failed to generate WhatsApp link');
     }
@@ -102,7 +102,7 @@ const Talents = () => {
     setTempSelectedLocation('');
   };
 
-  const getSkillIcon = (skill: string) => {
+  const getSkillIcon = (skill) => {
     const skillLower = skill.toLowerCase();
     if (skillLower.includes('design') || skillLower.includes('ui') || skillLower.includes('ux')) return <Palette size={12} />;
     if (skillLower.includes('code') || skillLower.includes('programming') || skillLower.includes('developer') || skillLower.includes('react') || skillLower.includes('javascript')) return <Code size={12} />;
@@ -240,7 +240,7 @@ const Talents = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {talentsData?.talents?.map((talent: any) => (
+                {talentsData?.talents?.map((talent) => (
                   <div key={talent._id} className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden group">
                     <div className="p-4">
                       <div className="flex items-start gap-3 mb-3">
@@ -268,7 +268,7 @@ const Talents = () => {
 
                       {talent.skills && talent.skills.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-3">
-                          {talent.skills.slice(0, 3).map((skill: string, idx: number) => (
+                          {talent.skills.slice(0, 3).map((skill, idx) => (
                             <span key={idx} className="inline-flex items-center gap-1 text-xs bg-gray-50 text-gray-700 px-2 py-1 rounded-full">
                               {getSkillIcon(skill)}
                               <span className="truncate max-w-[80px]">{skill}</span>

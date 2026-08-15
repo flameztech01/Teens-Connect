@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import DashboardSidebar from "../components/DashbordSidebar";
+import DashboardSidebar from '../components/DashbordSidebar';
 import {
   HelpCircle,
   MessageCircle,
@@ -21,8 +21,8 @@ import {
 } from 'lucide-react';
 
 const Help = () => {
-  const { userInfo } = useSelector((state: any) => state.auth);
-  const [openQuestion, setOpenQuestion] = useState<number | null>(null);
+  const { userInfo } = useSelector((state) => state.auth);
+  const [openQuestion, setOpenQuestion] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const faqs = [
@@ -114,7 +114,7 @@ const Help = () => {
 
   const categories = [...new Set(faqs.map(faq => faq.category))];
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

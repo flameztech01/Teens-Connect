@@ -1,21 +1,25 @@
 import mongoose from "mongoose";
-import { notificationPreferencesSchema } from "./notificationsPreferencesSchema.js"
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     username: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -24,6 +28,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
+      trim: true,
     },
     profile: {
       type: String,
@@ -36,6 +41,7 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
       default: "",
+      maxlength: 500,
     },
     location: {
       type: String,
@@ -44,11 +50,13 @@ const userSchema = new mongoose.Schema(
     skills: [
       {
         type: String,
+        trim: true,
       },
     ],
     interests: [
       {
         type: String,
+        trim: true,
       },
     ],
     dateOfBirth: {
@@ -57,9 +65,11 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       enum: ["male", "female", "other", "prefer-not-to-say"],
+      default: "prefer-not-to-say",
     },
     whatsappNumber: {
       type: String,
+      trim: true,
     },
     whatsappLink: {
       type: String,
@@ -69,6 +79,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePicture: {
       type: String,
+      default: "",
     },
     googleId: {
       type: String,
@@ -79,6 +90,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
     authMethod: {
       type: String,
       enum: ["email", "google"],
@@ -86,10 +101,19 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin", "moderator"],
+      enum: ["user", "admin", "super_admin"],
       default: "user",
     },
-    // Add to userModel.js and adminModel.js
+    // OTP fields for email verification & password reset
+    otp: {
+      type: String,
+      select: false,
+    },
+    otpExpires: {
+      type: Date,
+      select: false,
+    },
+    // Notification preferences
     notificationPreferences: {
       emailNotifications: {
         type: Boolean,
@@ -125,22 +149,71 @@ const userSchema = new mongoose.Schema(
       },
     },
     pushSubscription: {
-      type: Object,
-      default: null,
+      endpoint: {
+        type: String,
+        default: null,
+      },
+      keys: {
+        p256dh: {
+          type: String,
+          default: null,
+        },
+        auth: {
+          type: String,
+          default: null,
+        },
+      },
     },
     deviceInfo: {
       type: Object,
       default: null,
     },
-    createdAt: {
+    lastLogin: {
       type: Date,
-      default: Date.now,
+    },
+    // Account status
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
     timestamps: true,
-  },
+  }
 );
+
+// Indexes for better query performance
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isEmailVerified: 1 });
+userSchema.index({ createdAt: -1 });
+
+// Method to check if OTP is expired
+userSchema.methods.isOTPExpired = function() {
+  return this.otpExpires < new Date();
+};
+
+// Method to clear OTP
+userSchema.methods.clearOTP = function() {
+  this.otp = undefined;
+  this.otpExpires = undefined;
+};
+
+// Method to get public profile (exclude sensitive data)
+userSchema.methods.getPublicProfile = function() {
+  const userObject = this.toObject();
+  delete userObject.password;
+  delete userObject.otp;
+  delete userObject.otpExpires;
+  delete userObject.pushSubscription;
+  delete userObject.deviceInfo;
+  return userObject;
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;

@@ -36,12 +36,13 @@ import {
   Settings as SettingsIcon,
   Key,
   X,
-  ChevronUp
+  ChevronUp,
+  Lock
 } from 'lucide-react';
-import { adminLogout } from '../slices/adminAuthSlice';
+import { logout } from '../slices/authSlice';
 
 // Helper function to convert VAPID key from base64 to Uint8Array
-const urlBase64ToUint8Array = (base64String: string) => {
+const urlBase64ToUint8Array = (base64String) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
@@ -55,14 +56,14 @@ const urlBase64ToUint8Array = (base64String: string) => {
 const AdminSettings = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { adminInfo } = useSelector((state: any) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
   
   const [activeTab, setActiveTab] = useState('preferences');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedSetting, setSelectedSetting] = useState<any>(null);
+  const [selectedSetting, setSelectedSetting] = useState(null);
   
   const { data: preferences, isLoading: prefsLoading, refetch: refetchPrefs } = useGetNotificationPreferencesQuery();
   const [updatePreferences, { isLoading: isUpdating }] = useUpdateNotificationPreferencesMutation();
@@ -90,6 +91,31 @@ const AdminSettings = () => {
   });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Check if user is admin
+  if (!userInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">Please login to access this page</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
+          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+        </div>
+      </div>
+    );
+  }
   
   useEffect(() => {
     if (preferences) {
@@ -127,7 +153,7 @@ const AdminSettings = () => {
     }
   };
   
-  const handlePreferenceChange = (key: string, value: any) => {
+  const handlePreferenceChange = (key, value) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
   
@@ -136,7 +162,7 @@ const AdminSettings = () => {
       await updatePreferences(formData).unwrap();
       setSuccessMessage('Notification preferences saved successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage(error.data?.message || 'Failed to save preferences');
       setTimeout(() => setErrorMessage(''), 3000);
     }
@@ -148,7 +174,7 @@ const AdminSettings = () => {
       setFormData(prev => ({ ...prev, soundEnabled: result.soundEnabled }));
       setSuccessMessage(result.message);
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage('Failed to toggle sound');
       setTimeout(() => setErrorMessage(''), 3000);
     }
@@ -205,13 +231,13 @@ const AdminSettings = () => {
       }
       
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (error) {
       setErrorMessage(error.message || 'Failed to toggle push notifications');
       setTimeout(() => setErrorMessage(''), 5000);
     }
   };
   
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setErrorMessage('New passwords do not match');
@@ -230,7 +256,7 @@ const AdminSettings = () => {
   };
   
   const handleLogout = () => {
-    dispatch(adminLogout());
+    dispatch(logout());
     navigate('/admin/login');
   };
   
@@ -241,7 +267,7 @@ const AdminSettings = () => {
     { id: 'data', label: 'Data', icon: Database, description: 'Cache and data management' },
   ];
   
-  const openDrawer = (setting: any) => {
+  const openDrawer = (setting) => {
     setSelectedSetting(setting);
     setIsDrawerOpen(true);
   };
@@ -250,8 +276,6 @@ const AdminSettings = () => {
     setIsDrawerOpen(false);
     setTimeout(() => setSelectedSetting(null), 300);
   };
-  
-  if (!adminInfo) return null;
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

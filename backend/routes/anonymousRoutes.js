@@ -11,22 +11,22 @@ import {
   getUnreadCount,
   deleteAnonymousPost
 } from "../controllers/anonymousController.js";
-import { protect, adminProtect } from "../Middleware/authMiddleware.js";
+import { protect } from "../Middleware/authMiddleware.js";   // only protect now
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// User routes - require protect
+// All routes use protect – no admin-only distinction
 router.post("/post", protect, upload.single("media"), createAnonymousPost);
 router.get("/my-posts", protect, getMyAnonymousPosts);
 
-// Admin only routes - require adminProtect only
-router.get("/admin/all", adminProtect, getAllAnonymousPosts);
-router.get("/admin/unread-count", adminProtect, getUnreadCount);
-router.put("/admin/:id/read", adminProtect, markAsRead);
-router.get("/admin/:id/view-poster", adminProtect, viewPoster);
-router.post("/admin/:id/share-whatsapp", adminProtect, shareToWhatsApp);
-router.post("/admin/:id/share-poster-whatsapp", adminProtect, sharePosterToWhatsApp);
-router.delete("/admin/:id", adminProtect, deleteAnonymousPost);
+// Previously admin-only, now accessible to any logged-in user
+router.get("/admin/all", protect, getAllAnonymousPosts);
+router.get("/admin/unread-count", protect, getUnreadCount);
+router.put("/admin/:id/read", protect, markAsRead);
+router.get("/admin/:id/view-poster", protect, viewPoster);
+router.post("/admin/:id/share-whatsapp", protect, shareToWhatsApp);
+router.post("/admin/:id/share-poster-whatsapp", protect, sharePosterToWhatsApp);
+router.delete("/admin/:id", protect, deleteAnonymousPost);
 
 export default router;

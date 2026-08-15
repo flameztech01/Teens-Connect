@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -13,7 +13,8 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
-  Award
+  Award,
+  Shield // <-- added for admin
 } from 'lucide-react';
 import { logout } from '../slices/authSlice';
 
@@ -25,7 +26,7 @@ const DashboardSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   
-  const { userInfo } = useSelector((state: any) => state.auth);
+  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,7 +43,8 @@ const DashboardSidebar = () => {
     navigate('/');
   };
 
-  const navLinks = [
+  // Base navigation links
+  const baseLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'Anonymous', path: '/anonymous', icon: Users },
     { name: 'Hire Talent', path: '/hire', icon: Briefcase },
@@ -50,9 +52,20 @@ const DashboardSidebar = () => {
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
+  // Conditionally add Admin Dashboard link
+  const navLinks = useMemo(() => {
+    const links = [...baseLinks];
+    const role = userInfo?.role;
+    if (role === 'admin' || role === 'super_admin') {
+      links.push({ name: 'Admin Dashboard', path: '/admin/dashboard', icon: Shield });
+    }
+    return links;
+  }, [userInfo?.role]);
+
   const displayName = userInfo?.name || 'User';
   const displayEmail = userInfo?.email || '';
   const displayImage = userInfo?.profilePicture || userInfo?.profile || null;
+  const isAdmin = userInfo?.role === 'admin' || userInfo?.role === 'super_admin';
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#1a2538] to-[#0f172a] shadow-2xl">
@@ -103,7 +116,9 @@ const DashboardSidebar = () => {
               <p className="text-gray-400 text-xs truncate">{displayEmail}</p>
               <div className="flex items-center gap-1 mt-1">
                 <Award size={10} className="text-[#f4a825]" />
-                <span className="text-[10px] text-gray-500">Member</span>
+                <span className="text-[10px] text-gray-500">
+                  {isAdmin ? 'Admin' : 'Member'}
+                </span>
               </div>
             </div>
           )}

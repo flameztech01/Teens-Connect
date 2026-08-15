@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useAdminLoginMutation } from '../slices/adminApiSlice';
-import { setAdminCredentials } from '../slices/adminAuthSlice';
+import { useLoginMutation } from '../slices/userApiSlice';
+import { setCredentials } from '../slices/authSlice';
 import { 
-  Shield, 
+  UserCog, 
   Mail, 
   Lock, 
   Eye, 
@@ -16,7 +16,7 @@ import {
 const AdminLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [adminLogin, { isLoading }] = useAdminLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -25,16 +25,24 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   
-  const { adminInfo } = useSelector((state: any) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
 
-  // Redirect if already logged in
+  // Redirect if already logged in as admin
   useEffect(() => {
-    if (adminInfo) {
-      navigate('/admin/dashboard');
+    if (userInfo) {
+      if (userInfo.role === 'admin' || userInfo.role === 'super_admin') {
+        navigate('/admin/dashboard');
+      } else {
+        // Regular user trying to access admin login
+        setError('Access denied. Admin privileges required.');
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
+      }
     }
-  }, [adminInfo, navigate]);
+  }, [userInfo, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -44,14 +52,22 @@ const AdminLogin = () => {
     }
     
     try {
-      const result = await adminLogin(formData).unwrap();
-      console.log('Admin login result:', result);
+      // Use the normal user login endpoint
+      const result = await login({
+        email: formData.email,
+        password: formData.password
+      }).unwrap();
       
-      // Store admin info in Redux using adminAuthSlice
-      dispatch(setAdminCredentials(result));
+      // Check if user has admin role
+      if (result.role === 'admin' || result.role === 'super_admin') {
+        dispatch(setCredentials(result));
+        navigate('/admin/dashboard');
+      } else {
+        setError('Access denied. This account does not have admin privileges.');
+        setFormData({ email: '', password: '' });
+      }
       
-      navigate('/admin/dashboard');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login failed:', err);
       setError(err.data?.message || 'Login failed. Please check your credentials.');
     }
@@ -83,7 +99,7 @@ const AdminLogin = () => {
           <div className="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in-up delay-200">
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-br from-[#1d2b4f] to-[#0d6b57] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-10 h-10 text-white" />
+                <UserCog className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-[#1d2b4f]">Admin Login</h2>
               <p className="text-gray-500 text-sm mt-2">Access the admin dashboard</p>
@@ -91,9 +107,9 @@ const AdminLogin = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2 text-sm">
-                <AlertCircle size={16} />
-                {error}
+              <div className="mb-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-start gap-2 text-sm">
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -202,6 +218,27 @@ const AdminLogin = () => {
         .delay-200 {
           animation-delay: 0.2s;
           opacity: 0;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.2;
+          }
+          50% {
+            opacity: 0.4;
+          }
+        }
+
+        .animate-pulse {
+          animation: pulse 3s ease-in-out infinite;
+        }
+
+        .delay-1000 {
+          animation-delay: 1s;
+        }
+
+        .delay-500 {
+          animation-delay: 0.5s;
         }
       `}</style>
     </div>

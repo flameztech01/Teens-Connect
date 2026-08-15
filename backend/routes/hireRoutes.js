@@ -9,11 +9,11 @@ import {
   searchTalents,
   getHireStats
 } from "../controllers/hireController.js";
-import { protect, adminProtect } from "../Middleware/authMiddleware.js";
+import { protect } from "../Middleware/authMiddleware.js";   // only protect now
 
 const router = express.Router();
 
-// User protected routes
+// Public routes (no auth required)
 router.get("/talents", getTalents);
 router.get("/talents/featured", getFeaturedTalents);
 router.get("/talents/skill/:skill", getTalentsBySkill);
@@ -22,8 +22,7 @@ router.get("/talent/:id/contact", getTalentContact);
 router.post("/message", generateWhatsAppMessage);
 router.post("/talents/search", searchTalents);
 
-// Admin route - use adminProtect only
-router.get("/stats", adminProtect, getHireStats);
-
+// Admin stats now requires a valid user token (protect)
+router.get("/stats", protect, getHireStats);
 
 export default router;

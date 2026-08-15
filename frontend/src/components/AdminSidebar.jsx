@@ -19,10 +19,10 @@ import {
   UserCheck,
   AlertTriangle,
   Sparkles,
-  Activity
+  Activity,
+  Home, // Added for Main Dashboard
 } from 'lucide-react';
-import { useAdminLogoutMutation } from '../slices/adminApiSlice';
-import { adminLogout } from '../slices/adminAuthSlice';
+import { logout } from '../slices/authSlice';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -33,8 +33,7 @@ const AdminSidebar = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   
-  const [adminLogoutApi] = useAdminLogoutMutation();
-  const { adminInfo } = useSelector((state: any) => state.adminAuth);
+  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,16 +46,11 @@ const AdminSidebar = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await adminLogoutApi().unwrap();
-      dispatch(adminLogout());
-      navigate('/admin/login');
-    } catch (error) {
-      dispatch(adminLogout());
-      navigate('/admin/login');
-    }
+    dispatch(logout());
+    navigate('/admin/login');
   };
 
+  // Navigation links – added "Main Dashboard" pointing to /dashboard
   const navLinks = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, color: '#f4a825' },
     { name: 'Users', path: '/admin/users', icon: Users, color: '#3b82f6' },
@@ -64,11 +58,12 @@ const AdminSidebar = () => {
     { name: 'Talents', path: '/admin/talents', icon: TrendingUp, color: '#10b981' },
     { name: 'Reports', path: '/admin/reports', icon: AlertTriangle, color: '#ef4444' },
     { name: 'Notifications', path: '/admin/notifications', icon: Bell, color: '#f59e0b' },
+    { name: 'Main Dashboard', path: '/dashboard', icon: Home, color: '#f4a825' }, // <-- New link
     { name: 'Settings', path: '/admin/settings', icon: Settings, color: '#6b7280' },
   ];
 
-  const displayName = adminInfo?.name || 'Admin User';
-  const displayEmail = adminInfo?.email || 'admin@teensconnect.com';
+  const displayName = userInfo?.name || 'Admin User';
+  const displayEmail = userInfo?.email || 'admin@teensconnect.com';
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#1a2538] to-[#0f172a] shadow-2xl">
