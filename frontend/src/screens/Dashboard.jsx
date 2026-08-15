@@ -285,6 +285,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             <button
+                                onClick={() => setSelectedTab('notifications')}
                                 className="relative p-2 rounded-xl transition-all hover:bg-white/5"
                                 style={{ color: MUTED }}
                             >
@@ -827,10 +828,10 @@ const Dashboard = () => {
                     )}
                 </div>
 
-                {/* Floating action button */}
+                {/* Floating action button - raised on mobile to avoid hamburger */}
                 <Link
                     to="/anonymous"
-                    className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 lg:right-10 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center z-40 transition-all hover:scale-105 hover:shadow-glow"
+                    className="fixed bottom-20 sm:bottom-6 lg:bottom-10 right-4 sm:right-6 lg:right-10 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center z-40 transition-all hover:scale-105 hover:shadow-glow"
                     style={{
                         background: `linear-gradient(135deg, ${GOLD_DEEP}, ${GOLD})`,
                         boxShadow: `0 8px 32px rgba(244,168,37,0.35)`,
