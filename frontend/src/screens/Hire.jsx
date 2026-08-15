@@ -29,6 +29,35 @@ import {
   Sliders
 } from 'lucide-react';
 
+// ---- design tokens (same as dashboard) ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_DEEP = '#d4911f';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+const PURPLE = '#8b5cf6';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
 const Hire = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
@@ -114,27 +143,27 @@ const Hire = () => {
   const hasActiveFilters = searchTerm || selectedSkill || selectedLocation;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
-      
-      <div className="lg:ml-72">
-        {/* Header - flat gradient, no shadow */}
-        <div className="sticky top-0 z-30 bg-gradient-to-r from-[#f4a825] to-[#ff8c00] text-white">
-          <div className="px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+
+      <div className="lg:ml-72 relative">
+        {/* Header - Dark theme with gold accent, matching Anonymous */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-                  <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                  <Briefcase className="w-5 h-5" style={{ color: GOLD }} />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-2xl font-bold text-white">Hire Talent</h1>
-                  <p className="text-xs sm:text-sm text-white/80 mt-0.5">
-                    Discover and connect with talented teens ready to work on your projects
+                  <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>Hire Talent</h1>
+                  <p className="text-[11px] sm:text-xs" style={{ color: MUTED }}>
+                    Discover and connect with talented teens
                   </p>
                 </div>
               </div>
-              
-              {/* Search Button - flat white rounded-full */}
+
+              {/* Search Button - gold on dark */}
               <button
                 onClick={() => {
                   setTempSearchTerm(searchTerm);
@@ -142,7 +171,8 @@ const Hire = () => {
                   setTempSelectedLocation(selectedLocation);
                   setIsSearchModalOpen(true);
                 }}
-                className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-white text-[#f4a825] text-sm font-bold rounded-full hover:bg-gray-100 transition-all"
+                className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105"
+                style={{ backgroundColor: GOLD, color: BG }}
               >
                 <Search size={18} />
                 <span>Search & Filter</span>
@@ -150,37 +180,38 @@ const Hire = () => {
               </button>
             </div>
 
-            {/* Active Filters - flat, no rounded */}
+            {/* Active Filters - dark style */}
             {hasActiveFilters && (
-              <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-white/20">
-                <span className="text-xs text-white/80">Active filters:</span>
+              <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t" style={{ borderColor: BORDER }}>
+                <span className="text-xs" style={{ color: MUTED }}>Active filters:</span>
                 {searchTerm && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full" style={{ backgroundColor: GOLD_TINT, color: GOLD }}>
                     Search: {searchTerm}
-                    <button onClick={() => setSearchTerm('')} className="hover:text-white">
+                    <button onClick={() => setSearchTerm('')} className="hover:opacity-80">
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 {selectedSkill && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full" style={{ backgroundColor: GOLD_TINT, color: GOLD }}>
                     Skill: {selectedSkill}
-                    <button onClick={() => setSelectedSkill('')} className="hover:text-white">
+                    <button onClick={() => setSelectedSkill('')} className="hover:opacity-80">
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 {selectedLocation && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full" style={{ backgroundColor: GOLD_TINT, color: GOLD }}>
                     Location: {selectedLocation}
-                    <button onClick={() => setSelectedLocation('')} className="hover:text-white">
+                    <button onClick={() => setSelectedLocation('')} className="hover:opacity-80">
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 <button
                   onClick={handleClearFilters}
-                  className="text-xs text-white underline hover:text-gray-200 ml-2"
+                  className="text-xs underline hover:opacity-80 ml-2"
+                  style={{ color: MUTED }}
                 >
                   Clear all
                 </button>
@@ -189,95 +220,110 @@ const Hire = () => {
           </div>
         </div>
 
-        {/* Main Content - full width, no outer card */}
-        <div className="px-0 sm:px-4 lg:px-6 py-4 sm:py-6">
+        {/* Main Content */}
+        <div className="px-0 sm:px-0 pb-8">
           {/* Talents Section */}
           <div>
-            <div className="flex justify-between items-center mb-4 px-4 sm:px-0">
-              <h2 className="text-lg font-semibold text-gray-900">
+            <div className="flex justify-between items-center mb-3 px-3 sm:px-6">
+              <h2 className="text-base font-semibold" style={{ color: INK }}>
                 {hasActiveFilters ? 'Search Results' : 'All Talents'}
               </h2>
-              <p className="text-sm text-gray-400">{talentsData?.total || 0} talents found</p>
+              <p className="text-xs" style={{ color: MUTED }}>{talentsData?.total || 0} talents</p>
             </div>
 
             {isLoading ? (
-              <div className="text-center py-16 bg-white border-b border-gray-200">
-                <div className="inline-block w-10 h-10 border-3 border-gray-200 border-t-[#f4a825] rounded-full animate-spin"></div>
-                <p className="text-gray-500 mt-4">Loading talents...</p>
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-10 w-10 border-3" style={{ borderColor: BORDER, borderTopColor: GOLD }} />
+                <p className="text-sm mt-4" style={{ color: MUTED }}>Loading talents...</p>
               </div>
             ) : talentsData?.talents?.length === 0 ? (
-              <div className="bg-white border-b border-gray-200 px-4 py-12 text-center">
-                <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">No talents found</h3>
-                <p className="text-gray-400 text-sm">Try adjusting your search or filters</p>
-                <button
-                  onClick={handleClearFilters}
-                  className="mt-4 text-[#f4a825] font-medium hover:underline"
-                >
-                  Clear all filters
-                </button>
+              <div className="px-3 sm:px-6">
+                <CardShell>
+                  <div className="text-center py-8">
+                    <Briefcase className="w-16 h-16 mx-auto mb-4" style={{ color: MUTED }} />
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: INK }}>No talents found</h3>
+                    <p className="text-sm" style={{ color: MUTED }}>Try adjusting your search or filters</p>
+                    <button
+                      onClick={handleClearFilters}
+                      className="mt-4 font-medium hover:opacity-80"
+                      style={{ color: GOLD }}
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                </CardShell>
               </div>
             ) : (
               <>
-                {/* Talents List - flat, divide-y, edge-to-edge */}
-                <div className="bg-white divide-y divide-gray-100">
+                {/* Talents List - WhatsApp style, full width with thin separators */}
+                <div className="divide-y" style={{ borderColor: BORDER }}>
                   {talentsData?.talents?.map((talent) => (
-                    <div key={talent._id} className="px-4 py-5 hover:bg-gray-50/50 transition-colors">
-                      <div className="flex items-start gap-4">
+                    <div
+                      key={talent._id}
+                      className="px-3 sm:px-6 py-3 sm:py-4 transition-all duration-200 hover:bg-white/5 cursor-pointer"
+                      onClick={() => handleContactTalent(talent)}
+                    >
+                      <div className="flex items-start gap-3 sm:gap-4">
                         {talent.profile ? (
-                          <img src={talent.profile} alt={talent.name} className="w-14 h-14 rounded-full object-cover ring-2 ring-[#f4a825]/20" />
+                          <img src={talent.profile} alt={talent.name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-                            <UserCircle className="w-8 h-8 text-gray-400" />
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
+                            <UserCircle className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: MUTED }} />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">{talent.name}</h3>
-                              <div className="flex items-center gap-1 text-sm text-gray-400 mt-0.5">
-                                <MapPin size={14} />
-                                <span>{talent.location || 'Location not specified'}</span>
+                            <div className="min-w-0">
+                              <h3 className="font-semibold text-sm sm:text-base truncate" style={{ color: INK }}>{talent.name}</h3>
+                              <div className="flex items-center gap-1 text-xs sm:text-sm mt-0.5" style={{ color: MUTED }}>
+                                <MapPin size={12} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="truncate">{talent.location || 'Location not specified'}</span>
                               </div>
                             </div>
                             <button
-                              onClick={() => handleContactTalent(talent)}
-                              className="flex items-center gap-2 px-3 py-2 bg-[#f4a825] text-white text-sm font-medium rounded-full hover:bg-[#e09e1a] transition-all whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleContactTalent(talent);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all hover:scale-105 flex-shrink-0"
+                              style={{ backgroundColor: GOLD, color: BG }}
                             >
-                              <MessageCircle size={14} />
+                              <MessageCircle size={13} />
                               <span className="hidden sm:inline">Contact</span>
                             </button>
                           </div>
 
                           {talent.bio && (
-                            <p className="text-gray-600 text-sm mt-2 line-clamp-2 leading-relaxed">{talent.bio}</p>
+                            <p className="text-xs sm:text-sm mt-1.5 line-clamp-2 leading-relaxed" style={{ color: MUTED }}>{talent.bio}</p>
                           )}
 
                           {talent.skills && talent.skills.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-3">
+                            <div className="flex flex-wrap gap-1.5 mt-2">
                               {talent.skills.slice(0, 4).map((skill, idx) => (
-                                <span key={idx} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                                <span key={idx} className="inline-flex items-center gap-1 text-[10px] sm:text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
                                   {getSkillIcon(skill)}
                                   {skill}
                                 </span>
                               ))}
                               {talent.skills.length > 4 && (
-                                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
+                                <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
                                   +{talent.skills.length - 4}
                                 </span>
                               )}
                             </div>
                           )}
 
-                          <div className="flex items-center gap-3 mt-3">
+                          <div className="flex items-center gap-3 mt-2">
                             {talent.portfolioLink && (
                               <a
                                 href={talent.portfolioLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-[10px] sm:text-xs transition-colors hover:opacity-80"
+                                style={{ color: BLUE }}
                               >
-                                <LinkIcon size={12} />
+                                <LinkIcon size={11} />
                                 Portfolio
                               </a>
                             )}
@@ -286,9 +332,11 @@ const Hire = () => {
                                 href={talent.cv}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-[10px] sm:text-xs transition-colors hover:opacity-80"
+                                style={{ color: GREEN }}
                               >
-                                <FileText size={12} />
+                                <FileText size={11} />
                                 CV
                               </a>
                             )}
@@ -299,13 +347,14 @@ const Hire = () => {
                   ))}
                 </div>
 
-                {/* Pagination - flat, no cards */}
+                {/* Pagination - dark style */}
                 {talentsData && talentsData.pages > 1 && (
-                  <div className="flex justify-center gap-3 mt-6 mb-8 px-4 sm:px-0">
+                  <div className="flex justify-center gap-3 mt-6 px-3 sm:px-6">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 text-sm font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:text-[#f4a825] transition-colors"
+                      className="px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ color: MUTED }}
                     >
                       Previous
                     </button>
@@ -328,8 +377,8 @@ const Hire = () => {
                             onClick={() => setPage(pageNum)}
                             className={`w-8 h-8 rounded-full text-sm font-medium transition-all ${
                               page === pageNum
-                                ? 'bg-[#f4a825] text-white'
-                                : 'text-gray-600 hover:text-[#f4a825]'
+                                ? 'bg-[#f4a825] text-[#0c0c0d]'
+                                : 'text-gray-400 hover:text-white'
                             }`}
                           >
                             {pageNum}
@@ -340,7 +389,8 @@ const Hire = () => {
                     <button
                       onClick={() => setPage(p => Math.min(talentsData.pages, p + 1))}
                       disabled={page === talentsData.pages}
-                      className="px-4 py-2 text-sm font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:text-[#f4a825] transition-colors"
+                      className="px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ color: MUTED }}
                     >
                       Next
                     </button>
@@ -352,18 +402,19 @@ const Hire = () => {
         </div>
       </div>
 
-      {/* Search & Filter Modal - flat, full-width on mobile, no shadow */}
+      {/* Search & Filter Modal - dark theme */}
       {isSearchModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full h-full sm:h-auto sm:max-w-lg mx-auto sm:my-8 flex flex-col">
-            <div className="bg-[#1a2538] px-4 sm:px-6 py-4 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="w-full h-full sm:h-auto sm:max-w-lg mx-auto sm:my-8 flex flex-col" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}>
+            <div className="px-4 sm:px-6 py-4 flex justify-between items-center" style={{ borderBottom: `1px solid ${BORDER}` }}>
               <div className="flex items-center gap-3">
-                <Search className="w-5 h-5 text-[#f4a825]" />
-                <h2 className="text-lg font-semibold text-white">Search & Filter</h2>
+                <Search className="w-5 h-5" style={{ color: GOLD }} />
+                <h2 className="text-lg font-semibold" style={{ color: INK }}>Search & Filter</h2>
               </div>
               <button
                 onClick={() => setIsSearchModalOpen(false)}
-                className="text-white/60 hover:text-white transition-colors"
+                className="transition-colors hover:opacity-80"
+                style={{ color: MUTED }}
               >
                 <X size={20} />
               </button>
@@ -372,24 +423,30 @@ const Hire = () => {
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               {/* Search Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                   Search by name or bio
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: MUTED }} />
                   <input
                     type="text"
                     placeholder="Search talents..."
                     value={tempSearchTerm}
                     onChange={(e) => setTempSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f4a825] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      color: INK,
+                      border: `1px solid ${BORDER}`,
+                      focusRing: GOLD,
+                    }}
                   />
                 </div>
               </div>
 
               {/* Skill Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                   Filter by skill
                 </label>
                 <input
@@ -397,7 +454,13 @@ const Hire = () => {
                   placeholder="Enter a skill..."
                   value={tempSelectedSkill}
                   onChange={(e) => setTempSelectedSkill(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f4a825] transition-colors mb-3"
+                  className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors mb-3"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    color: INK,
+                    border: `1px solid ${BORDER}`,
+                    focusRing: GOLD,
+                  }}
                 />
                 <div className="flex flex-wrap gap-2">
                   {popularSkills.map(skill => (
@@ -406,8 +469,8 @@ const Hire = () => {
                       onClick={() => setTempSelectedSkill(skill)}
                       className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                         tempSelectedSkill === skill
-                          ? 'bg-[#f4a825] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-[#f4a825]/10 hover:text-[#f4a825]'
+                          ? 'bg-[#f4a825] text-[#0c0c0d]'
+                          : 'bg-[rgba(255,255,255,0.04)] text-gray-400 hover:text-white'
                       }`}
                     >
                       {skill}
@@ -418,32 +481,40 @@ const Hire = () => {
 
               {/* Location Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                   Filter by location
                 </label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: MUTED }} />
                   <input
                     type="text"
                     placeholder="City, state, or country..."
                     value={tempSelectedLocation}
                     onChange={(e) => setTempSelectedLocation(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f4a825] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      color: INK,
+                      border: `1px solid ${BORDER}`,
+                      focusRing: GOLD,
+                    }}
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
+              <div className="flex gap-3 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
                 <button
                   onClick={handleResetFilters}
-                  className="flex-1 px-4 py-2.5 text-gray-700 rounded-full font-medium hover:bg-gray-100 transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-full font-medium transition-colors hover:bg-white/5"
+                  style={{ color: MUTED }}
                 >
                   Reset All
                 </button>
                 <button
                   onClick={handleApplyFilters}
-                  className="flex-1 bg-[#f4a825] text-white py-2.5 rounded-full font-semibold hover:bg-[#e09e1a] transition-colors"
+                  className="flex-1 py-2.5 rounded-full font-semibold transition-colors hover:opacity-90"
+                  style={{ backgroundColor: GOLD, color: BG }}
                 >
                   Apply Filters
                 </button>
@@ -453,63 +524,70 @@ const Hire = () => {
         </div>
       )}
 
-      {/* Contact Modal - flat, full-width on mobile */}
+      {/* Contact Modal - dark theme */}
       {selectedTalent && talentContact && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full h-full sm:h-auto sm:max-w-md mx-auto sm:my-8 flex flex-col">
-            <div className="bg-[#1a2538] px-4 sm:px-6 py-4 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="w-full h-full sm:h-auto sm:max-w-md mx-auto sm:my-8 flex flex-col" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}>
+            <div className="px-4 sm:px-6 py-4 flex justify-between items-center" style={{ borderBottom: `1px solid ${BORDER}` }}>
               <div className="flex items-center gap-3">
-                <MessageCircle className="w-5 h-5 text-[#f4a825]" />
-                <h2 className="text-lg font-semibold text-white">Contact {selectedTalent.name}</h2>
+                <MessageCircle className="w-5 h-5" style={{ color: GOLD }} />
+                <h2 className="text-lg font-semibold" style={{ color: INK }}>Contact {selectedTalent.name}</h2>
               </div>
               <button
                 onClick={() => setSelectedTalent(null)}
-                className="text-white/60 hover:text-white transition-colors"
+                className="transition-colors hover:opacity-80"
+                style={{ color: MUTED }}
               >
                 <X size={20} />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-              <div className="bg-gray-50 p-4">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Contact Information</p>
+              <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                <p className="text-xs font-medium uppercase tracking-wide mb-3" style={{ color: MUTED }}>Contact Information</p>
                 <div className="space-y-2.5">
                   {talentContact.whatsappNumber && (
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center">
-                        <Smartphone className="w-3.5 h-3.5 text-green-600" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(34,197,94,0.12)' }}>
+                        <Smartphone className="w-3.5 h-3.5" style={{ color: GREEN }} />
                       </div>
-                      <span className="text-gray-700">{talentContact.whatsappNumber}</span>
+                      <span style={{ color: INK }}>{talentContact.whatsappNumber}</span>
                     </div>
                   )}
                   {talentContact.email && (
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Mail className="w-3.5 h-3.5 text-blue-600" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                        <Mail className="w-3.5 h-3.5" style={{ color: BLUE }} />
                       </div>
-                      <span className="text-gray-700">{talentContact.email}</span>
+                      <span style={{ color: INK }}>{talentContact.email}</span>
                     </div>
                   )}
                   {talentContact.phoneNumber && (
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Phone className="w-3.5 h-3.5 text-gray-600" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
+                        <Phone className="w-3.5 h-3.5" style={{ color: MUTED }} />
                       </div>
-                      <span className="text-gray-700">{talentContact.phoneNumber}</span>
+                      <span style={{ color: INK }}>{talentContact.phoneNumber}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                   Your Message
                 </label>
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f4a825] transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors resize-none"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    color: INK,
+                    border: `1px solid ${BORDER}`,
+                    focusRing: GOLD,
+                  }}
                   placeholder="Write your message here..."
                 />
               </div>
@@ -517,10 +595,11 @@ const Hire = () => {
               <button
                 onClick={handleSendWhatsApp}
                 disabled={isGenerating}
-                className="w-full bg-green-600 text-white py-3 rounded-full font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-full font-semibold transition-colors hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: GREEN, color: '#fff' }}
               >
                 {isGenerating ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Send size={18} />
@@ -529,7 +608,7 @@ const Hire = () => {
                 )}
               </button>
 
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center justify-center gap-2 text-xs" style={{ color: MUTED }}>
                 <Shield size={12} />
                 <span>You'll be redirected to WhatsApp to send your message</span>
               </div>

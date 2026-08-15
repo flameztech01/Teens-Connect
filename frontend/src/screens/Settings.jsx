@@ -21,6 +21,34 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 
+// ---- design tokens ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_DEEP = '#d4911f';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
 const Settings = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -222,20 +250,20 @@ const Settings = () => {
   ];
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
       
-      <div className="lg:ml-72">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                <SettingsIcon className="w-6 h-6 text-[#f4a825]" />
+      <div className="lg:ml-72 relative">
+        {/* Header – dark theme */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                <SettingsIcon className="w-5 h-5" style={{ color: GOLD }} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>Settings</h1>
+                <p className="text-[11px] sm:text-xs" style={{ color: MUTED }}>
                   Manage your account preferences and settings
                 </p>
               </div>
@@ -243,156 +271,202 @@ const Settings = () => {
           </div>
         </div>
         
-        <div className="px-6 lg:px-8 py-6">
+        <div className="px-3 sm:px-6 py-4 sm:py-6">
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2">
-              <CheckCircle size={18} className="text-green-500" />
-              <span className="text-sm font-medium">{successMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: `1px solid rgba(34,197,94,0.2)` }}>
+              <CheckCircle size={18} style={{ color: GREEN }} />
+              <span className="text-sm font-medium" style={{ color: GREEN }}>{successMessage}</span>
             </div>
           )}
           
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2">
-              <AlertCircle size={18} className="text-red-500" />
-              <span className="text-sm font-medium">{errorMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: `1px solid rgba(239,68,68,0.2)` }}>
+              <AlertCircle size={18} style={{ color: RED }} />
+              <span className="text-sm font-medium" style={{ color: RED }}>{errorMessage}</span>
             </div>
           )}
           
-          <div className="grid lg:grid-cols-4 gap-6">
+          <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Sidebar Tabs */}
             <div className="lg:col-span-1">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-2 sticky top-24">
+              <CardShell className="p-2 sticky top-24">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`
-                        w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                        ${activeTab === tab.id 
-                          ? 'bg-[#f4a825] text-white' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }
-                      `}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200`}
+                      style={{
+                        backgroundColor: isActive ? GOLD_TINT : 'transparent',
+                        color: isActive ? GOLD : MUTED,
+                      }}
                     >
                       <Icon size={18} />
                       <span className="text-sm font-medium">{tab.label}</span>
                     </button>
                   );
                 })}
-              </div>
+              </CardShell>
             </div>
             
             {/* Content Area */}
             <div className="lg:col-span-3">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <CardShell glow>
                 {/* Profile Settings */}
                 {activeTab === 'profile' && (
-                  <form onSubmit={handleProfileUpdate} className="p-6 space-y-5">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Profile Settings</h2>
+                  <form onSubmit={handleProfileUpdate} className="space-y-5">
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>Profile Settings</h2>
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                           Full Name
                         </label>
                         <input
                           type="text"
                           value={profileData.name}
                           onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                           Username
                         </label>
                         <input
                           type="text"
                           value={profileData.username}
                           onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                         />
                       </div>
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                           Email
                         </label>
                         <input
                           type="email"
                           value={profileData.email}
                           disabled
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 rounded-xl bg-gray-50 cursor-not-allowed"
+                          className="w-full px-4 py-2.5 rounded-xl cursor-not-allowed opacity-50"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.02)',
+                            color: MUTED,
+                            border: `1px solid ${BORDER}`,
+                          }}
                         />
-                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                        <p className="text-xs mt-1" style={{ color: MUTED }}>Email cannot be changed</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                           Phone Number
                         </label>
                         <input
                           type="tel"
                           value={profileData.phone}
                           onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Location
                       </label>
                       <input
                         type="text"
                         value={profileData.location}
                         onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         placeholder="City, Country"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         WhatsApp Number
                       </label>
                       <input
                         type="tel"
                         value={profileData.whatsappNumber}
                         onChange={(e) => setProfileData({ ...profileData, whatsappNumber: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         placeholder="+234 123 456 7890"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Portfolio Link
                       </label>
                       <input
                         type="url"
                         value={profileData.portfolioLink}
                         onChange={(e) => setProfileData({ ...profileData, portfolioLink: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         placeholder="https://your-portfolio.com"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Bio
                       </label>
                       <textarea
                         value={profileData.bio}
                         onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                         rows={3}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 resize-none transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all resize-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         placeholder="Tell us about yourself..."
                       />
                     </div>
@@ -400,11 +474,12 @@ const Settings = () => {
                     <button
                       type="submit"
                       disabled={isUpdating}
-                      className="bg-[#f4a825] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all disabled:opacity-50 flex items-center gap-2"
+                      className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
+                      style={{ backgroundColor: GOLD, color: BG }}
                     >
                       {isUpdating ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: BG, borderTopColor: 'transparent' }} />
                           Saving...
                         </>
                       ) : (
@@ -419,66 +494,38 @@ const Settings = () => {
                 
                 {/* Notification Settings */}
                 {activeTab === 'notifications' && (
-                  <div className="p-6 space-y-5">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Notification Preferences</h2>
+                  <div className="space-y-5">
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>Notification Preferences</h2>
                     
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Email Notifications</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Receive updates via email</p>
+                      {[
+                        { key: 'emailNotifications', label: 'Email Notifications', desc: 'Receive updates via email' },
+                        { key: 'pushNotifications', label: 'Push Notifications', desc: 'Receive push notifications in browser' },
+                        { key: 'messageAlerts', label: 'Message Alerts', desc: 'Get notified when you receive messages' },
+                        { key: 'opportunityAlerts', label: 'Opportunity Alerts', desc: 'Get notified about new opportunities' },
+                      ].map((item) => (
+                        <div key={item.key} className="flex items-center justify-between p-4 rounded-xl" style={{ border: `1px solid ${BORDER}` }}>
+                          <div>
+                            <h3 className="font-semibold" style={{ color: INK }}>{item.label}</h3>
+                            <p className="text-sm" style={{ color: MUTED }}>{item.desc}</p>
+                          </div>
+                          <button
+                            onClick={() => setNotificationSettings({ ...notificationSettings, [item.key]: !notificationSettings[item.key] })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                            style={{
+                              backgroundColor: notificationSettings[item.key] ? GOLD : 'rgba(255,255,255,0.15)',
+                            }}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings[item.key] ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, emailNotifications: !notificationSettings.emailNotifications })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.emailNotifications ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Push Notifications</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Receive push notifications in browser</p>
-                        </div>
-                        <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, pushNotifications: !notificationSettings.pushNotifications })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.pushNotifications ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.pushNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Message Alerts</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Get notified when you receive messages</p>
-                        </div>
-                        <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, messageAlerts: !notificationSettings.messageAlerts })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.messageAlerts ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.messageAlerts ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Opportunity Alerts</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Get notified about new opportunities</p>
-                        </div>
-                        <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, opportunityAlerts: !notificationSettings.opportunityAlerts })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.opportunityAlerts ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.opportunityAlerts ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
+                      ))}
                     </div>
                     
                     <button
                       onClick={handleNotificationUpdate}
-                      className="bg-[#f4a825] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all"
+                      className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: GOLD, color: BG }}
                     >
                       Save Notification Settings
                     </button>
@@ -487,68 +534,58 @@ const Settings = () => {
                 
                 {/* Privacy Settings */}
                 {activeTab === 'privacy' && (
-                  <div className="p-6 space-y-5">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Privacy Settings</h2>
+                  <div className="space-y-5">
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>Privacy Settings</h2>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Profile Visibility
                       </label>
                       <select
                         value={privacySettings.profileVisibility}
                         onChange={(e) => setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       >
-                        <option value="public">Public - Everyone can see your profile</option>
-                        <option value="registered">Registered Users Only</option>
-                        <option value="private">Private - Only you can see</option>
+                        <option value="public" style={{ backgroundColor: CARD, color: INK }}>Public - Everyone can see your profile</option>
+                        <option value="registered" style={{ backgroundColor: CARD, color: INK }}>Registered Users Only</option>
+                        <option value="private" style={{ backgroundColor: CARD, color: INK }}>Private - Only you can see</option>
                       </select>
                     </div>
                     
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Show Email</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Allow others to see your email address</p>
+                      {[
+                        { key: 'showEmail', label: 'Show Email', desc: 'Allow others to see your email address' },
+                        { key: 'showPhone', label: 'Show Phone Number', desc: 'Allow others to see your phone number' },
+                        { key: 'showWhatsapp', label: 'Show WhatsApp', desc: 'Allow others to contact you on WhatsApp' },
+                      ].map((item) => (
+                        <div key={item.key} className="flex items-center justify-between p-4 rounded-xl" style={{ border: `1px solid ${BORDER}` }}>
+                          <div>
+                            <h3 className="font-semibold" style={{ color: INK }}>{item.label}</h3>
+                            <p className="text-sm" style={{ color: MUTED }}>{item.desc}</p>
+                          </div>
+                          <button
+                            onClick={() => setPrivacySettings({ ...privacySettings, [item.key]: !privacySettings[item.key] })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                            style={{
+                              backgroundColor: privacySettings[item.key] ? GOLD : 'rgba(255,255,255,0.15)',
+                            }}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings[item.key] ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => setPrivacySettings({ ...privacySettings, showEmail: !privacySettings.showEmail })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showEmail ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings.showEmail ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Show Phone Number</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Allow others to see your phone number</p>
-                        </div>
-                        <button
-                          onClick={() => setPrivacySettings({ ...privacySettings, showPhone: !privacySettings.showPhone })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showPhone ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings.showPhone ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Show WhatsApp</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Allow others to contact you on WhatsApp</p>
-                        </div>
-                        <button
-                          onClick={() => setPrivacySettings({ ...privacySettings, showWhatsapp: !privacySettings.showWhatsapp })}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showWhatsapp ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings.showWhatsapp ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
+                      ))}
                     </div>
                     
                     <button
                       onClick={handlePrivacyUpdate}
-                      className="bg-[#f4a825] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all"
+                      className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: GOLD, color: BG }}
                     >
                       Save Privacy Settings
                     </button>
@@ -557,18 +594,23 @@ const Settings = () => {
                 
                 {/* Security Settings */}
                 {activeTab === 'security' && (
-                  <div className="p-6 space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Security Settings</h2>
+                  <div className="space-y-6">
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>Security Settings</h2>
                     
                     {/* Theme Toggle */}
-                    <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
+                    <div className="flex items-center justify-between p-4 rounded-xl" style={{ border: `1px solid ${BORDER}` }}>
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Dark Mode</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Switch between light and dark theme</p>
+                        <h3 className="font-semibold" style={{ color: INK }}>Dark Mode</h3>
+                        <p className="text-sm" style={{ color: MUTED }}>Switch between light and dark theme</p>
                       </div>
                       <button
                         onClick={toggleTheme}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm font-medium"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                        }}
                       >
                         {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
                         {isDarkMode ? 'Light Mode' : 'Dark Mode'}
@@ -576,11 +618,11 @@ const Settings = () => {
                     </div>
                     
                     {/* Change Password */}
-                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
+                    <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}` }}>
+                      <h3 className="font-semibold mb-4" style={{ color: INK }}>Change Password</h3>
                       <form onSubmit={handlePasswordChange} className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                             Current Password
                           </label>
                           <div className="relative">
@@ -588,13 +630,20 @@ const Settings = () => {
                               type={showCurrentPassword ? 'text' : 'password'}
                               value={passwordData.currentPassword}
                               onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 pr-10 transition-all"
+                              className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all pr-10"
+                              style={{
+                                backgroundColor: 'rgba(255,255,255,0.04)',
+                                color: INK,
+                                border: `1px solid ${BORDER}`,
+                                focusRing: GOLD,
+                              }}
                               required
                             />
                             <button
                               type="button"
                               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              style={{ color: MUTED }}
                             >
                               {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
@@ -602,7 +651,7 @@ const Settings = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                             New Password
                           </label>
                           <div className="relative">
@@ -610,13 +659,20 @@ const Settings = () => {
                               type={showNewPassword ? 'text' : 'password'}
                               value={passwordData.newPassword}
                               onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 pr-10 transition-all"
+                              className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all pr-10"
+                              style={{
+                                backgroundColor: 'rgba(255,255,255,0.04)',
+                                color: INK,
+                                border: `1px solid ${BORDER}`,
+                                focusRing: GOLD,
+                              }}
                               required
                             />
                             <button
                               type="button"
                               onClick={() => setShowNewPassword(!showNewPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              style={{ color: MUTED }}
                             >
                               {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
@@ -624,14 +680,20 @@ const Settings = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                             Confirm New Password
                           </label>
                           <input
                             type="password"
                             value={passwordData.confirmPassword}
                             onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] focus:ring-2 focus:ring-[#f4a825]/20 transition-all"
+                            className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                            style={{
+                              backgroundColor: 'rgba(255,255,255,0.04)',
+                              color: INK,
+                              border: `1px solid ${BORDER}`,
+                              focusRing: GOLD,
+                            }}
                             required
                           />
                         </div>
@@ -639,7 +701,8 @@ const Settings = () => {
                         <button
                           type="submit"
                           disabled={isUpdating}
-                          className="bg-[#f4a825] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-all disabled:opacity-50"
+                          className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+                          style={{ backgroundColor: GOLD, color: BG }}
                         >
                           Change Password
                         </button>
@@ -650,44 +713,52 @@ const Settings = () => {
                 
                 {/* Danger Zone */}
                 {activeTab === 'danger' && (
-                  <div className="p-6 space-y-5">
-                    <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
+                  <div className="space-y-5">
+                    <h2 className="text-xl font-bold" style={{ color: RED }}>Danger Zone</h2>
                     
-                    <div className="border border-red-300 dark:border-red-700 rounded-xl p-5 bg-red-50 dark:bg-red-900/20">
-                      <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Delete Account</h3>
-                      <p className="text-sm text-red-600 dark:text-red-300 mb-4">
+                    <div className="rounded-xl p-5" style={{ border: `1px solid ${RED}33`, backgroundColor: 'rgba(239,68,68,0.05)' }}>
+                      <h3 className="font-semibold mb-2" style={{ color: RED }}>Delete Account</h3>
+                      <p className="text-sm mb-4" style={{ color: MUTED }}>
                         Once you delete your account, there is no going back. This action is permanent.
                       </p>
                       
                       {!showDeleteConfirm ? (
                         <button
                           onClick={() => setShowDeleteConfirm(true)}
-                          className="bg-red-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-red-700 transition-all flex items-center gap-2"
+                          className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90 flex items-center gap-2"
+                          style={{ backgroundColor: RED, color: '#fff' }}
                         >
                           <Trash2 size={16} />
                           Delete My Account
                         </button>
                       ) : (
                         <div className="space-y-4">
-                          <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-                            Type <span className="bg-red-100 dark:bg-red-900 px-2 py-1 rounded">DELETE MY ACCOUNT</span> to confirm:
+                          <p className="text-sm font-semibold" style={{ color: RED }}>
+                            Type <span className="px-2 py-1 rounded" style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: RED }}>DELETE MY ACCOUNT</span> to confirm:
                           </p>
                           <input
                             type="text"
                             value={deleteConfirmationText}
                             onChange={(e) => setDeleteConfirmationText(e.target.value)}
-                            className="w-full px-4 py-2.5 border border-red-300 dark:border-red-700 rounded-xl focus:outline-none focus:border-red-500"
+                            className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                            style={{
+                              backgroundColor: 'rgba(255,255,255,0.04)',
+                              color: INK,
+                              border: `1px solid ${RED}33`,
+                              focusRing: RED,
+                            }}
                             placeholder="DELETE MY ACCOUNT"
                           />
                           <div className="flex gap-3">
                             <button
                               onClick={handleDeleteAccount}
                               disabled={isDeleting}
-                              className="bg-red-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-red-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                              className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
+                              style={{ backgroundColor: RED, color: '#fff' }}
                             >
                               {isDeleting ? (
                                 <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                   Deleting...
                                 </>
                               ) : (
@@ -702,7 +773,8 @@ const Settings = () => {
                                 setShowDeleteConfirm(false);
                                 setDeleteConfirmationText('');
                               }}
-                              className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-xl font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                              className="px-6 py-2.5 rounded-xl font-semibold transition-all hover:opacity-80"
+                              style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED, border: `1px solid ${BORDER}` }}
                             >
                               Cancel
                             </button>
@@ -712,7 +784,7 @@ const Settings = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              </CardShell>
             </div>
           </div>
         </div>

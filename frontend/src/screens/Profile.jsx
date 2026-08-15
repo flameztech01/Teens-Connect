@@ -24,6 +24,34 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+// ---- design tokens ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_DEEP = '#d4911f';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
 const Profile = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
@@ -175,12 +203,12 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen" style={{ backgroundColor: BG }}>
         <DashboardSidebar />
         <div className="lg:ml-72 flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-[#f4a825] border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-500 mt-4">Loading profile...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4" style={{ borderColor: BORDER, borderTopColor: GOLD }} />
+            <p className="mt-4 text-sm" style={{ color: MUTED }}>Loading profile...</p>
           </div>
         </div>
       </div>
@@ -190,21 +218,21 @@ const Profile = () => {
   const displayImage = profilePreview || formData.profile;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
       
-      <div className="lg:ml-72">
-        {/* Header – white, like Facebook */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-          <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <div className="lg:ml-72 relative">
+        {/* Header – dark theme */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#f4a825]/10 flex items-center justify-center">
-                  <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#f4a825]" />
+                <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                  <UserCircle className="w-5 h-5" style={{ color: GOLD }} />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-2xl font-bold text-gray-900">My Profile</h1>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                  <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>My Profile</h1>
+                  <p className="text-[11px] sm:text-xs" style={{ color: MUTED }}>
                     Manage your personal information and preferences
                   </p>
                 </div>
@@ -213,7 +241,8 @@ const Profile = () => {
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-[#f4a825] text-white text-sm font-semibold rounded-lg hover:bg-[#e09e1a] transition-colors"
+                  className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105"
+                  style={{ backgroundColor: GOLD, color: BG }}
                 >
                   <Edit2 size={16} />
                   <span className="hidden sm:inline">Edit Profile</span>
@@ -224,128 +253,127 @@ const Profile = () => {
         </div>
 
         {/* Main content */}
-        <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto">
+        <div className="px-3 sm:px-6 py-4 sm:py-6 max-w-6xl mx-auto">
           {/* Success/Error Messages */}
           {successMessage && (
-            <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
-              <CheckCircle size={18} className="text-green-500" />
-              <span className="text-sm font-medium">{successMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: `1px solid rgba(34,197,94,0.2)` }}>
+              <CheckCircle size={18} style={{ color: GREEN }} />
+              <span className="text-sm font-medium" style={{ color: GREEN }}>{successMessage}</span>
             </div>
           )}
           {errorMessage && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-              <AlertCircle size={18} className="text-red-500" />
-              <span className="text-sm font-medium">{errorMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: `1px solid rgba(239,68,68,0.2)` }}>
+              <AlertCircle size={18} style={{ color: RED }} />
+              <span className="text-sm font-medium" style={{ color: RED }}>{errorMessage}</span>
             </div>
           )}
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column – Profile Summary Card (no shadow) */}
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Left Column – Profile Summary Card */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="p-6">
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      {displayImage ? (
-                        <img
-                          src={displayImage}
-                          alt={formData.name}
-                          className="w-24 h-24 rounded-full object-cover ring-4 ring-gray-100"
+              <CardShell glow>
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    {displayImage ? (
+                      <img
+                        src={displayImage}
+                        alt={formData.name}
+                        className="w-24 h-24 rounded-full object-cover ring-2" style={{ ringColor: GOLD_TINT }}
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full flex items-center justify-center ring-2" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_DEEP})`, ringColor: GOLD_TINT }}>
+                        <span className="text-white font-bold text-2xl">
+                          {getInitials(formData.name)}
+                        </span>
+                      </div>
+                    )}
+                    {isEditing && (
+                      <label className="absolute bottom-0 right-0 p-1.5 rounded-full cursor-pointer transition-colors ring-2" style={{ backgroundColor: GOLD, ringColor: BG }}>
+                        <Camera size={12} style={{ color: BG }} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProfilePictureChange}
+                          className="hidden"
                         />
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#f4a825] to-[#e09e1a] flex items-center justify-center ring-4 ring-gray-100">
-                          <span className="text-white font-bold text-2xl">
-                            {getInitials(formData.name)}
-                          </span>
-                        </div>
-                      )}
-                      {isEditing && (
-                        <label className="absolute bottom-0 right-0 bg-[#f4a825] p-1.5 rounded-full cursor-pointer hover:bg-[#e09e1a] transition-colors ring-2 ring-white">
-                          <Camera size={12} className="text-white" />
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleProfilePictureChange}
-                            className="hidden"
-                          />
-                        </label>
-                      )}
-                    </div>
-                    
-                    <div className="text-center mt-4">
-                      <h2 className="text-xl font-bold text-gray-900">{formData.name}</h2>
-                      <p className="text-gray-500 text-sm">@{formData.username}</p>
-                    </div>
-
-                    <div className="flex justify-around w-full mt-6 pt-4 border-t border-gray-200">
-                      <div className="text-center">
-                        <p className="text-xl font-bold text-gray-900">{formData.skills.length}</p>
-                        <p className="text-xs text-gray-500">Skills</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xl font-bold text-gray-900">{formData.interests.length}</p>
-                        <p className="text-xs text-gray-500">Interests</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xl font-bold text-gray-900">{userData?.profileViews || 0}</p>
-                        <p className="text-xs text-gray-500">Views</p>
-                      </div>
-                    </div>
-
-                    <div className="w-full mt-6 space-y-2 text-sm">
-                      {formData.email && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail size={14} className="text-gray-400" />
-                          <span>{formData.email}</span>
-                        </div>
-                      )}
-                      {formData.phone && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone size={14} className="text-gray-400" />
-                          <span>{formData.phone}</span>
-                        </div>
-                      )}
-                      {formData.location && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin size={14} className="text-gray-400" />
-                          <span>{formData.location}</span>
-                        </div>
-                      )}
-                      {formData.dateOfBirth && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Calendar size={14} className="text-gray-400" />
-                          <span>{new Date(formData.dateOfBirth).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {formData.portfolioLink && (
-                      <a
-                        href={formData.portfolioLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
-                      >
-                        <LinkIcon size={14} />
-                        View Portfolio
-                      </a>
+                      </label>
                     )}
                   </div>
+                  
+                  <div className="text-center mt-4">
+                    <h2 className="text-xl font-bold" style={{ color: INK }}>{formData.name}</h2>
+                    <p className="text-sm" style={{ color: MUTED }}>@{formData.username}</p>
+                  </div>
+
+                  <div className="flex justify-around w-full mt-6 pt-4 border-t" style={{ borderColor: BORDER }}>
+                    <div className="text-center">
+                      <p className="text-xl font-bold" style={{ color: INK }}>{formData.skills.length}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>Skills</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xl font-bold" style={{ color: INK }}>{formData.interests.length}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>Interests</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xl font-bold" style={{ color: INK }}>{userData?.profileViews || 0}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>Views</p>
+                    </div>
+                  </div>
+
+                  <div className="w-full mt-6 space-y-2 text-sm">
+                    {formData.email && (
+                      <div className="flex items-center gap-2" style={{ color: MUTED }}>
+                        <Mail size={14} style={{ color: MUTED }} />
+                        <span>{formData.email}</span>
+                      </div>
+                    )}
+                    {formData.phone && (
+                      <div className="flex items-center gap-2" style={{ color: MUTED }}>
+                        <Phone size={14} style={{ color: MUTED }} />
+                        <span>{formData.phone}</span>
+                      </div>
+                    )}
+                    {formData.location && (
+                      <div className="flex items-center gap-2" style={{ color: MUTED }}>
+                        <MapPin size={14} style={{ color: MUTED }} />
+                        <span>{formData.location}</span>
+                      </div>
+                    )}
+                    {formData.dateOfBirth && (
+                      <div className="flex items-center gap-2" style={{ color: MUTED }}>
+                        <Calendar size={14} style={{ color: MUTED }} />
+                        <span>{new Date(formData.dateOfBirth).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {formData.portfolioLink && (
+                    <a
+                      href={formData.portfolioLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 flex items-center justify-center gap-2 text-sm transition-colors hover:opacity-80"
+                      style={{ color: BLUE }}
+                    >
+                      <LinkIcon size={14} />
+                      View Portfolio
+                    </a>
+                  )}
                 </div>
-              </div>
+              </CardShell>
             </div>
 
-            {/* Right Column – Edit Form Card (no shadow) */}
+            {/* Right Column – Edit Form Card */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-900">Profile Information</h3>
+              <CardShell glow>
+                <div className="border-b pb-4 mb-5" style={{ borderColor: BORDER }}>
+                  <h3 className="font-semibold" style={{ color: INK }}>Profile Information</h3>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         Full Name
                       </label>
                       <input
@@ -354,11 +382,17 @@ const Profile = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         Username
                       </label>
                       <input
@@ -367,14 +401,20 @@ const Profile = () => {
                         value={formData.username}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       />
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         Phone Number
                       </label>
                       <input
@@ -383,11 +423,17 @@ const Profile = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         WhatsApp Number
                       </label>
                       <input
@@ -396,7 +442,13 @@ const Profile = () => {
                         value={formData.whatsappNumber}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         placeholder="+234 123 456 7890"
                       />
                     </div>
@@ -404,7 +456,7 @@ const Profile = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         Date of Birth
                       </label>
                       <input
@@ -413,11 +465,17 @@ const Profile = () => {
                         value={formData.dateOfBirth}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                         Gender
                       </label>
                       <select
@@ -425,19 +483,25 @@ const Profile = () => {
                         value={formData.gender}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 transition-colors"
+                        className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                       >
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer-not-to-say">Prefer not to say</option>
+                        <option value="" style={{ backgroundColor: CARD, color: MUTED }}>Select gender</option>
+                        <option value="male" style={{ backgroundColor: CARD, color: INK }}>Male</option>
+                        <option value="female" style={{ backgroundColor: CARD, color: INK }}>Female</option>
+                        <option value="other" style={{ backgroundColor: CARD, color: INK }}>Other</option>
+                        <option value="prefer-not-to-say" style={{ backgroundColor: CARD, color: INK }}>Prefer not to say</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                       Location
                     </label>
                     <input
@@ -446,13 +510,19 @@ const Profile = () => {
                       value={formData.location}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                        color: INK,
+                        border: `1px solid ${BORDER}`,
+                        focusRing: GOLD,
+                      }}
                       placeholder="City, Country"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                       Portfolio Link
                     </label>
                     <input
@@ -461,13 +531,19 @@ const Profile = () => {
                       value={formData.portfolioLink}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50"
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                        color: INK,
+                        border: `1px solid ${BORDER}`,
+                        focusRing: GOLD,
+                      }}
                       placeholder="https://your-portfolio.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                       Bio
                     </label>
                     <textarea
@@ -476,14 +552,20 @@ const Profile = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       rows={3}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] disabled:bg-gray-100 disabled:text-gray-500 resize-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 resize-none"
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                        color: INK,
+                        border: `1px solid ${BORDER}`,
+                        focusRing: GOLD,
+                      }}
                       placeholder="Tell us about yourself..."
                     />
                   </div>
 
                   {/* Skills */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                       Skills
                     </label>
                     {isEditing && (
@@ -493,13 +575,20 @@ const Profile = () => {
                           value={newSkill}
                           onChange={(e) => setNewSkill(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                          className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] transition-colors"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                           placeholder="Add a skill"
                         />
                         <button
                           type="button"
                           onClick={addSkill}
-                          className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
+                          className="px-4 py-2 rounded-xl font-medium transition-colors hover:opacity-80"
+                          style={{ backgroundColor: GREEN, color: '#fff' }}
                         >
                           Add
                         </button>
@@ -509,7 +598,8 @@ const Profile = () => {
                       {formData.skills.map((skill) => (
                         <span
                           key={skill}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f4a825]/10 text-[#f4a825] rounded-full text-sm font-medium"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+                          style={{ backgroundColor: GOLD_TINT, color: GOLD }}
                         >
                           <Award size={12} />
                           {skill}
@@ -517,7 +607,8 @@ const Profile = () => {
                             <button
                               type="button"
                               onClick={() => removeSkill(skill)}
-                              className="hover:text-red-500 transition-colors ml-1"
+                              className="hover:opacity-80 ml-1 transition-opacity"
+                              style={{ color: MUTED }}
                             >
                               <X size={12} />
                             </button>
@@ -529,7 +620,7 @@ const Profile = () => {
 
                   {/* Interests */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: MUTED }}>
                       Interests
                     </label>
                     {isEditing && (
@@ -539,13 +630,20 @@ const Profile = () => {
                           value={newInterest}
                           onChange={(e) => setNewInterest(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && addInterest()}
-                          className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a825]/30 focus:border-[#f4a825] transition-colors"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-colors"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                           placeholder="Add an interest"
                         />
                         <button
                           type="button"
                           onClick={addInterest}
-                          className="px-4 py-2 bg-[#0d6b57] text-white rounded-lg hover:bg-[#0a5545] transition-colors"
+                          className="px-4 py-2 rounded-xl font-medium transition-colors hover:opacity-80"
+                          style={{ backgroundColor: BLUE, color: '#fff' }}
                         >
                           Add
                         </button>
@@ -555,7 +653,8 @@ const Profile = () => {
                       {formData.interests.map((interest) => (
                         <span
                           key={interest}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0d6b57]/10 text-[#0d6b57] rounded-full text-sm font-medium"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+                          style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: BLUE }}
                         >
                           <Heart size={12} />
                           {interest}
@@ -563,7 +662,8 @@ const Profile = () => {
                             <button
                               type="button"
                               onClick={() => removeInterest(interest)}
-                              className="hover:text-red-500 transition-colors ml-1"
+                              className="hover:opacity-80 ml-1 transition-opacity"
+                              style={{ color: MUTED }}
                             >
                               <X size={12} />
                             </button>
@@ -574,7 +674,7 @@ const Profile = () => {
                   </div>
 
                   {isEditing && (
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex gap-3 pt-4 border-t" style={{ borderColor: BORDER }}>
                       <button
                         type="button"
                         onClick={() => {
@@ -599,18 +699,20 @@ const Profile = () => {
                             });
                           }
                         }}
-                        className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-xl font-medium transition-colors hover:opacity-80"
+                        style={{ border: `1px solid ${BORDER}`, color: MUTED }}
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isUpdating}
-                        className="flex-1 bg-[#f4a825] text-white py-2.5 rounded-lg font-semibold hover:bg-[#e09e1a] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 rounded-xl font-semibold transition-colors hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{ backgroundColor: GOLD, color: BG }}
                       >
                         {isUpdating ? (
                           <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: BG, borderTopColor: 'transparent' }} />
                             Saving...
                           </>
                         ) : (
@@ -623,7 +725,7 @@ const Profile = () => {
                     </div>
                   )}
                 </form>
-              </div>
+              </CardShell>
             </div>
           </div>
         </div>

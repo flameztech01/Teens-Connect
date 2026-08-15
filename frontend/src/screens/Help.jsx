@@ -20,6 +20,33 @@ import {
   CheckCircle
 } from 'lucide-react';
 
+// ---- design tokens ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const BLUE = '#3b82f6';
+const PURPLE = '#8b5cf6';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
 const Help = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [openQuestion, setOpenQuestion] = useState(null);
@@ -121,20 +148,20 @@ const Help = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
       
-      <div className="lg:ml-72">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                <HelpCircle className="w-6 h-6 text-[#f4a825]" />
+      <div className="lg:ml-72 relative">
+        {/* Header – dark theme */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                <HelpCircle className="w-5 h-5" style={{ color: GOLD }} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Help Center</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                <h1 className="text-base sm:text-lg font-semibold leading-tight" style={{ color: INK }}>Help Center</h1>
+                <p className="text-[11px] sm:text-xs" style={{ color: MUTED }}>
                   Find answers to common questions or contact our support team
                 </p>
               </div>
@@ -142,54 +169,54 @@ const Help = () => {
           </div>
         </div>
 
-        <div className="px-6 lg:px-8 py-6">
-          <div className="grid lg:grid-cols-3 gap-6">
+        <div className="px-3 sm:px-6 py-4 sm:py-6">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
             {/* FAQ Section - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <CardShell glow>
+                <div className="border-b pb-4 mb-4" style={{ borderColor: BORDER }}>
+                  <h2 className="text-lg font-semibold" style={{ color: INK }}>
                     Frequently Asked Questions
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm" style={{ color: MUTED }}>
                     Everything you need to know about TeensConnect
                   </p>
                 </div>
                 
-                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                <div className="divide-y" style={{ borderColor: BORDER }}>
                   {faqs.map((faq) => {
                     const Icon = faq.icon;
                     const isOpen = openQuestion === faq.id;
                     
                     return (
-                      <div key={faq.id} className="px-6 py-4">
+                      <div key={faq.id} className="py-4 first:pt-0 last:pb-0">
                         <button
                           onClick={() => setOpenQuestion(isOpen ? null : faq.id)}
                           className="w-full flex items-start justify-between text-left gap-4"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#f4a825]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Icon size={16} className="text-[#f4a825]" />
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: GOLD_TINT }}>
+                              <Icon size={16} style={{ color: GOLD }} />
                             </div>
                             <div>
-                              <span className="text-xs text-[#f4a825] font-medium">
+                              <span className="text-xs font-medium" style={{ color: GOLD }}>
                                 {faq.category}
                               </span>
-                              <h3 className="font-semibold text-gray-900 dark:text-white mt-0.5">
+                              <h3 className="font-semibold mt-0.5" style={{ color: INK }}>
                                 {faq.question}
                               </h3>
                             </div>
                           </div>
                           {isOpen ? (
-                            <ChevronUp size={18} className="text-gray-400 flex-shrink-0 mt-1" />
+                            <ChevronUp size={18} className="flex-shrink-0 mt-1" style={{ color: MUTED }} />
                           ) : (
-                            <ChevronDown size={18} className="text-gray-400 flex-shrink-0 mt-1" />
+                            <ChevronDown size={18} className="flex-shrink-0 mt-1" style={{ color: MUTED }} />
                           )}
                         </button>
                         
                         {isOpen && (
                           <div className="mt-3 pl-11">
-                            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
                               {faq.answer}
                             </p>
                           </div>
@@ -198,43 +225,44 @@ const Help = () => {
                     );
                   })}
                 </div>
-              </div>
+              </CardShell>
             </div>
 
             {/* Contact Support Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
               {/* Contact Support Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#f4a825]/5 to-transparent">
+              <CardShell glow className="sticky top-24">
+                <div className="border-b pb-4 mb-4" style={{ borderColor: BORDER }}>
                   <div className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-[#f4a825]" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <MessageCircle className="w-5 h-5" style={{ color: GOLD }} />
+                    <h3 className="font-semibold" style={{ color: INK }}>
                       Contact Support
                     </h3>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm mt-1" style={{ color: MUTED }}>
                     Get help from our support team
                   </p>
                 </div>
                 
-                <div className="p-6 space-y-5">
+                <div className="space-y-5">
                   {/* WhatsApp Support */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <MessageCircle size={16} className="text-green-600 dark:text-green-400" />
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(34,197,94,0.12)' }}>
+                        <MessageCircle size={16} style={{ color: GREEN }} />
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium" style={{ color: MUTED }}>
                         WhatsApp Support
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                      <span className="text-gray-900 dark:text-white font-medium">
+                    <div className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER}` }}>
+                      <span className="font-medium" style={{ color: INK }}>
                         08058586759
                       </span>
                       <button
                         onClick={() => copyToClipboard('08058586759')}
-                        className="text-[#f4a825] hover:text-[#e09e1a] transition-colors"
+                        className="transition-colors hover:opacity-80"
+                        style={{ color: GOLD }}
                       >
                         {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
                       </button>
@@ -243,7 +271,8 @@ const Help = () => {
                       href="https://wa.me/2348058586759"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 w-full flex items-center justify-center gap-2 bg-green-600 text-white py-2.5 rounded-xl font-semibold hover:bg-green-700 transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: GREEN, color: '#fff' }}
                     >
                       <Send size={16} />
                       Message on WhatsApp
@@ -251,73 +280,76 @@ const Help = () => {
                   </div>
 
                   {/* Phone Support */}
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <div className="pt-4 border-t" style={{ borderColor: BORDER }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <Phone size={16} className="text-blue-600 dark:text-blue-400" />
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                        <Phone size={16} style={{ color: BLUE }} />
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium" style={{ color: MUTED }}>
                         Phone Support
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                      <span className="text-gray-900 dark:text-white font-medium">
+                    <div className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER}` }}>
+                      <span className="font-medium" style={{ color: INK }}>
                         08058586759
                       </span>
                       <button
                         onClick={() => copyToClipboard('08058586759')}
-                        className="text-[#f4a825] hover:text-[#e09e1a] transition-colors"
+                        className="transition-colors hover:opacity-80"
+                        style={{ color: GOLD }}
                       >
                         {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
                       </button>
                     </div>
                     <a
                       href="tel:08058586759"
-                      className="mt-3 w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-700 transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: BLUE, color: '#fff' }}
                     >
                       <Phone size={16} />
                       Call Now
                     </a>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                    <p className="text-xs mt-2 text-center" style={{ color: MUTED }}>
                       Available: Monday - Friday, 9AM - 6PM
                     </p>
                   </div>
 
                   {/* Email Support */}
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <div className="pt-4 border-t" style={{ borderColor: BORDER }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <Mail size={16} className="text-purple-600 dark:text-purple-400" />
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(139,92,246,0.12)' }}>
+                        <Mail size={16} style={{ color: PURPLE }} />
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium" style={{ color: MUTED }}>
                         Email Support
                       </span>
                     </div>
-                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                      <span className="text-gray-900 dark:text-white text-sm">
+                    <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER}` }}>
+                      <span className="text-sm" style={{ color: INK }}>
                         hello@teensconnect.com
                       </span>
                     </div>
                     <a
                       href="mailto:hello@teensconnect.com"
-                      className="mt-3 w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2.5 rounded-xl font-semibold hover:bg-purple-700 transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: PURPLE, color: '#fff' }}
                     >
                       <Mail size={16} />
                       Send Email
                     </a>
                   </div>
                 </div>
-              </div>
+              </CardShell>
 
               {/* Quick Tips Card */}
-              <div className="bg-gradient-to-r from-[#f4a825]/10 to-transparent rounded-2xl p-5 border border-[#f4a825]/20">
+              <div className="rounded-2xl p-5 border" style={{ backgroundColor: GOLD_TINT, borderColor: `${GOLD}33` }}>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#f4a825]/20 flex items-center justify-center">
-                    <AlertCircle size={14} className="text-[#f4a825]" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(244,168,37,0.2)' }}>
+                    <AlertCircle size={14} style={{ color: GOLD }} />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Quick Tips</h4>
-                    <ul className="text-gray-600 dark:text-gray-400 text-xs mt-2 space-y-1.5">
+                    <h4 className="font-semibold text-sm" style={{ color: INK }}>Quick Tips</h4>
+                    <ul className="text-xs mt-2 space-y-1.5" style={{ color: MUTED }}>
                       <li>• Complete your profile to get discovered</li>
                       <li>• Add skills to attract opportunities</li>
                       <li>• Check your anonymous post status</li>
