@@ -12,33 +12,22 @@ import {
     MessageCircle,
     Bell,
     Users,
-    User,
-    Camera,
-    Send,
     TrendingUp,
-    Smartphone,
-    Activity,
     ArrowUpRight,
     ArrowDownRight,
     Plus,
     BarChart3,
     PieChart,
-    Calendar,
-    Clock,
     ChevronRight,
     Sparkles,
     Zap,
-    Eye,
-    MoreHorizontal,
 } from 'lucide-react';
 
 // ---- design tokens - dark theme matching signin ----
 const BG = '#0c0c0d';
 const CARD = '#141416';
-const CARD_HOVER = '#1c1c1f';
 const INK = '#ffffff';
 const MUTED = 'rgba(255,255,255,0.4)';
-const MUTED_LIGHT = 'rgba(255,255,255,0.15)';
 const BORDER = 'rgba(255,255,255,0.06)';
 const GOLD = '#f4a825';
 const GOLD_DEEP = '#d4911f';
@@ -52,7 +41,7 @@ const PURPLE = '#8b5cf6';
 // ---- styled components ----
 const CardShell = ({ children, className = '', glow = false }) => (
     <div
-        className={`rounded-2xl p-5 sm:p-6 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+        className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
         style={{
             backgroundColor: CARD,
             border: `1px solid ${BORDER}`,
@@ -65,19 +54,19 @@ const CardShell = ({ children, className = '', glow = false }) => (
 
 const StatCard = ({ icon: Icon, label, value, trend, trendValue, color = GOLD }) => (
     <div
-        className="rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] group"
+        className="rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:scale-[1.02] group"
         style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
     >
         <div className="flex items-start justify-between">
             <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors group-hover:scale-110"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors group-hover:scale-110"
                 style={{ backgroundColor: `${color}15` }}
             >
-                <Icon size={18} style={{ color }} />
+                <Icon size={16} className="sm:w-[18px] sm:h-[18px]" style={{ color }} />
             </div>
             {trend !== undefined && (
                 <span
-                    className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-1 rounded-full`}
+                    className={`inline-flex items-center gap-0.5 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full`}
                     style={{
                         backgroundColor: trend >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
                         color: trend >= 0 ? GREEN : RED,
@@ -88,18 +77,11 @@ const StatCard = ({ icon: Icon, label, value, trend, trendValue, color = GOLD })
                 </span>
             )}
         </div>
-        <p className="text-2xl sm:text-3xl font-bold mt-3" style={{ color: INK }}>
+        <p className="text-xl sm:text-3xl font-bold mt-2 sm:mt-3" style={{ color: INK }}>
             {value}
         </p>
-        <p className="text-xs" style={{ color: MUTED }}>{label}</p>
+        <p className="text-[10px] sm:text-xs" style={{ color: MUTED }}>{label}</p>
     </div>
-);
-
-const TrendTag = ({ trend, change }) => (
-    <span className="inline-flex items-center gap-0.5 text-xs font-semibold" style={{ color: trend === 'up' ? GREEN : RED }}>
-        {change}
-        {trend === 'up' ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-    </span>
 );
 
 const Dashboard = () => {
@@ -268,7 +250,7 @@ const Dashboard = () => {
     const tabs = [
         { key: 'dashboard', label: 'Overview' },
         { key: 'feed', label: 'Feed' },
-        { key: 'notifications', label: 'Notifications' },
+        { key: 'notifications', label: 'Alerts' },
         { key: 'posts', label: 'My Posts' },
     ];
 
@@ -293,29 +275,29 @@ const Dashboard = () => {
             <div className="lg:ml-72 relative">
                 {/* Header */}
                 <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
-                    <div className="flex items-center justify-between px-4 sm:px-6 pt-5 pb-4">
+                    <div className="flex items-center justify-between px-3 sm:px-6 pt-3 sm:pt-5 pb-2 sm:pb-4">
                         <div className="min-w-0">
-                            <p className="text-lg font-medium tracking-tight truncate" style={{ color: INK }}>
+                            <p className="text-sm sm:text-lg font-medium tracking-tight truncate" style={{ color: INK }}>
                                 <span style={{ color: GOLD }}>{greeting.split(' ')[0]}</span>{' '}
                                 {greeting.split(' ')[1]}, {userData?.name?.split(' ')[0] || 'User'}
                             </p>
-                            <p className="text-xs" style={{ color: MUTED }}>Here's what's happening in your community</p>
+                            <p className="text-[10px] sm:text-xs" style={{ color: MUTED }}>Here's what's happening</p>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             <button
-                                className="relative p-2.5 rounded-xl transition-all hover:bg-white/5"
+                                className="relative p-2 rounded-xl transition-all hover:bg-white/5"
                                 style={{ color: MUTED }}
                             >
                                 <Bell size={18} />
                                 {unreadData?.unreadCount > 0 && (
                                     <span
-                                        className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                                        className="absolute top-1 right-1 w-2 h-2 rounded-full"
                                         style={{ backgroundColor: RED, border: `1.5px solid ${BG}` }}
                                     />
                                 )}
                             </button>
                             <div
-                                className="w-9 h-9 rounded-xl flex items-center justify-center font-semibold text-sm transition-all hover:scale-105"
+                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-semibold text-xs sm:text-sm transition-all hover:scale-105"
                                 style={{ backgroundColor: GOLD_TINT, color: GOLD }}
                             >
                                 {userData?.name?.charAt(0) || 'U'}
@@ -324,15 +306,15 @@ const Dashboard = () => {
                     </div>
 
                     {/* Tabs row with Join Community button */}
-                    <div className="px-4 sm:px-6 pb-4">
-                        <div className="flex items-center gap-3">
+                    <div className="px-3 sm:px-6 pb-2 sm:pb-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <div className="overflow-x-auto whitespace-nowrap flex-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 <div className="inline-flex p-1 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
                                     {tabs.map((tab) => (
                                         <button
                                             key={tab.key}
                                             onClick={() => setSelectedTab(tab.key)}
-                                            className="px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0"
+                                            className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-sm font-medium transition-all flex-shrink-0"
                                             style={
                                                 selectedTab === tab.key
                                                     ? { backgroundColor: GOLD, color: '#0c0c0d' }
@@ -349,49 +331,49 @@ const Dashboard = () => {
                                 href={communityLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white flex-shrink-0 transition-all hover:scale-105"
+                                className="relative flex items-center justify-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-sm font-semibold flex-shrink-0 transition-all hover:scale-105"
                                 style={{ backgroundColor: GOLD, color: '#0c0c0d' }}
                             >
-                                <Users size={15} />
-                                <span className="hidden sm:inline">Join Community</span>
+                                <Users size={14} />
+                                <span className="hidden sm:inline">Join</span>
                             </a>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="px-4 sm:px-6 lg:px-8 pb-8 pt-6">
+                <div className="px-3 sm:px-4 lg:px-6 pb-8 pt-4 sm:pt-6">
                     {/* ============= DASHBOARD TAB ============= */}
                     {selectedTab === 'dashboard' && (
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             {/* ---- Stats Section ---- */}
                             {/* Mobile: Single slim summary card */}
                             <div className="sm:hidden">
                                 <div
-                                    className="rounded-2xl p-3 flex items-center justify-around"
+                                    className="rounded-2xl p-2 flex items-center justify-around"
                                     style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
                                 >
                                     <div className="text-center">
-                                        <p className="text-xs" style={{ color: MUTED }}>Posts</p>
-                                        <p className="text-lg font-bold" style={{ color: INK }}>{realStats.posts}</p>
+                                        <p className="text-[10px]" style={{ color: MUTED }}>Posts</p>
+                                        <p className="text-base font-bold" style={{ color: INK }}>{realStats.posts}</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs" style={{ color: MUTED }}>Members</p>
-                                        <p className="text-lg font-bold" style={{ color: INK }}>{computedStats.totalMembers}</p>
+                                        <p className="text-[10px]" style={{ color: MUTED }}>Members</p>
+                                        <p className="text-base font-bold" style={{ color: INK }}>{computedStats.totalMembers}</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs" style={{ color: MUTED }}>Notify</p>
-                                        <p className="text-lg font-bold" style={{ color: INK }}>{realStats.notifications}</p>
+                                        <p className="text-[10px]" style={{ color: MUTED }}>Alerts</p>
+                                        <p className="text-base font-bold" style={{ color: INK }}>{realStats.notifications}</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs" style={{ color: MUTED }}>Skills</p>
-                                        <p className="text-lg font-bold" style={{ color: INK }}>{realStats.skills}</p>
+                                        <p className="text-[10px]" style={{ color: MUTED }}>Skills</p>
+                                        <p className="text-base font-bold" style={{ color: INK }}>{realStats.skills}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Desktop/Tablet: Grid of stat cards */}
-                            <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                 <StatCard
                                     icon={BarChart3}
                                     label="Total Posts"
@@ -427,16 +409,16 @@ const Dashboard = () => {
                             </div>
 
                             {/* Chart + Demographics Row */}
-                            <div className="grid lg:grid-cols-3 gap-6">
+                            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
                                 {/* Activity Chart */}
                                 <CardShell className="lg:col-span-2" glow>
-                                    <div className="flex items-center justify-between mb-5">
+                                    <div className="flex items-center justify-between mb-4 sm:mb-5">
                                         <div>
-                                            <p className="text-xs" style={{ color: MUTED }}>Performance</p>
-                                            <h3 className="text-lg font-semibold" style={{ color: INK }}>Weekly Sign-ups</h3>
+                                            <p className="text-[10px] sm:text-xs" style={{ color: MUTED }}>Performance</p>
+                                            <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Weekly Sign-ups</h3>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
+                                            <span className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
                                                 {computedStats.totalMembers} total
                                             </span>
                                         </div>
@@ -493,7 +475,7 @@ const Dashboard = () => {
                                         </svg>
                                         <div className="flex justify-between mt-2 px-2">
                                             {dayLabels.map((day) => (
-                                                <span key={day} className="text-[10px] font-medium" style={{ color: MUTED }}>
+                                                <span key={day} className="text-[8px] sm:text-[10px] font-medium" style={{ color: MUTED }}>
                                                     {day}
                                                 </span>
                                             ))}
@@ -503,12 +485,12 @@ const Dashboard = () => {
 
                                 {/* Demographics Pie */}
                                 <CardShell glow>
-                                    <div className="flex items-center justify-between mb-5">
-                                        <h3 className="text-base font-semibold" style={{ color: INK }}>Demographics</h3>
+                                    <div className="flex items-center justify-between mb-4 sm:mb-5">
+                                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Demographics</h3>
                                         <PieChart size={16} style={{ color: MUTED }} />
                                     </div>
                                     <div className="flex items-center justify-center">
-                                        <div className="relative w-32 h-32">
+                                        <div className="relative w-28 h-28 sm:w-32 sm:h-32">
                                             <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                                                 <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3.5" />
                                                 {genderPercent.map((segment, idx) => {
@@ -530,14 +512,14 @@ const Dashboard = () => {
                                                 })}
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-xl font-bold" style={{ color: INK }}>{computedStats.totalMembers}</span>
-                                                <span className="text-[10px]" style={{ color: MUTED }}>Users</span>
+                                                <span className="text-lg sm:text-xl font-bold" style={{ color: INK }}>{computedStats.totalMembers}</span>
+                                                <span className="text-[8px] sm:text-[10px]" style={{ color: MUTED }}>Users</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="mt-5 space-y-2.5">
+                                    <div className="mt-4 sm:mt-5 space-y-2">
                                         {genderPercent.map((item) => (
-                                            <div key={item.label} className="flex items-center justify-between text-sm">
+                                            <div key={item.label} className="flex items-center justify-between text-xs sm:text-sm">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                                                     <span style={{ color: MUTED }}>{item.label}</span>
@@ -550,28 +532,28 @@ const Dashboard = () => {
                             </div>
 
                             {/* WhatsApp Channel + Quick Actions */}
-                            <div className="grid lg:grid-cols-3 gap-6">
+                            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
                                 {/* WhatsApp Channel */}
                                 <CardShell className="lg:col-span-1" glow>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-base font-semibold" style={{ color: INK }}>WhatsApp</h3>
-                                        <span className="text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" style={{ backgroundColor: 'rgba(34,197,94,0.12)', color: GREEN }}>
-                                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
+                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>WhatsApp</h3>
+                                        <span className="text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: 'rgba(34,197,94,0.12)', color: GREEN }}>
+                                            <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
                                             Active
                                         </span>
                                     </div>
-                                    <div className="space-y-3">
-                                        <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
-                                            <div className="flex items-center gap-2 text-xs mb-1" style={{ color: MUTED }}>
+                                    <div className="space-y-2 sm:space-y-3">
+                                        <div className="rounded-xl p-3 sm:p-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                                            <div className="flex items-center gap-2 text-[10px] sm:text-xs mb-0.5 sm:mb-1" style={{ color: MUTED }}>
                                                 <Users size={13} /> Members
                                             </div>
-                                            <p className="text-lg font-bold" style={{ color: INK }}>{computedStats.whatsappMembers}</p>
+                                            <p className="text-base sm:text-lg font-bold" style={{ color: INK }}>{computedStats.whatsappMembers}</p>
                                         </div>
-                                        <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
-                                            <div className="flex items-center gap-2 text-xs mb-1" style={{ color: MUTED }}>
+                                        <div className="rounded-xl p-3 sm:p-4" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                                            <div className="flex items-center gap-2 text-[10px] sm:text-xs mb-0.5 sm:mb-1" style={{ color: MUTED }}>
                                                 <TrendingUp size={13} /> Growth (30d)
                                             </div>
-                                            <p className="text-lg font-bold" style={{ color: computedStats.growthPercent >= 0 ? GREEN : RED }}>
+                                            <p className="text-base sm:text-lg font-bold" style={{ color: computedStats.growthPercent >= 0 ? GREEN : RED }}>
                                                 {computedStats.growthPercent >= 0 ? '+' : ''}{computedStats.growthPercent.toFixed(1)}%
                                             </p>
                                         </div>
@@ -580,7 +562,7 @@ const Dashboard = () => {
                                         href={communityLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="mt-4 flex items-center justify-between text-sm font-medium transition-colors hover:opacity-80"
+                                        className="mt-3 sm:mt-4 flex items-center justify-between text-xs sm:text-sm font-medium transition-colors hover:opacity-80"
                                         style={{ color: GOLD }}
                                     >
                                         <span>Join channel</span>
@@ -590,51 +572,51 @@ const Dashboard = () => {
 
                                 {/* Quick Actions */}
                                 <CardShell className="lg:col-span-2" glow>
-                                    <div className="flex items-center justify-between mb-5">
-                                        <h3 className="text-base font-semibold" style={{ color: INK }}>Quick Actions</h3>
+                                    <div className="flex items-center justify-between mb-3 sm:mb-5">
+                                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Quick Actions</h3>
                                         <Sparkles size={16} style={{ color: GOLD }} />
                                     </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
                                         <Link
                                             to="/anonymous"
-                                            className="rounded-xl p-4 text-center transition-all hover:scale-105 group"
+                                            className="rounded-xl p-2 sm:p-4 text-center transition-all hover:scale-105 group"
                                             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}
                                         >
-                                            <div className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center mb-2 transition-colors group-hover:bg-gold/20" style={{ backgroundColor: GOLD_TINT }}>
-                                                <Plus size={18} style={{ color: GOLD }} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-xl flex items-center justify-center mb-1 sm:mb-2 transition-colors group-hover:bg-gold/20" style={{ backgroundColor: GOLD_TINT }}>
+                                                <Plus size={14} className="sm:w-[18px] sm:h-[18px]" style={{ color: GOLD }} />
                                             </div>
-                                            <p className="text-xs font-medium" style={{ color: INK }}>New Post</p>
+                                            <p className="text-[10px] sm:text-xs font-medium" style={{ color: INK }}>New</p>
                                         </Link>
                                         <button
                                             onClick={() => setSelectedTab('notifications')}
-                                            className="rounded-xl p-4 text-center transition-all hover:scale-105 group"
+                                            className="rounded-xl p-2 sm:p-4 text-center transition-all hover:scale-105 group"
                                             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}
                                         >
-                                            <div className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center mb-2 transition-colors group-hover:bg-purple/20" style={{ backgroundColor: 'rgba(139,92,246,0.12)' }}>
-                                                <Bell size={18} style={{ color: PURPLE }} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-xl flex items-center justify-center mb-1 sm:mb-2 transition-colors group-hover:bg-purple/20" style={{ backgroundColor: 'rgba(139,92,246,0.12)' }}>
+                                                <Bell size={14} className="sm:w-[18px] sm:h-[18px]" style={{ color: PURPLE }} />
                                             </div>
-                                            <p className="text-xs font-medium" style={{ color: INK }}>Notifications</p>
+                                            <p className="text-[10px] sm:text-xs font-medium" style={{ color: INK }}>Alerts</p>
                                         </button>
                                         <button
                                             onClick={() => setSelectedTab('posts')}
-                                            className="rounded-xl p-4 text-center transition-all hover:scale-105 group"
+                                            className="rounded-xl p-2 sm:p-4 text-center transition-all hover:scale-105 group"
                                             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}
                                         >
-                                            <div className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center mb-2 transition-colors group-hover:bg-blue/20" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
-                                                <Lock size={18} style={{ color: BLUE }} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-xl flex items-center justify-center mb-1 sm:mb-2 transition-colors group-hover:bg-blue/20" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                                                <Lock size={14} className="sm:w-[18px] sm:h-[18px]" style={{ color: BLUE }} />
                                             </div>
-                                            <p className="text-xs font-medium" style={{ color: INK }}>My Posts</p>
+                                            <p className="text-[10px] sm:text-xs font-medium" style={{ color: INK }}>Posts</p>
                                         </button>
                                     </div>
                                 </CardShell>
                             </div>
 
                             {/* Recent Notifications & Posts */}
-                            <div className="grid lg:grid-cols-2 gap-6">
+                            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
                                 <CardShell glow>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-base font-semibold" style={{ color: INK }}>Recent Notifications</h3>
-                                        <button onClick={() => setSelectedTab('notifications')} className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: GOLD }}>
+                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                        <h3 className="text-sm sm:text-base font-semibold" style={{ color: INK }}>Recent Alerts</h3>
+                                        <button onClick={() => setSelectedTab('notifications')} className="text-[10px] sm:text-xs font-medium transition-colors hover:opacity-80" style={{ color: GOLD }}>
                                             View all
                                         </button>
                                     </div>
@@ -644,18 +626,18 @@ const Dashboard = () => {
                                                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-2" style={{ borderColor: BORDER, borderTopColor: GOLD }} />
                                             </div>
                                         ) : recentNotifications.length === 0 ? (
-                                            <p className="text-sm text-center py-4" style={{ color: MUTED }}>No notifications</p>
+                                            <p className="text-xs sm:text-sm text-center py-4" style={{ color: MUTED }}>No notifications</p>
                                         ) : (
                                             recentNotifications.map((notification) => (
-                                                <div key={notification._id} className="flex items-start gap-3 p-3 rounded-xl transition-all hover:bg-white/5">
-                                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: GOLD_TINT }}>
-                                                        <Bell size={14} style={{ color: GOLD }} />
+                                                <div key={notification._id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all hover:bg-white/5">
+                                                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: GOLD_TINT }}>
+                                                        <Bell size={12} className="sm:w-[14px] sm:h-[14px]" style={{ color: GOLD }} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium truncate" style={{ color: INK }}>{notification.title}</p>
-                                                        <p className="text-xs line-clamp-1" style={{ color: MUTED }}>{notification.message}</p>
+                                                        <p className="text-xs sm:text-sm font-medium truncate" style={{ color: INK }}>{notification.title}</p>
+                                                        <p className="text-[10px] sm:text-xs line-clamp-1" style={{ color: MUTED }}>{notification.message}</p>
                                                     </div>
-                                                    <span className="text-xs shrink-0" style={{ color: MUTED }}>{formatDate(notification.createdAt)}</span>
+                                                    <span className="text-[10px] sm:text-xs shrink-0" style={{ color: MUTED }}>{formatDate(notification.createdAt)}</span>
                                                 </div>
                                             ))
                                         )}
@@ -663,9 +645,9 @@ const Dashboard = () => {
                                 </CardShell>
 
                                 <CardShell glow>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-base font-semibold" style={{ color: INK }}>Recent Posts</h3>
-                                        <button onClick={() => setSelectedTab('posts')} className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: GOLD }}>
+                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                        <h3 className="text-sm sm:text-base font-semibold" style={{ color: INK }}>Recent Posts</h3>
+                                        <button onClick={() => setSelectedTab('posts')} className="text-[10px] sm:text-xs font-medium transition-colors hover:opacity-80" style={{ color: GOLD }}>
                                             View all
                                         </button>
                                     </div>
@@ -675,16 +657,16 @@ const Dashboard = () => {
                                                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-2" style={{ borderColor: BORDER, borderTopColor: GOLD }} />
                                             </div>
                                         ) : recentPosts.length === 0 ? (
-                                            <p className="text-sm text-center py-4" style={{ color: MUTED }}>No posts yet</p>
+                                            <p className="text-xs sm:text-sm text-center py-4" style={{ color: MUTED }}>No posts yet</p>
                                         ) : (
                                             recentPosts.map((post) => (
-                                                <div key={post._id} className="flex items-start gap-3 p-3 rounded-xl transition-all hover:bg-white/5">
-                                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
-                                                        <Lock size={14} style={{ color: BLUE }} />
+                                                <div key={post._id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all hover:bg-white/5">
+                                                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                                                        <Lock size={12} className="sm:w-[14px] sm:h-[14px]" style={{ color: BLUE }} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm line-clamp-1" style={{ color: INK }}>{post.content}</p>
-                                                        <p className="text-xs" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
+                                                        <p className="text-xs sm:text-sm line-clamp-1" style={{ color: INK }}>{post.content}</p>
+                                                        <p className="text-[10px] sm:text-xs" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
                                                     </div>
                                                 </div>
                                             ))
@@ -697,11 +679,11 @@ const Dashboard = () => {
 
                     {/* ============= FEED TAB ============= */}
                     {selectedTab === 'feed' && (
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             <CardShell glow>
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-lg font-semibold" style={{ color: INK }}>Community Feed</h3>
-                                    <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
+                                <div className="flex items-center justify-between mb-3 sm:mb-5">
+                                    <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Community Feed</h3>
+                                    <span className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
                                         {anonymousPostsData?.total || 0} posts
                                     </span>
                                 </div>
@@ -721,16 +703,16 @@ const Dashboard = () => {
                                         </Link>
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
+                                    <div className="space-y-3 sm:space-y-4">
                                         {anonymousPostsData?.posts?.slice(0, 5).map((post) => (
-                                            <div key={post._id} className="rounded-xl p-4 transition-all hover:bg-white/5" style={{ border: `1px solid ${BORDER}` }}>
+                                            <div key={post._id} className="rounded-xl p-3 sm:p-4 transition-all hover:bg-white/5" style={{ border: `1px solid ${BORDER}` }}>
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: GOLD_TINT }}>
-                                                        <Lock size={14} style={{ color: GOLD }} />
+                                                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: GOLD_TINT }}>
+                                                        <Lock size={12} className="sm:w-[14px] sm:h-[14px]" style={{ color: GOLD }} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm" style={{ color: INK }}>{post.content}</p>
-                                                        <p className="text-xs mt-1" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
+                                                        <p className="text-xs sm:text-sm" style={{ color: INK }}>{post.content}</p>
+                                                        <p className="text-[10px] sm:text-xs mt-1" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -744,15 +726,15 @@ const Dashboard = () => {
                     {/* ============= NOTIFICATIONS TAB ============= */}
                     {selectedTab === 'notifications' && (
                         <CardShell glow className="p-0 overflow-hidden">
-                            <div className="p-5 sm:p-6 border-b" style={{ borderColor: BORDER }}>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={{ color: INK }}>Notifications</h3>
-                                        <p className="text-xs" style={{ color: MUTED }}>Stay updated with your community activity</p>
+                            <div className="p-4 sm:p-6 border-b" style={{ borderColor: BORDER }}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>Notifications</h3>
+                                        <p className="text-[10px] sm:text-xs truncate" style={{ color: MUTED }}>Stay updated with your community activity</p>
                                     </div>
                                     <button
                                         onClick={handleMarkAllRead}
-                                        className="text-xs font-medium px-4 py-2 rounded-lg transition-colors hover:opacity-80"
+                                        className="text-[10px] sm:text-xs font-medium px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors hover:opacity-80 whitespace-nowrap"
                                         style={{ backgroundColor: GOLD_TINT, color: GOLD }}
                                     >
                                         Mark all read
@@ -774,17 +756,17 @@ const Dashboard = () => {
                                     </div>
                                 ) : (
                                     notificationsData?.notifications?.map((notification) => (
-                                        <div key={notification._id} className="flex items-start gap-4 p-5 sm:p-6 transition-all hover:bg-white/5">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: notification.read ? 'rgba(255,255,255,0.03)' : GOLD_TINT }}>
-                                                <Bell size={16} style={{ color: notification.read ? MUTED : GOLD }} />
+                                        <div key={notification._id} className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 transition-all hover:bg-white/5">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: notification.read ? 'rgba(255,255,255,0.03)' : GOLD_TINT }}>
+                                                <Bell size={14} className="sm:w-[16px] sm:h-[16px]" style={{ color: notification.read ? MUTED : GOLD }} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium" style={{ color: notification.read ? MUTED : INK }}>{notification.title}</p>
-                                                <p className="text-sm" style={{ color: MUTED }}>{notification.message}</p>
-                                                <p className="text-xs mt-1" style={{ color: MUTED }}>{formatDate(notification.createdAt)}</p>
+                                                <p className="text-xs sm:text-sm font-medium" style={{ color: notification.read ? MUTED : INK }}>{notification.title}</p>
+                                                <p className="text-xs sm:text-sm" style={{ color: MUTED }}>{notification.message}</p>
+                                                <p className="text-[10px] sm:text-xs mt-1" style={{ color: MUTED }}>{formatDate(notification.createdAt)}</p>
                                             </div>
                                             {!notification.read && (
-                                                <span className="w-2 h-2 rounded-full shrink-0 mt-2" style={{ backgroundColor: GOLD }} />
+                                                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 mt-2" style={{ backgroundColor: GOLD }} />
                                             )}
                                         </div>
                                     ))
@@ -796,18 +778,18 @@ const Dashboard = () => {
                     {/* ============= MY POSTS TAB ============= */}
                     {selectedTab === 'posts' && (
                         <CardShell glow className="p-0 overflow-hidden">
-                            <div className="p-5 sm:p-6 border-b" style={{ borderColor: BORDER }}>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={{ color: INK }}>My Anonymous Posts</h3>
-                                        <p className="text-xs" style={{ color: MUTED }}>Manage your anonymous contributions</p>
+                            <div className="p-4 sm:p-6 border-b" style={{ borderColor: BORDER }}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: INK }}>My Anonymous Posts</h3>
+                                        <p className="text-[10px] sm:text-xs truncate" style={{ color: MUTED }}>Manage your anonymous contributions</p>
                                     </div>
                                     <Link
                                         to="/anonymous"
-                                        className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg transition-colors hover:opacity-80"
+                                        className="flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors hover:opacity-80 whitespace-nowrap"
                                         style={{ backgroundColor: GOLD_TINT, color: GOLD }}
                                     >
-                                        <Plus size={14} /> New Post
+                                        <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> New
                                     </Link>
                                 </div>
                             </div>
@@ -829,13 +811,13 @@ const Dashboard = () => {
                                     </div>
                                 ) : (
                                     anonymousPostsData?.posts?.map((post) => (
-                                        <div key={post._id} className="flex items-start gap-4 p-5 sm:p-6 transition-all hover:bg-white/5">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
-                                                <Lock size={16} style={{ color: BLUE }} />
+                                        <div key={post._id} className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 transition-all hover:bg-white/5">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                                                <Lock size={14} className="sm:w-[16px] sm:h-[16px]" style={{ color: BLUE }} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm" style={{ color: INK }}>{post.content}</p>
-                                                <p className="text-xs mt-1" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
+                                                <p className="text-xs sm:text-sm" style={{ color: INK }}>{post.content}</p>
+                                                <p className="text-[10px] sm:text-xs mt-1" style={{ color: MUTED }}>{formatDate(post.createdAt)}</p>
                                             </div>
                                         </div>
                                     ))
@@ -848,13 +830,13 @@ const Dashboard = () => {
                 {/* Floating action button */}
                 <Link
                     to="/anonymous"
-                    className="fixed bottom-6 right-6 lg:right-10 w-14 h-14 rounded-2xl flex items-center justify-center z-40 transition-all hover:scale-105 hover:shadow-glow"
+                    className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 lg:right-10 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center z-40 transition-all hover:scale-105 hover:shadow-glow"
                     style={{
                         background: `linear-gradient(135deg, ${GOLD_DEEP}, ${GOLD})`,
                         boxShadow: `0 8px 32px rgba(244,168,37,0.35)`,
                     }}
                 >
-                    <Plus size={22} color="#0c0c0d" />
+                    <Plus size={18} className="sm:w-[22px] sm:h-[22px]" color="#0c0c0d" />
                 </Link>
             </div>
 
