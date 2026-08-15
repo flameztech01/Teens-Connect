@@ -11,6 +11,7 @@ import Signup from "./screens/Signup.jsx";
 import Signin from "./screens/Signin.jsx";
 import Help from "./screens/Help.jsx";
 import Talents from "./screens/Talents.jsx";
+import TalentId from "./screens/TalentId.jsx";
 
 import Dashboard from "./screens/Dashboard.jsx";
 import Anonymous from "./screens/Anonymous.jsx";
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
       { path: "/settings", element: <Settings /> },
       { path: "/help", element: <Help /> },
       { path: "/explore", element: <Talents /> },
+      {path: "/talents/:id", element: <TalentId /> },
 
       { path: "/admin/login", element: <AdminLogin /> },
       { path: "/admin/dashboard", element: <AdminDashboard /> },

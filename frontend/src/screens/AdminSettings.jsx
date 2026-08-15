@@ -41,6 +41,36 @@ import {
 } from 'lucide-react';
 import { logout } from '../slices/authSlice';
 
+// ---- design tokens ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_DEEP = '#d4911f';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+const PURPLE = '#8b5cf6';
+const AMBER = '#f59e0b';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
 // Helper function to convert VAPID key from base64 to Uint8Array
 const urlBase64ToUint8Array = (base64String) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -95,11 +125,11 @@ const AdminSettings = () => {
   // Check if user is admin
   if (!userInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: BG }}>
         <div className="text-center p-8">
-          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
-          <p className="text-gray-500 mt-2">Please login to access this page</p>
+          <Lock className="w-16 h-16 mx-auto mb-4" style={{ color: MUTED }} />
+          <h2 className="text-2xl font-bold" style={{ color: INK }}>Access Denied</h2>
+          <p className="mt-2" style={{ color: MUTED }}>Please login to access this page</p>
         </div>
       </div>
     );
@@ -107,11 +137,11 @@ const AdminSettings = () => {
 
   if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: BG }}>
         <div className="text-center p-8">
-          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
-          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+          <Lock className="w-16 h-16 mx-auto mb-4" style={{ color: RED }} />
+          <h2 className="text-2xl font-bold" style={{ color: INK }}>Access Denied</h2>
+          <p className="mt-2" style={{ color: MUTED }}>You don't have admin privileges</p>
         </div>
       </div>
     );
@@ -278,20 +308,20 @@ const AdminSettings = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <AdminSidebar />
       
-      <div className="lg:ml-72">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                <SettingsIcon className="w-6 h-6 text-[#f4a825]" />
+      <div className="lg:ml-72 relative">
+        {/* Header – dark theme */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                <SettingsIcon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: GOLD }} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Settings</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                <h1 className="text-xl sm:text-2xl font-bold leading-tight" style={{ color: INK }}>Admin Settings</h1>
+                <p className="text-xs sm:text-sm" style={{ color: MUTED }}>
                   Manage your account preferences and system settings
                 </p>
               </div>
@@ -299,48 +329,43 @@ const AdminSettings = () => {
           </div>
         </div>
         
-        <div className="px-6 lg:px-8 py-6">
+        <div className="px-3 sm:px-6 py-4 sm:py-6">
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2">
-              <CheckCircle size={18} className="text-green-500" />
-              <span className="text-sm font-medium">{successMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: `1px solid ${GREEN}33` }}>
+              <CheckCircle size={18} style={{ color: GREEN }} />
+              <span className="text-sm font-medium" style={{ color: GREEN }}>{successMessage}</span>
             </div>
           )}
           
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2">
-              <AlertCircle size={18} className="text-red-500" />
-              <span className="text-sm font-medium">{errorMessage}</span>
+            <div className="mb-4 p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: `1px solid ${RED}33` }}>
+              <AlertCircle size={18} style={{ color: RED }} />
+              <span className="text-sm font-medium" style={{ color: RED }}>{errorMessage}</span>
             </div>
           )}
           
           {/* Settings Cards - Mobile Friendly */}
-          <div className="space-y-3">
+          <div className="space-y-3 lg:hidden">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <div
                   key={tab.id}
-                  onClick={() => {
-                    if (window.innerWidth < 1024) {
-                      openDrawer(tab);
-                    } else {
-                      setActiveTab(tab.id);
-                    }
-                  }}
-                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 active:bg-gray-50 dark:active:bg-gray-700 transition-all cursor-pointer lg:hidden"
+                  onClick={() => openDrawer(tab)}
+                  className="rounded-2xl p-4 transition-all cursor-pointer active:bg-white/5"
+                  style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-[#f4a825]" />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                      <Icon className="w-6 h-6" style={{ color: GOLD }} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{tab.label}</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{tab.description}</p>
+                      <h3 className="font-semibold" style={{ color: INK }}>{tab.label}</h3>
+                      <p className="text-xs mt-0.5" style={{ color: MUTED }}>{tab.description}</p>
                     </div>
-                    <ChevronRight size={18} className="text-gray-400" />
+                    <ChevronRight size={18} style={{ color: MUTED }} />
                   </div>
                 </div>
               );
@@ -349,384 +374,379 @@ const AdminSettings = () => {
             {/* Logout Card */}
             <div
               onClick={handleLogout}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-red-100 dark:border-red-800 p-4 active:bg-red-50 dark:active:bg-red-900/20 transition-all cursor-pointer"
+              className="rounded-2xl p-4 transition-all cursor-pointer active:bg-white/5"
+              style={{ backgroundColor: CARD, border: `1px solid ${RED}33` }}
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                  <LogOut className="w-6 h-6 text-red-500" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(239,68,68,0.12)' }}>
+                  <LogOut className="w-6 h-6" style={{ color: RED }} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-red-600 dark:text-red-400">Logout</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Sign out of your admin account</p>
+                  <h3 className="font-semibold" style={{ color: RED }}>Logout</h3>
+                  <p className="text-xs mt-0.5" style={{ color: MUTED }}>Sign out of your admin account</p>
                 </div>
-                <ChevronRight size={18} className="text-gray-400" />
+                <ChevronRight size={18} style={{ color: MUTED }} />
               </div>
             </div>
           </div>
           
           {/* Desktop Settings Panel */}
-          <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="flex">
-              {/* Sidebar Tabs */}
-              <div className="w-64 border-r border-gray-100 dark:border-gray-700 p-4 space-y-1">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`
-                        w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                        ${activeTab === tab.id 
-                          ? 'bg-[#f4a825] text-white' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }
-                      `}
-                    >
-                      <Icon size={18} />
-                      <span className="text-sm font-medium">{tab.label}</span>
-                    </button>
-                  );
-                })}
-                
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                >
-                  <LogOut size={18} />
-                  <span className="text-sm font-medium">Logout</span>
-                </button>
-              </div>
-              
-              {/* Content Area */}
-              <div className="flex-1 p-6">
-                {/* Notification Preferences */}
-                {activeTab === 'preferences' && (
-                  <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Notification Preferences</h2>
-                    
-                    {prefsLoading ? (
-                      <div className="text-center py-8">
-                        <Loader className="w-8 h-8 text-[#f4a825] animate-spin mx-auto" />
-                        <p className="text-gray-500 mt-2">Loading preferences...</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="space-y-4">
-                          {/* Sound Toggle */}
-                          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                            <div className="flex items-center gap-3">
-                              {formData.soundEnabled ? (
-                                <Volume2 className="w-5 h-5 text-green-600" />
-                              ) : (
-                                <VolumeX className="w-5 h-5 text-gray-500" />
-                              )}
-                              <div>
-                                <h3 className="font-semibold text-gray-900 dark:text-white">Notification Sound</h3>
-                                <p className="text-sm text-gray-500">Play sound when new notifications arrive</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={handleToggleSound}
-                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                formData.soundEnabled ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'
-                              }`}
-                            >
-                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                formData.soundEnabled ? 'translate-x-6' : 'translate-x-1'
-                              }`} />
-                            </button>
-                          </div>
-                          
-                          {/* Push Notifications */}
-                          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                            <div className="flex items-center gap-3">
-                              <Smartphone className="w-5 h-5 text-blue-600" />
-                              <div>
-                                <h3 className="font-semibold text-gray-900 dark:text-white">Push Notifications</h3>
-                                <p className="text-sm text-gray-500">Receive browser notifications</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={handleTogglePush}
-                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                formData.pushNotifications ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'
-                              }`}
-                            >
-                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                formData.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                              }`} />
-                            </button>
-                          </div>
-                          
-                          {/* Email Notifications */}
-                          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                            <div className="flex items-center gap-3">
-                              <Mail className="w-5 h-5 text-purple-600" />
-                              <div>
-                                <h3 className="font-semibold text-gray-900 dark:text-white">Email Notifications</h3>
-                                <p className="text-sm text-gray-500">Receive notifications via email</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handlePreferenceChange('emailNotifications', !formData.emailNotifications)}
-                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                formData.emailNotifications ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'
-                              }`}
-                            >
-                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                formData.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                              }`} />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Alert Types</h3>
-                          <div className="space-y-3">
-                            <label className="flex items-center justify-between cursor-pointer">
-                              <span className="text-gray-700 dark:text-gray-300">Anonymous Post Alerts</span>
-                              <input
-                                type="checkbox"
-                                checked={formData.anonymousPostAlerts}
-                                onChange={(e) => handlePreferenceChange('anonymousPostAlerts', e.target.checked)}
-                                className="w-4 h-4 text-[#f4a825] rounded focus:ring-[#f4a825]"
-                              />
-                            </label>
-                            <label className="flex items-center justify-between cursor-pointer">
-                              <span className="text-gray-700 dark:text-gray-300">Response Alerts</span>
-                              <input
-                                type="checkbox"
-                                checked={formData.responseAlerts}
-                                onChange={(e) => handlePreferenceChange('responseAlerts', e.target.checked)}
-                                className="w-4 h-4 text-[#f4a825] rounded focus:ring-[#f4a825]"
-                              />
-                            </label>
-                            <label className="flex items-center justify-between cursor-pointer">
-                              <span className="text-gray-700 dark:text-gray-300">Opportunity Alerts</span>
-                              <input
-                                type="checkbox"
-                                checked={formData.opportunityAlerts}
-                                onChange={(e) => handlePreferenceChange('opportunityAlerts', e.target.checked)}
-                                className="w-4 h-4 text-[#f4a825] rounded focus:ring-[#f4a825]"
-                              />
-                            </label>
-                            <label className="flex items-center justify-between cursor-pointer">
-                              <span className="text-gray-700 dark:text-gray-300">Message Alerts</span>
-                              <input
-                                type="checkbox"
-                                checked={formData.messageAlerts}
-                                onChange={(e) => handlePreferenceChange('messageAlerts', e.target.checked)}
-                                className="w-4 h-4 text-[#f4a825] rounded focus:ring-[#f4a825]"
-                              />
-                            </label>
-                            <label className="flex items-center justify-between cursor-pointer">
-                              <span className="text-gray-700 dark:text-gray-300">System Alerts</span>
-                              <input
-                                type="checkbox"
-                                checked={formData.systemAlerts}
-                                onChange={(e) => handlePreferenceChange('systemAlerts', e.target.checked)}
-                                className="w-4 h-4 text-[#f4a825] rounded focus:ring-[#f4a825]"
-                              />
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Email Digest Frequency
-                          </label>
-                          <select
-                            value={formData.digestFrequency}
-                            onChange={(e) => handlePreferenceChange('digestFrequency', e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825]"
-                          >
-                            <option value="instant">Instant (Immediately)</option>
-                            <option value="daily">Daily Digest</option>
-                            <option value="weekly">Weekly Digest</option>
-                          </select>
-                        </div>
-                        
-                        <button
-                          onClick={handleSavePreferences}
-                          disabled={isUpdating}
-                          className="w-full bg-[#f4a825] text-white py-3 rounded-xl font-semibold hover:bg-[#e09e1a] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                          {isUpdating ? (
-                            <>
-                              <Loader className="w-4 h-4 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save size={16} />
-                              Save Preferences
-                            </>
-                          )}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-                
-                {/* Appearance Settings */}
-                {activeTab === 'appearance' && (
-                  <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Appearance</h2>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        {isDarkMode ? (
-                          <Moon className="w-5 h-5 text-blue-600" />
-                        ) : (
-                          <Sun className="w-5 h-5 text-orange-600" />
-                        )}
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Dark Mode</h3>
-                          <p className="text-sm text-gray-500">Switch between light and dark theme</p>
-                        </div>
-                      </div>
+          <div className="hidden lg:block">
+            <CardShell glow className="p-0 overflow-hidden">
+              <div className="flex">
+                {/* Sidebar Tabs */}
+                <div className="w-64 border-r p-4 space-y-1" style={{ borderColor: BORDER }}>
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
                       <button
-                        onClick={toggleTheme}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          isDarkMode ? 'bg-[#f4a825]' : 'bg-gray-300 dark:bg-gray-600'
-                        }`}
-                      >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          isDarkMode ? 'translate-x-6' : 'translate-x-1'
-                        }`} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Security Settings */}
-                {activeTab === 'security' && (
-                  <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Security</h2>
-                    
-                    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
-                      <form onSubmit={handlePasswordChange} className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Current Password
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showCurrentPassword ? 'text' : 'password'}
-                              value={passwordData.currentPassword}
-                              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] pr-10"
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                            >
-                              {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            New Password
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showNewPassword ? 'text' : 'password'}
-                              value={passwordData.newPassword}
-                              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] pr-10"
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowNewPassword(!showNewPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                            >
-                              {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Confirm New Password
-                          </label>
-                          <input
-                            type="password"
-                            value={passwordData.confirmPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825]"
-                            required
-                          />
-                        </div>
-                        
-                        <button
-                          type="submit"
-                          className="bg-[#f4a825] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#e09e1a] transition-colors"
-                        >
-                          Change Password
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Data Management */}
-                {activeTab === 'data' && (
-                  <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Data Management</h2>
-                    
-                    <div className="border border-red-300 dark:border-red-700 rounded-xl p-5 bg-red-50 dark:bg-red-900/20">
-                      <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Clear All Data</h3>
-                      <p className="text-sm text-red-600 dark:text-red-300 mb-4">
-                        This will clear all cached data and reset your preferences. Your account will remain active.
-                      </p>
-                      <button
-                        onClick={() => {
-                          localStorage.clear();
-                          window.location.reload();
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200`}
+                        style={{
+                          backgroundColor: isActive ? GOLD_TINT : 'transparent',
+                          color: isActive ? GOLD : MUTED,
                         }}
-                        className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
                       >
-                        <Trash2 size={16} />
-                        Clear Cache
+                        <Icon size={18} />
+                        <span className="text-sm font-medium">{tab.label}</span>
                       </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all"
+                    style={{ color: RED }}
+                  >
+                    <LogOut size={18} />
+                    <span className="text-sm font-medium">Logout</span>
+                  </button>
+                </div>
+                
+                {/* Content Area */}
+                <div className="flex-1 p-6">
+                  {/* Notification Preferences */}
+                  {activeTab === 'preferences' && (
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-bold" style={{ color: INK }}>Notification Preferences</h2>
+                      
+                      {prefsLoading ? (
+                        <div className="text-center py-8">
+                          <Loader className="w-8 h-8 animate-spin mx-auto" style={{ color: GOLD }} />
+                          <p className="mt-2" style={{ color: MUTED }}>Loading preferences...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="space-y-4">
+                            {/* Sound Toggle */}
+                            <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                              <div className="flex items-center gap-3">
+                                {formData.soundEnabled ? (
+                                  <Volume2 className="w-5 h-5" style={{ color: GREEN }} />
+                                ) : (
+                                  <VolumeX className="w-5 h-5" style={{ color: MUTED }} />
+                                )}
+                                <div>
+                                  <h3 className="font-semibold" style={{ color: INK }}>Notification Sound</h3>
+                                  <p className="text-sm" style={{ color: MUTED }}>Play sound when new notifications arrive</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={handleToggleSound}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                                style={{
+                                  backgroundColor: formData.soundEnabled ? GOLD : 'rgba(255,255,255,0.15)',
+                                }}
+                              >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.soundEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                            
+                            {/* Push Notifications */}
+                            <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                              <div className="flex items-center gap-3">
+                                <Smartphone className="w-5 h-5" style={{ color: BLUE }} />
+                                <div>
+                                  <h3 className="font-semibold" style={{ color: INK }}>Push Notifications</h3>
+                                  <p className="text-sm" style={{ color: MUTED }}>Receive browser notifications</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={handleTogglePush}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                                style={{
+                                  backgroundColor: formData.pushNotifications ? GOLD : 'rgba(255,255,255,0.15)',
+                                }}
+                              >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.pushNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                            
+                            {/* Email Notifications */}
+                            <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                              <div className="flex items-center gap-3">
+                                <Mail className="w-5 h-5" style={{ color: PURPLE }} />
+                                <div>
+                                  <h3 className="font-semibold" style={{ color: INK }}>Email Notifications</h3>
+                                  <p className="text-sm" style={{ color: MUTED }}>Receive notifications via email</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handlePreferenceChange('emailNotifications', !formData.emailNotifications)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                                style={{
+                                  backgroundColor: formData.emailNotifications ? GOLD : 'rgba(255,255,255,0.15)',
+                                }}
+                              >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-6 border-t" style={{ borderColor: BORDER }}>
+                            <h3 className="font-semibold mb-4" style={{ color: INK }}>Alert Types</h3>
+                            <div className="space-y-3">
+                              {[
+                                { key: 'anonymousPostAlerts', label: 'Anonymous Post Alerts' },
+                                { key: 'responseAlerts', label: 'Response Alerts' },
+                                { key: 'opportunityAlerts', label: 'Opportunity Alerts' },
+                                { key: 'messageAlerts', label: 'Message Alerts' },
+                                { key: 'systemAlerts', label: 'System Alerts' },
+                              ].map((item) => (
+                                <label key={item.key} className="flex items-center justify-between cursor-pointer">
+                                  <span style={{ color: MUTED }}>{item.label}</span>
+                                  <input
+                                    type="checkbox"
+                                    checked={formData[item.key]}
+                                    onChange={(e) => handlePreferenceChange(item.key, e.target.checked)}
+                                    className="w-4 h-4 rounded focus:ring-2"
+                                    style={{ accentColor: GOLD }}
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="pt-6 border-t" style={{ borderColor: BORDER }}>
+                            <label className="block text-sm font-semibold mb-2" style={{ color: MUTED }}>
+                              Email Digest Frequency
+                            </label>
+                            <select
+                              value={formData.digestFrequency}
+                              onChange={(e) => handlePreferenceChange('digestFrequency', e.target.value)}
+                              className="w-full px-4 py-2 rounded-xl focus:outline-none focus:ring-2"
+                              style={{
+                                backgroundColor: 'rgba(255,255,255,0.04)',
+                                color: INK,
+                                border: `1px solid ${BORDER}`,
+                                focusRing: GOLD,
+                              }}
+                            >
+                              <option value="instant" style={{ backgroundColor: CARD, color: INK }}>Instant (Immediately)</option>
+                              <option value="daily" style={{ backgroundColor: CARD, color: INK }}>Daily Digest</option>
+                              <option value="weekly" style={{ backgroundColor: CARD, color: INK }}>Weekly Digest</option>
+                            </select>
+                          </div>
+                          
+                          <button
+                            onClick={handleSavePreferences}
+                            disabled={isUpdating}
+                            className="w-full py-3 rounded-xl font-semibold transition-colors hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                            style={{ backgroundColor: GOLD, color: BG }}
+                          >
+                            {isUpdating ? (
+                              <>
+                                <Loader className="w-4 h-4 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save size={16} />
+                                Save Preferences
+                              </>
+                            )}
+                          </button>
+                        </>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
+                  
+                  {/* Appearance Settings */}
+                  {activeTab === 'appearance' && (
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-bold" style={{ color: INK }}>Appearance</h2>
+                      
+                      <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-3">
+                          {isDarkMode ? (
+                            <Moon className="w-5 h-5" style={{ color: BLUE }} />
+                          ) : (
+                            <Sun className="w-5 h-5" style={{ color: AMBER }} />
+                          )}
+                          <div>
+                            <h3 className="font-semibold" style={{ color: INK }}>Dark Mode</h3>
+                            <p className="text-sm" style={{ color: MUTED }}>Switch between light and dark theme</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={toggleTheme}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                          style={{
+                            backgroundColor: isDarkMode ? GOLD : 'rgba(255,255,255,0.15)',
+                          }}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Security Settings */}
+                  {activeTab === 'security' && (
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-bold" style={{ color: INK }}>Security</h2>
+                      
+                      <div className="rounded-xl p-5" style={{ border: `1px solid ${BORDER}` }}>
+                        <h3 className="font-semibold mb-4" style={{ color: INK }}>Change Password</h3>
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                              Current Password
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showCurrentPassword ? 'text' : 'password'}
+                                value={passwordData.currentPassword}
+                                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 pr-10"
+                                style={{
+                                  backgroundColor: 'rgba(255,255,255,0.04)',
+                                  color: INK,
+                                  border: `1px solid ${BORDER}`,
+                                  focusRing: GOLD,
+                                }}
+                                required
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                style={{ color: MUTED }}
+                              >
+                                {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                              New Password
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showNewPassword ? 'text' : 'password'}
+                                value={passwordData.newPassword}
+                                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 pr-10"
+                                style={{
+                                  backgroundColor: 'rgba(255,255,255,0.04)',
+                                  color: INK,
+                                  border: `1px solid ${BORDER}`,
+                                  focusRing: GOLD,
+                                }}
+                                required
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                style={{ color: MUTED }}
+                              >
+                                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                              Confirm New Password
+                            </label>
+                            <input
+                              type="password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                              className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2"
+                              style={{
+                                backgroundColor: 'rgba(255,255,255,0.04)',
+                                color: INK,
+                                border: `1px solid ${BORDER}`,
+                                focusRing: GOLD,
+                              }}
+                              required
+                            />
+                          </div>
+                          
+                          <button
+                            type="submit"
+                            className="px-6 py-2.5 rounded-xl font-semibold transition-colors hover:opacity-90"
+                            style={{ backgroundColor: GOLD, color: BG }}
+                          >
+                            Change Password
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Data Management */}
+                  {activeTab === 'data' && (
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-bold" style={{ color: INK }}>Data Management</h2>
+                      
+                      <div className="rounded-xl p-5" style={{ border: `1px solid ${RED}33`, backgroundColor: 'rgba(239,68,68,0.05)' }}>
+                        <h3 className="font-semibold mb-2" style={{ color: RED }}>Clear All Data</h3>
+                        <p className="text-sm mb-4" style={{ color: MUTED }}>
+                          This will clear all cached data and reset your preferences. Your account will remain active.
+                        </p>
+                        <button
+                          onClick={() => {
+                            localStorage.clear();
+                            window.location.reload();
+                          }}
+                          className="px-4 py-2 rounded-xl font-semibold transition-colors hover:opacity-90 flex items-center gap-2"
+                          style={{ backgroundColor: RED, color: '#fff' }}
+                        >
+                          <Trash2 size={16} />
+                          Clear Cache
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </CardShell>
           </div>
         </div>
       </div>
       
-      {/* Bottom Drawer for Mobile */}
+      {/* Bottom Drawer for Mobile – dark theme */}
       {isDrawerOpen && selectedSetting && (
         <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 lg:hidden"
-            onClick={closeDrawer}
-          />
+          <div className="fixed inset-0 bg-black/70 z-50 transition-opacity duration-300 lg:hidden" onClick={closeDrawer} />
           
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[85vh] overflow-y-auto lg:hidden">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 pt-4 pb-2 px-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[85vh] overflow-y-auto lg:hidden" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}>
+            <div className="sticky top-0 pt-4 pb-2 px-6 border-b" style={{ backgroundColor: CARD, borderColor: BORDER }}>
               <div className="flex justify-center mb-3">
-                <div className="w-12 h-1 bg-gray-300 rounded-full" />
+                <div className="w-12 h-1 rounded-full" style={{ backgroundColor: MUTED }} />
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  {selectedSetting.icon && <selectedSetting.icon size={18} className="text-[#f4a825]" />}
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{selectedSetting.label}</h2>
+                  {selectedSetting.icon && <selectedSetting.icon size={18} style={{ color: GOLD }} />}
+                  <h2 className="text-lg font-bold" style={{ color: INK }}>{selectedSetting.label}</h2>
                 </div>
-                <button
-                  onClick={closeDrawer}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
+                <button onClick={closeDrawer} className="transition-colors hover:opacity-80" style={{ color: MUTED }}>
                   <X size={24} />
                 </button>
               </div>
@@ -737,67 +757,64 @@ const AdminSettings = () => {
               {selectedSetting.id === 'preferences' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                       <div className="flex items-center gap-3">
                         {formData.soundEnabled ? (
-                          <Volume2 className="w-5 h-5 text-green-600" />
+                          <Volume2 className="w-5 h-5" style={{ color: GREEN }} />
                         ) : (
-                          <VolumeX className="w-5 h-5 text-gray-500" />
+                          <VolumeX className="w-5 h-5" style={{ color: MUTED }} />
                         )}
                         <div>
-                          <h3 className="font-semibold">Notification Sound</h3>
-                          <p className="text-xs text-gray-500">Play sound for new notifications</p>
+                          <h3 className="font-semibold" style={{ color: INK }}>Notification Sound</h3>
+                          <p className="text-xs" style={{ color: MUTED }}>Play sound for new notifications</p>
                         </div>
                       </div>
                       <button
                         onClick={handleToggleSound}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.soundEnabled ? 'bg-[#f4a825]' : 'bg-gray-300'
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                        style={{
+                          backgroundColor: formData.soundEnabled ? GOLD : 'rgba(255,255,255,0.15)',
+                        }}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.soundEnabled ? 'translate-x-6' : 'translate-x-1'
-                        }`} />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.soundEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                       <div className="flex items-center gap-3">
-                        <Smartphone className="w-5 h-5 text-blue-600" />
+                        <Smartphone className="w-5 h-5" style={{ color: BLUE }} />
                         <div>
-                          <h3 className="font-semibold">Push Notifications</h3>
-                          <p className="text-xs text-gray-500">Receive browser notifications</p>
+                          <h3 className="font-semibold" style={{ color: INK }}>Push Notifications</h3>
+                          <p className="text-xs" style={{ color: MUTED }}>Receive browser notifications</p>
                         </div>
                       </div>
                       <button
                         onClick={handleTogglePush}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.pushNotifications ? 'bg-[#f4a825]' : 'bg-gray-300'
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                        style={{
+                          backgroundColor: formData.pushNotifications ? GOLD : 'rgba(255,255,255,0.15)',
+                        }}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`} />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.pushNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                       <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-purple-600" />
+                        <Mail className="w-5 h-5" style={{ color: PURPLE }} />
                         <div>
-                          <h3 className="font-semibold">Email Notifications</h3>
-                          <p className="text-xs text-gray-500">Receive email notifications</p>
+                          <h3 className="font-semibold" style={{ color: INK }}>Email Notifications</h3>
+                          <p className="text-xs" style={{ color: MUTED }}>Receive email notifications</p>
                         </div>
                       </div>
                       <button
                         onClick={() => handlePreferenceChange('emailNotifications', !formData.emailNotifications)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.emailNotifications ? 'bg-[#f4a825]' : 'bg-gray-300'
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                        style={{
+                          backgroundColor: formData.emailNotifications ? GOLD : 'rgba(255,255,255,0.15)',
+                        }}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`} />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
                   </div>
@@ -805,7 +822,8 @@ const AdminSettings = () => {
                   <button
                     onClick={handleSavePreferences}
                     disabled={isUpdating}
-                    className="w-full bg-[#f4a825] text-white py-3 rounded-xl font-semibold hover:bg-[#e09e1a] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl font-semibold transition-colors hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: GOLD, color: BG }}
                   >
                     {isUpdating ? (
                       <>
@@ -823,37 +841,36 @@ const AdminSettings = () => {
               )}
               
               {selectedSetting.id === 'appearance' && (
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                   <div className="flex items-center gap-3">
                     {isDarkMode ? (
-                      <Moon className="w-5 h-5 text-blue-600" />
+                      <Moon className="w-5 h-5" style={{ color: BLUE }} />
                     ) : (
-                      <Sun className="w-5 h-5 text-orange-600" />
+                      <Sun className="w-5 h-5" style={{ color: AMBER }} />
                     )}
                     <div>
-                      <h3 className="font-semibold">Dark Mode</h3>
-                      <p className="text-xs text-gray-500">Switch between light and dark theme</p>
+                      <h3 className="font-semibold" style={{ color: INK }}>Dark Mode</h3>
+                      <p className="text-xs" style={{ color: MUTED }}>Switch between light and dark theme</p>
                     </div>
                   </div>
                   <button
                     onClick={toggleTheme}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isDarkMode ? 'bg-[#f4a825]' : 'bg-gray-300'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                    style={{
+                      backgroundColor: isDarkMode ? GOLD : 'rgba(255,255,255,0.15)',
+                    }}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      isDarkMode ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               )}
               
               {selectedSetting.id === 'security' && (
-                <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
+                <div className="rounded-xl p-5" style={{ border: `1px solid ${BORDER}` }}>
+                  <h3 className="font-semibold mb-4" style={{ color: INK }}>Change Password</h3>
                   <form onSubmit={handlePasswordChange} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Current Password
                       </label>
                       <div className="relative">
@@ -861,13 +878,20 @@ const AdminSettings = () => {
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] pr-10"
+                          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 pr-10"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                          style={{ color: MUTED }}
                         >
                           {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -875,7 +899,7 @@ const AdminSettings = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         New Password
                       </label>
                       <div className="relative">
@@ -883,13 +907,20 @@ const AdminSettings = () => {
                           type={showNewPassword ? 'text' : 'password'}
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825] pr-10"
+                          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 pr-10"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.04)',
+                            color: INK,
+                            border: `1px solid ${BORDER}`,
+                            focusRing: GOLD,
+                          }}
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                          style={{ color: MUTED }}
                         >
                           {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -897,21 +928,28 @@ const AdminSettings = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
                         Confirm New Password
                       </label>
                       <input
                         type="password"
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#f4a825]"
+                        className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          color: INK,
+                          border: `1px solid ${BORDER}`,
+                          focusRing: GOLD,
+                        }}
                         required
                       />
                     </div>
                     
                     <button
                       type="submit"
-                      className="w-full bg-[#f4a825] text-white py-3 rounded-xl font-semibold hover:bg-[#e09e1a] transition-colors"
+                      className="w-full py-3 rounded-xl font-semibold transition-colors hover:opacity-90"
+                      style={{ backgroundColor: GOLD, color: BG }}
                     >
                       Change Password
                     </button>
@@ -920,9 +958,9 @@ const AdminSettings = () => {
               )}
               
               {selectedSetting.id === 'data' && (
-                <div className="border border-red-300 dark:border-red-700 rounded-xl p-5 bg-red-50 dark:bg-red-900/20">
-                  <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Clear All Data</h3>
-                  <p className="text-sm text-red-600 dark:text-red-300 mb-4">
+                <div className="rounded-xl p-5" style={{ border: `1px solid ${RED}33`, backgroundColor: 'rgba(239,68,68,0.05)' }}>
+                  <h3 className="font-semibold mb-2" style={{ color: RED }}>Clear All Data</h3>
+                  <p className="text-sm mb-4" style={{ color: MUTED }}>
                     This will clear all cached data and reset your preferences.
                   </p>
                   <button
@@ -930,7 +968,8 @@ const AdminSettings = () => {
                       localStorage.clear();
                       window.location.reload();
                     }}
-                    className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl font-semibold transition-colors hover:opacity-90 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: RED, color: '#fff' }}
                   >
                     <Trash2 size={16} />
                     Clear Cache
@@ -944,12 +983,8 @@ const AdminSettings = () => {
       
       <style>{`
         @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
         
         .animate-slide-up {

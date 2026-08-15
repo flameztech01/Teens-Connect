@@ -29,8 +29,49 @@ import {
   TrendingUp,
   X,
   Inbox,
-  ChevronUp
+  ChevronUp,
+  Lock,
 } from 'lucide-react';
+
+// ---- design tokens ----
+const BG = '#0c0c0d';
+const CARD = '#141416';
+const INK = '#ffffff';
+const MUTED = 'rgba(255,255,255,0.4)';
+const BORDER = 'rgba(255,255,255,0.06)';
+const GOLD = '#f4a825';
+const GOLD_DEEP = '#d4911f';
+const GOLD_TINT = 'rgba(244,168,37,0.12)';
+const GOLD_GLOW = 'rgba(244,168,37,0.25)';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+const PURPLE = '#8b5cf6';
+const AMBER = '#f59e0b';
+
+// ---- styled components ----
+const CardShell = ({ children, className = '', glow = false }) => (
+  <div
+    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? 'hover:border-gold/30' : ''} ${className}`}
+    style={{
+      backgroundColor: CARD,
+      border: `1px solid ${BORDER}`,
+      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : '0 4px 24px rgba(0,0,0,0.3)',
+    }}
+  >
+    {children}
+  </div>
+);
+
+const StatCard = ({ label, value, icon: Icon, color = GOLD }) => (
+  <div
+    className="flex-shrink-0 w-36 rounded-2xl p-4"
+    style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
+  >
+    <p className="text-xs" style={{ color: MUTED }}>{label}</p>
+    <p className="text-2xl font-bold" style={{ color: color }}>{value}</p>
+  </div>
+);
 
 const AdminNotifications = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -53,11 +94,11 @@ const AdminNotifications = () => {
   // Check if user is admin
   if (!userInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: BG }}>
         <div className="text-center p-8">
-          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
-          <p className="text-gray-500 mt-2">Please login to access this page</p>
+          <Lock className="w-16 h-16 mx-auto mb-4" style={{ color: MUTED }} />
+          <h2 className="text-2xl font-bold" style={{ color: INK }}>Access Denied</h2>
+          <p className="mt-2" style={{ color: MUTED }}>Please login to access this page</p>
         </div>
       </div>
     );
@@ -65,11 +106,11 @@ const AdminNotifications = () => {
 
   if (userInfo.role !== 'admin' && userInfo.role !== 'super_admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: BG }}>
         <div className="text-center p-8">
-          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700">Access Denied</h2>
-          <p className="text-gray-500 mt-2">You don't have admin privileges</p>
+          <Lock className="w-16 h-16 mx-auto mb-4" style={{ color: RED }} />
+          <h2 className="text-2xl font-bold" style={{ color: INK }}>Access Denied</h2>
+          <p className="mt-2" style={{ color: MUTED }}>You don't have admin privileges</p>
         </div>
       </div>
     );
@@ -148,19 +189,19 @@ const AdminNotifications = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'anonymous_post':
-        return <MessageCircle className="w-5 h-5 text-purple-500" />;
+        return <MessageCircle className="w-5 h-5" style={{ color: PURPLE }} />;
       case 'new_user':
-        return <UserPlus className="w-5 h-5 text-green-500" />;
+        return <UserPlus className="w-5 h-5" style={{ color: GREEN }} />;
       case 'report':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
+        return <AlertCircle className="w-5 h-5" style={{ color: RED }} />;
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5" style={{ color: GREEN }} />;
       case 'warning':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+        return <AlertCircle className="w-5 h-5" style={{ color: AMBER }} />;
       case 'opportunity':
-        return <TrendingUp className="w-5 h-5 text-blue-500" />;
+        return <TrendingUp className="w-5 h-5" style={{ color: BLUE }} />;
       default:
-        return <Info className="w-5 h-5 text-gray-500" />;
+        return <Info className="w-5 h-5" style={{ color: MUTED }} />;
     }
   };
 
@@ -186,21 +227,21 @@ const AdminNotifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <AdminSidebar />
       
-      <div className="lg:ml-72">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-6">
+      <div className="lg:ml-72 relative">
+        {/* Header – dark theme */}
+        <div className="sticky top-0 z-30" style={{ backgroundColor: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#f4a825]/10 flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-[#f4a825]" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: GOLD_TINT }}>
+                  <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: GOLD }} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <h1 className="text-xl sm:text-2xl font-bold leading-tight" style={{ color: INK }}>Notifications</h1>
+                  <p className="text-xs sm:text-sm" style={{ color: MUTED }}>
                     Stay updated with platform activities
                   </p>
                 </div>
@@ -208,20 +249,22 @@ const AdminNotifications = () => {
               
               <div className="flex items-center gap-2">
                 {unreadData?.unreadCount > 0 && (
-                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  <div className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: RED, color: '#fff' }}>
                     {unreadData.unreadCount} unread
                   </div>
                 )}
                 <button
                   onClick={() => refetch()}
-                  className="p-2 text-gray-500 hover:text-[#f4a825] transition-colors bg-gray-100 rounded-xl"
+                  className="p-2 rounded-xl transition-colors hover:bg-white/5"
+                  style={{ color: MUTED }}
                 >
                   <RefreshCw size={18} />
                 </button>
                 <button
                   onClick={handleMarkAllAsRead}
                   disabled={!unreadData?.unreadCount}
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: BLUE, color: '#fff' }}
                 >
                   <CheckCheck size={16} />
                   Mark All Read
@@ -229,7 +272,8 @@ const AdminNotifications = () => {
                 <button
                   onClick={handleDeleteAll}
                   disabled={!notificationsData?.total}
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: RED, color: '#fff' }}
                 >
                   <Trash2 size={16} />
                   Clear All
@@ -239,26 +283,14 @@ const AdminNotifications = () => {
           </div>
         </div>
 
-        <div className="px-6 lg:px-8 py-6">
+        <div className="px-3 sm:px-6 py-4 sm:py-6">
           {/* Stats Cards - Horizontal Scroll */}
           {notificationsData && (
-            <div className="flex gap-4 overflow-x-auto pb-4 mb-6 hide-scrollbar">
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
-                <p className="text-gray-500 text-xs">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{notificationsData.total}</p>
-              </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
-                <p className="text-gray-500 text-xs">Unread</p>
-                <p className="text-2xl font-bold text-orange-600">{notificationsData.unreadCount}</p>
-              </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
-                <p className="text-gray-500 text-xs">Read</p>
-                <p className="text-2xl font-bold text-green-600">{notificationsData.total - notificationsData.unreadCount}</p>
-              </div>
-              <div className="flex-shrink-0 w-36 bg-white rounded-2xl border border-gray-100 p-4">
-                <p className="text-gray-500 text-xs">Pages</p>
-                <p className="text-2xl font-bold text-purple-600">{notificationsData.pages}</p>
-              </div>
+            <div className="flex gap-3 overflow-x-auto pb-4 mb-6 hide-scrollbar">
+              <StatCard label="Total" value={notificationsData.total} icon={Bell} color={BLUE} />
+              <StatCard label="Unread" value={notificationsData.unreadCount} icon={Clock} color={AMBER} />
+              <StatCard label="Read" value={notificationsData.total - notificationsData.unreadCount} icon={CheckCircle} color={GREEN} />
+              <StatCard label="Pages" value={notificationsData.pages} icon={Info} color={PURPLE} />
             </div>
           )}
 
@@ -267,7 +299,8 @@ const AdminNotifications = () => {
             <button
               onClick={handleMarkAllAsRead}
               disabled={!unreadData?.unreadCount}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: BLUE, color: '#fff' }}
             >
               <CheckCheck size={16} />
               Mark All Read
@@ -275,7 +308,8 @@ const AdminNotifications = () => {
             <button
               onClick={handleDeleteAll}
               disabled={!notificationsData?.total}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: RED, color: '#fff' }}
             >
               <Trash2 size={16} />
               Clear All
@@ -284,15 +318,15 @@ const AdminNotifications = () => {
 
           {/* Notifications Cards */}
           {isLoading ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-              <Loader className="w-8 h-8 text-[#f4a825] animate-spin mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">Loading notifications...</p>
+            <div className="text-center py-12" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, borderRadius: '1rem' }}>
+              <Loader className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: GOLD }} />
+              <p className="text-sm" style={{ color: MUTED }}>Loading notifications...</p>
             </div>
           ) : notificationsData?.notifications?.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-              <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No notifications yet</p>
-              <p className="text-sm text-gray-400 mt-1">When you receive notifications, they'll appear here</p>
+            <div className="text-center py-12" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, borderRadius: '1rem' }}>
+              <Inbox className="w-12 h-12 mx-auto mb-3" style={{ color: MUTED }} />
+              <p style={{ color: MUTED }}>No notifications yet</p>
+              <p className="text-sm mt-1" style={{ color: MUTED }}>When you receive notifications, they'll appear here</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -300,9 +334,14 @@ const AdminNotifications = () => {
                 <div
                   key={notification._id}
                   onClick={() => handleViewNotification(notification)}
-                  className={`bg-white rounded-2xl border p-4 active:bg-gray-50 transition-all cursor-pointer ${
-                    !notification.isRead ? 'border-[#f4a825] ring-2 ring-[#f4a825]/20' : 'border-gray-100'
+                  className={`rounded-2xl border p-4 transition-all cursor-pointer hover:bg-white/5 ${
+                    !notification.isRead ? 'ring-2' : ''
                   }`}
+                  style={{
+                    backgroundColor: CARD,
+                    borderColor: !notification.isRead ? GOLD : BORDER,
+                    ringColor: !notification.isRead ? `${GOLD}33` : 'transparent',
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
@@ -310,15 +349,15 @@ const AdminNotifications = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className={`text-sm font-semibold ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <h3 className={`text-sm font-semibold ${!notification.isRead ? 'text-white' : 'text-gray-400'}`}>
                           {notification.title}
                         </h3>
                         {!notification.isRead && (
-                          <span className="w-2 h-2 bg-[#f4a825] rounded-full"></span>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GOLD }}></span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 line-clamp-2">{notification.message}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                      <p className="text-sm line-clamp-2" style={{ color: MUTED }}>{notification.message}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: MUTED }}>
                         <span className="flex items-center gap-1">
                           <Clock size={10} />
                           {getTimeAgo(notification.createdAt)}
@@ -337,15 +376,19 @@ const AdminNotifications = () => {
 
           {/* Pagination */}
           {notificationsData && notificationsData.pages > 1 && (
-            <div className="flex justify-between items-center mt-6 pt-4">
-              <p className="text-xs text-gray-500">
+            <div className="flex justify-between items-center mt-6 pt-4 border-t" style={{ borderColor: BORDER }}>
+              <p className="text-xs" style={{ color: MUTED }}>
                 Page {notificationsData.page} of {notificationsData.pages}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={notificationsData.page === 1}
-                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    border: `1px solid ${BORDER}`,
+                    color: MUTED,
+                  }}
                 >
                   <ChevronLeft size={14} />
                   Previous
@@ -353,7 +396,11 @@ const AdminNotifications = () => {
                 <button
                   onClick={() => setPage(p => Math.min(notificationsData.pages, p + 1))}
                   disabled={notificationsData.page === notificationsData.pages}
-                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#f4a825] hover:text-[#f4a825] transition-all"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    border: `1px solid ${BORDER}`,
+                    color: MUTED,
+                  }}
                 >
                   Next
                   <ChevronRight size={14} />
@@ -364,28 +411,22 @@ const AdminNotifications = () => {
         </div>
       </div>
 
-      {/* Bottom Drawer for Notification Details */}
+      {/* Bottom Drawer for Notification Details – dark theme */}
       {isDrawerOpen && selectedNotification && (
         <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-50 transition-opacity duration-300"
-            onClick={closeDrawer}
-          />
+          <div className="fixed inset-0 bg-black/70 z-50 transition-opacity duration-300" onClick={closeDrawer} />
           
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[85vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white pt-4 pb-2 px-6 border-b border-gray-100">
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[85vh] overflow-y-auto" style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}>
+            <div className="sticky top-0 pt-4 pb-2 px-6 border-b" style={{ backgroundColor: CARD, borderColor: BORDER }}>
               <div className="flex justify-center mb-3">
-                <div className="w-12 h-1 bg-gray-300 rounded-full" />
+                <div className="w-12 h-1 rounded-full" style={{ backgroundColor: MUTED }} />
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Bell size={18} className="text-[#f4a825]" />
-                  <h2 className="text-lg font-bold text-gray-900">Notification Details</h2>
+                  <Bell size={18} style={{ color: GOLD }} />
+                  <h2 className="text-lg font-bold" style={{ color: INK }}>Notification Details</h2>
                 </div>
-                <button
-                  onClick={closeDrawer}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
+                <button onClick={closeDrawer} className="transition-colors hover:opacity-80" style={{ color: MUTED }}>
                   <X size={24} />
                 </button>
               </div>
@@ -393,13 +434,13 @@ const AdminNotifications = () => {
 
             <div className="p-6 space-y-5">
               {/* Header */}
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+              <div className="flex items-center gap-3 pb-4 border-b" style={{ borderColor: BORDER }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
                   {getNotificationIcon(selectedNotification.type)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{selectedNotification.title}</h3>
-                  <p className="text-xs text-gray-400">
+                  <h3 className="font-semibold" style={{ color: INK }}>{selectedNotification.title}</h3>
+                  <p className="text-xs" style={{ color: MUTED }}>
                     {new Date(selectedNotification.createdAt).toLocaleString()}
                   </p>
                 </div>
@@ -407,26 +448,28 @@ const AdminNotifications = () => {
 
               {/* Message */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Message</label>
-                <p className="text-gray-700 text-sm leading-relaxed">{selectedNotification.message}</p>
+                <label className="block text-xs font-semibold uppercase mb-2" style={{ color: MUTED }}>Message</label>
+                <p className="text-sm leading-relaxed" style={{ color: INK }}>{selectedNotification.message}</p>
               </div>
 
               {/* Type */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Type</label>
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-xl text-xs font-medium">
+                <label className="block text-xs font-semibold uppercase mb-2" style={{ color: MUTED }}>Type</label>
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium" style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: MUTED }}>
                   {selectedNotification.type}
                 </span>
               </div>
 
               {/* Status */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Status</label>
+                <label className="block text-xs font-semibold uppercase mb-2" style={{ color: MUTED }}>Status</label>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium ${
                   selectedNotification.isRead 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
+                    ? 'text-green-400' 
+                    : 'text-yellow-400'
+                }`} style={{
+                  backgroundColor: selectedNotification.isRead ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+                }}>
                   {selectedNotification.isRead ? (
                     <>
                       <CheckCircle size={12} />
@@ -444,17 +487,18 @@ const AdminNotifications = () => {
               {/* Read At */}
               {selectedNotification.readAt && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Read At</label>
-                  <p className="text-sm text-gray-600">{new Date(selectedNotification.readAt).toLocaleString()}</p>
+                  <label className="block text-xs font-semibold uppercase mb-2" style={{ color: MUTED }}>Read At</label>
+                  <p className="text-sm" style={{ color: INK }}>{new Date(selectedNotification.readAt).toLocaleString()}</p>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-gray-100">
+              <div className="flex gap-3 pt-4 border-t" style={{ borderColor: BORDER }}>
                 {!selectedNotification.isRead && (
                   <button
                     onClick={() => handleMarkAsRead(selectedNotification._id)}
-                    className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 rounded-xl font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: BLUE, color: '#fff' }}
                   >
                     <Eye size={16} />
                     Mark as Read
@@ -462,7 +506,8 @@ const AdminNotifications = () => {
                 )}
                 <button
                   onClick={() => handleDelete(selectedNotification._id)}
-                  className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: RED, color: '#fff' }}
                 >
                   <Trash2 size={16} />
                   Delete
@@ -483,12 +528,8 @@ const AdminNotifications = () => {
         }
         
         @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
         
         .animate-slide-up {
