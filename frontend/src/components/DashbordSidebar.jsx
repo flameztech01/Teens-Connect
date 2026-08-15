@@ -50,31 +50,15 @@ const DashboardSidebar = () => {
   }, []);
 
   const handleLogout = () => {
-    // 1. Dispatch logout to clear Redux state
     dispatch(logout());
-
-    // 2. Clear localStorage completely (or remove specific keys)
     localStorage.clear();
-
-    // 3. Clear sessionStorage completely
     sessionStorage.clear();
-
-    // 4. Clear cookies (delete all cookies)
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
-
-    // 5. Clear any IndexedDB (if you use it) - optional
-    if (window.indexedDB) {
-      // You can delete specific databases if needed, but not necessary for most cases.
-    }
-
-    // 6. Navigate to home page
     navigate('/');
-
-    // 7. Force a full page reload to reset any cached application state
     window.location.reload();
   };
 
@@ -196,26 +180,26 @@ const DashboardSidebar = () => {
               className={`
                 group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
                 ${isCollapsed ? 'justify-center' : ''}
+                ${isActive
+                  ? 'bg-[#f4a825]/15 text-[#f4a825] shadow-lg shadow-[#f4a825]/5'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }
               `}
-              style={{
-                backgroundColor: isActive ? GOLD_TINT : 'transparent',
-                color: isActive ? GOLD : MUTED,
-                boxShadow: isActive ? `0 0 20px -4px ${GOLD_GLOW}` : 'none',
-              }}
               title={isCollapsed ? link.name : ''}
             >
               <Icon
                 size={20}
-                className="transition-all duration-200"
-                style={{
-                  color: isActive ? GOLD : MUTED,
-                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                }}
+                className={`transition-all duration-200 ${
+                  isActive
+                    ? 'text-[#f4a825] scale-110'
+                    : 'text-gray-400 group-hover:text-white group-hover:scale-110'
+                }`}
               />
               {!isCollapsed && (
                 <span
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: isActive ? GOLD : 'rgba(255,255,255,0.7)' }}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive ? 'text-[#f4a825]' : 'text-gray-300 group-hover:text-white'
+                  }`}
                 >
                   {link.name}
                 </span>
@@ -235,11 +219,11 @@ const DashboardSidebar = () => {
           className={`
             group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
             ${isCollapsed ? 'justify-center' : ''}
+            text-gray-400 hover:text-white hover:bg-white/5
           `}
-          style={{ color: MUTED }}
           title={isCollapsed ? 'Help & Support' : ''}
         >
-          <HelpCircle size={20} className="transition-all group-hover:scale-110" />
+          <HelpCircle size={20} className="text-gray-400 group-hover:text-white group-hover:scale-110 transition-all" />
           {!isCollapsed && <span className="text-sm">Help & Support</span>}
         </Link>
 
@@ -248,11 +232,11 @@ const DashboardSidebar = () => {
           className={`
             group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
             ${isCollapsed ? 'justify-center' : ''}
+            text-gray-400 hover:text-red-400 hover:bg-red-500/10
           `}
-          style={{ color: MUTED }}
           title={isCollapsed ? 'Logout' : ''}
         >
-          <LogOut size={20} className="transition-all group-hover:scale-110" />
+          <LogOut size={20} className="text-gray-400 group-hover:text-red-400 group-hover:scale-110 transition-all" />
           {!isCollapsed && <span className="text-sm">Logout</span>}
         </button>
       </div>
@@ -274,7 +258,7 @@ const DashboardSidebar = () => {
 
   return (
     <>
-      {/* Mobile Floating Action Button - aligned with plus button */}
+      {/* Mobile Floating Action Button */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
         className="lg:hidden fixed z-50 rounded-2xl flex items-center justify-center transition-all hover:scale-105 hover:shadow-glow"

@@ -53,14 +53,36 @@ const CardShell = ({ children, className = '', glow = false }) => (
   </div>
 );
 
-// Helper to check if profile is complete
-const isProfileComplete = (user) => {
-  if (!user) return false;
-  const required = ['dateOfBirth', 'gender', 'location'];
-  for (const field of required) {
-    if (!user[field] || user[field] === '') return false;
+// Helper to calculate profile completion percentage
+const getProfileCompletion = (user) => {
+  if (!user) return 0;
+  
+  const fields = [
+    { key: 'dateOfBirth', weight: 1 },
+    { key: 'gender', weight: 1 },
+    { key: 'location', weight: 1 },
+    { key: 'whatsappNumber', weight: 1 },
+    { key: 'skills', weight: 1 }, // must be non-empty array
+    { key: 'interests', weight: 1 }, // must be non-empty array
+  ];
+  
+  let completed = 0;
+  let totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
+  
+  for (const field of fields) {
+    const value = user[field.key];
+    if (field.key === 'skills' || field.key === 'interests') {
+      if (Array.isArray(value) && value.length > 0) {
+        completed += field.weight;
+      }
+    } else {
+      if (value && value !== '') {
+        completed += field.weight;
+      }
+    }
   }
-  return true;
+  
+  return Math.round((completed / totalWeight) * 100);
 };
 
 const Profile = () => {
@@ -217,9 +239,10 @@ const Profile = () => {
       .slice(0, 2);
   };
 
-  // Check if profile is complete
-  const profileComplete = isProfileComplete(userData);
-  const showWarning = !profileComplete;
+  // Calculate profile completion percentage
+  const completionPercentage = getProfileCompletion(userData);
+  const isComplete = completionPercentage === 100;
+  const showWarning = !isComplete;
 
   if (isLoading) {
     return (
@@ -285,7 +308,7 @@ const Profile = () => {
 
         {/* Main content */}
         <div className="px-3 sm:px-6 py-4 sm:py-6 max-w-6xl mx-auto">
-          {/* Incomplete Profile Warning Banner */}
+          {/* Incomplete Profile Warning Banner - Compact with progress bar */}
           {showWarning && (
             <div
               className="mb-4 p-4 rounded-xl flex items-start gap-3"
@@ -296,11 +319,27 @@ const Profile = () => {
             >
               <AlertCircle size={20} style={{ color: GOLD }} className="flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold" style={{ color: GOLD }}>
-                  Complete Your Profile
-                </p>
-                <p className="text-sm" style={{ color: MUTED }}>
-                  To be discovered by potential collaborators and receive exclusive deals, please complete your profile by filling in your date of birth, gender, and location.
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold" style={{ color: GOLD }}>
+                    Profile Completion: {completionPercentage}%
+                  </p>
+                  <span className="text-xs" style={{ color: MUTED }}>
+                    {completionPercentage < 100 ? 'Incomplete' : 'Complete'}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full mt-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${completionPercentage}%`,
+                      backgroundColor: completionPercentage >= 80 ? GREEN : GOLD,
+                    }}
+                  />
+                </div>
+                <p className="text-sm mt-2" style={{ color: MUTED }}>
+                  {completionPercentage < 100
+                    ? 'Complete your profile to be discovered by collaborators and receive exclusive deals.'
+                    : 'Your profile is fully complete! You can now be discovered.'}
                 </p>
                 {location.state?.incomplete && (
                   <p className="text-xs mt-1" style={{ color: MUTED }}>
@@ -311,7 +350,6 @@ const Profile = () => {
               <button
                 onClick={() => {
                   setIsEditing(true);
-                  // Scroll to the form after a short delay
                   setTimeout(() => {
                     document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
                   }, 100);
