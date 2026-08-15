@@ -385,23 +385,23 @@ const Dashboard = () => {
                     {/* ---- Incomplete Profile Warning Banner with Progress ---- */}
                     {showWarning && (
                         <div
-                            className="mb-4 p-4 rounded-xl flex items-start gap-3"
+                            className="mb-4 p-3 sm:p-4 rounded-xl flex items-start gap-2 sm:gap-3"
                             style={{
                                 backgroundColor: 'rgba(244,168,37,0.08)',
                                 border: `1px solid ${GOLD}44`,
                             }}
                         >
-                            <AlertCircle size={20} style={{ color: GOLD }} className="flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
+                            <AlertCircle size={16} className="sm:w-5 sm:h-5" style={{ color: GOLD }} className="flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
-                                    <p className="font-semibold" style={{ color: GOLD }}>
-                                        Profile Completion: {completionPercentage}%
+                                    <p className="font-semibold text-xs sm:text-sm" style={{ color: GOLD }}>
+                                        Profile: {completionPercentage}%
                                     </p>
-                                    <span className="text-xs" style={{ color: MUTED }}>
+                                    <span className="text-[10px] sm:text-xs" style={{ color: MUTED }}>
                                         {completionPercentage < 100 ? 'Incomplete' : 'Complete'}
                                     </span>
                                 </div>
-                                <div className="w-full h-1.5 rounded-full mt-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                                <div className="w-full h-1.5 rounded-full mt-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                                     <div
                                         className="h-full rounded-full transition-all duration-500"
                                         style={{
@@ -410,7 +410,13 @@ const Dashboard = () => {
                                         }}
                                     />
                                 </div>
-                                <p className="text-sm mt-2" style={{ color: MUTED }}>
+                                {/* Short message for mobile, full message for larger screens */}
+                                <p className="text-xs sm:text-sm mt-1.5 sm:mt-2 sm:hidden" style={{ color: MUTED }}>
+                                    {completionPercentage < 100
+                                        ? 'Complete your profile to get discovered.'
+                                        : 'Profile complete! You can now be discovered.'}
+                                </p>
+                                <p className="text-sm mt-2 hidden sm:block" style={{ color: MUTED }}>
                                     {completionPercentage < 100
                                         ? 'Complete your profile to be discovered by collaborators and receive exclusive deals.'
                                         : 'Your profile is fully complete! You can now be discovered.'}
@@ -418,10 +424,10 @@ const Dashboard = () => {
                             </div>
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80 flex-shrink-0"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition hover:opacity-80 flex-shrink-0"
                                 style={{ backgroundColor: GOLD, color: BG }}
                             >
-                                Edit Now
+                                Edit
                             </button>
                         </div>
                     )}
