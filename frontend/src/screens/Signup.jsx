@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { GoogleLogin } from '@react-oauth/google';
 import {
   Eye,
   EyeOff,
@@ -16,7 +17,13 @@ import {
   ArrowLeft,
   Clock,
 } from 'lucide-react';
-import { useSignupMutation, useVerifyOTPMutation, useResendOTPMutation, useUpdateProfileMutation } from '../slices/userApiSlice';
+import { 
+  useSignupMutation, 
+  useVerifyOTPMutation, 
+  useResendOTPMutation, 
+  useUpdateProfileMutation,
+  useGoogleSignupMutation 
+} from '../slices/userApiSlice';
 import { setCredentials } from '../slices/authSlice';
 
 // Country codes data
@@ -127,6 +134,7 @@ const Signup = () => {
   const [verifyOTP, { isLoading: isVerifying }] = useVerifyOTPMutation();
   const [resendOTP, { isLoading: isResendingOTP }] = useResendOTPMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [googleSignup, { isLoading: isGoogleSigningUp }] = useGoogleSignupMutation();
 
   // Success/Error messages
   const [successMessage, setSuccessMessage] = useState('');
@@ -197,7 +205,7 @@ const Signup = () => {
 
       setOtpEmail(signupData.email);
       const now = new Date();
-      setOtpSentTime(now); // Record the time OTP was sent
+      setOtpSentTime(now);
       setSuccessMessage('OTP sent to your email! Please verify to continue.');
       setStep(2);
       setResendTimer(60);
@@ -256,7 +264,7 @@ const Signup = () => {
     try {
       await resendOTP({ email: otpEmail }).unwrap();
       const now = new Date();
-      setOtpSentTime(now); // Update sent time on resend
+      setOtpSentTime(now);
       setOtpSuccess('New OTP sent to your email!');
       setResendTimer(60);
       setTimeout(() => setOtpSuccess(''), 3000);
@@ -368,6 +376,28 @@ const Signup = () => {
       setCv(file);
       setCvName(file.name);
     }
+  };
+
+  // ==================== GOOGLE SIGNUP HANDLERS ====================
+  const handleGoogleSignupSuccess = async (credentialResponse) => {
+    const googleToken = credentialResponse.credential;
+    if (!googleToken) return;
+
+    try {
+      const result = await googleSignup({ token: googleToken }).unwrap();
+      dispatch(setCredentials(result));
+      setSuccessMessage('Account created! Redirecting...');
+
+      // Since we created minimal profile, we may want to direct to profile completion later.
+      // For now, go to dashboard.
+      setTimeout(() => navigate('/dashboard'), 1500);
+    } catch (err) {
+      setErrorMessage(err.data?.message || 'Google signup failed. Please try again.');
+    }
+  };
+
+  const handleGoogleSignupError = () => {
+    setErrorMessage('Google signup failed. Please try again.');
   };
 
   // ==================== RENDER ====================
@@ -629,6 +659,35 @@ const Signup = () => {
                   )}
                 </button>
 
+                {/* Divider + Google Signup */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-3 bg-[#0c0c0d] text-white/30">or continue with</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSignupSuccess}
+                    onError={handleGoogleSignupError}
+                    useOneTap={false}
+                    theme="filled_blue"
+                    size="large"
+                    text="signup_with"
+                    shape="rectangular"
+                    width="100%"
+                  />
+                </div>
+                {isGoogleSigningUp && (
+                  <div className="text-center text-[#f4a825] text-sm mt-2 flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-[#f4a825] border-t-transparent rounded-full animate-spin" />
+                    Signing up with Google...
+                  </div>
+                )}
+
                 <p className="text-center text-xs text-white/40 pt-2">
                   Already have an account?{' '}
                   <Link to="/signin" className="text-[#f4a825] font-medium hover:text-[#f4a825]/80 transition-colors">
@@ -639,7 +698,7 @@ const Signup = () => {
             </>
           )}
 
-          {/* ==================== STEP 2: OTP VERIFICATION (UPDATED) ==================== */}
+          {/* ==================== STEP 2: OTP VERIFICATION ==================== */}
           {step === 2 && (
             <>
               <div className="w-11 h-11 bg-[#f4a825]/15 rounded-xl flex items-center justify-center mb-5">

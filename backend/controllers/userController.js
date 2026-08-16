@@ -469,50 +469,15 @@ const resetPassword = asyncHandler(async (req, res) => {
 // @desc    Google Signup with additional info
 // @route   POST /api/users/google/signup
 // @access  Public
+// @desc    Google Signup (one-click, no additional fields)
+// @route   POST /api/users/google/signup
+// @access  Public
 const googleSignup = asyncHandler(async (req, res) => {
-  const { 
-    token: googleToken, 
-    phone, 
-    dateOfBirth,
-    gender,
-    location,
-    whatsappNumber,
-    portfolioLink,
-    skills,
-    interests,
-    bio
-  } = req.body;
-
-  // Handle file uploads
-  let profilePictureUrl = "";
-  let cvUrl = "";
-
-  if (req.files) {
-    if (req.files.profilePicture) {
-      profilePictureUrl = await uploadFileToCloudinary(
-        req.files.profilePicture[0],
-        "user_profiles",
-        { transformation: [{ width: 500, height: 500, crop: "limit" }] }
-      );
-    }
-    
-    if (req.files.cv) {
-      cvUrl = await uploadFileToCloudinary(
-        req.files.cv[0],
-        "user_cvs",
-        { resource_type: "raw" }
-      );
-    }
-  }
+  const { token: googleToken } = req.body;
 
   if (!googleToken) {
     res.status(400);
     throw new Error("Google token is required");
-  }
-
-  if (!phone) {
-    res.status(400);
-    throw new Error("Phone number is required");
   }
 
   let googleId = "";
@@ -520,19 +485,20 @@ const googleSignup = asyncHandler(async (req, res) => {
   let name = "";
   let picture = "";
 
-  // Verify Google token
+  // Verify Google token (ID token or access token)
   try {
+    // Try as ID token first
     const ticket = await googleClient.verifyIdToken({
       idToken: googleToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-
     const payload = ticket.getPayload();
     googleId = payload?.sub || "";
     email = payload?.email || "";
     name = payload?.name || "";
     picture = payload?.picture || "";
   } catch (error) {
+    // Fallback: try as access token
     const userInfo = await getUserInfoFromAccessToken(googleToken);
     googleId = userInfo?.sub || `google-${userInfo?.email || Date.now()}`;
     email = userInfo?.email || "";
@@ -545,17 +511,19 @@ const googleSignup = asyncHandler(async (req, res) => {
     throw new Error("Google account email is required");
   }
 
-  // Check if user already exists
+  // Check if user already exists with this email or googleId
   const existingUser = await User.findOne({
     $or: [{ googleId }, { email }],
   });
 
   if (existingUser) {
+    // If user exists, we could either login them in or return error.
+    // For signup, we return error to avoid duplication.
     res.status(400);
     throw new Error("Account already exists. Please login instead.");
   }
 
-  // Generate unique username
+  // Generate a unique username from email or name
   const baseUsername = (email?.split("@")[0] || name || "user")
     .toLowerCase()
     .replace(/\s+/g, "")
@@ -563,66 +531,42 @@ const googleSignup = asyncHandler(async (req, res) => {
 
   let username = baseUsername;
   let counter = 1;
-
   while (await User.findOne({ username })) {
     username = `${baseUsername}${counter++}`;
   }
 
-  // Generate WhatsApp link if number provided
-  let whatsappLink = "";
-  if (whatsappNumber) {
-    const cleanedNumber = whatsappNumber.replace(/\D/g, '');
-    whatsappLink = `https://wa.me/${cleanedNumber}`;
-  }
-
-  // Parse skills and interests if they're JSON strings
-  let parsedSkills = skills || [];
-  let parsedInterests = interests || [];
-  
-  if (typeof skills === 'string') {
-    try {
-      parsedSkills = JSON.parse(skills);
-    } catch {
-      parsedSkills = skills ? skills.split(',').map(s => s.trim()) : [];
-    }
-  }
-  
-  if (typeof interests === 'string') {
-    try {
-      parsedInterests = JSON.parse(interests);
-    } catch {
-      parsedInterests = interests ? interests.split(',').map(i => i.trim()) : [];
-    }
-  }
-
-  // Create user with all fields
+  // Create user with minimal required fields
   const user = await User.create({
     googleId,
     name: name || "",
     username,
     email,
-    phone: phone.trim(),
-    profile: profilePictureUrl || picture || "",
-    cv: cvUrl || "",
-    bio: bio || "",
-    location: location || "",
-    skills: parsedSkills,
-    interests: parsedInterests,
-    dateOfBirth: dateOfBirth || null,
-    gender: gender || "prefer-not-to-say",
-    whatsappNumber: whatsappNumber || "",
-    whatsappLink,
-    portfolioLink: portfolioLink || "",
-    profilePicture: profilePictureUrl || picture || "",
+    profile: picture || "",
+    profilePicture: picture || "",
+    // Set a dummy password (not used for Google auth)
     password: `google-auth-${googleId}`,
     isVerified: true,
     isEmailVerified: true,
     authMethod: "google",
     role: "user",
+    // Default values for optional fields
+    phone: "",
+    bio: "",
+    location: "",
+    skills: [],
+    interests: [],
+    gender: "prefer-not-to-say",
+    dateOfBirth: null,
+    whatsappNumber: "",
+    whatsappLink: "",
+    portfolioLink: "",
+    cv: "",
   });
 
+  // Generate JWT token
   const token = generateToken(res, user._id);
 
+  // Return user data (excluding sensitive fields)
   res.status(201).json({
     _id: user._id,
     name: user.name,
@@ -643,6 +587,8 @@ const googleSignup = asyncHandler(async (req, res) => {
     profilePicture: user.profilePicture,
     authMethod: user.authMethod,
     role: user.role,
+    isVerified: user.isVerified,
+    isEmailVerified: user.isEmailVerified,
     token,
   });
 });
