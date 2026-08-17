@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import DashboardSidebar from "../components/DashbordSidebar";
 import {
@@ -33,21 +33,6 @@ const GOLD_TINT = "rgba(244,168,37,0.12)";
 const GOLD_GLOW = "rgba(244,168,37,0.25)";
 const GREEN = "#22c55e";
 const RED = "#ef4444";
-
-// ---- styled components ----
-const CardShell = ({ children, className = "", glow = false, ...props }) => (
-  <div
-    className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? "hover:border-gold/30" : ""} ${className}`}
-    style={{
-      backgroundColor: CARD,
-      border: `1px solid ${BORDER}`,
-      boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : "0 4px 24px rgba(0,0,0,0.3)",
-    }}
-    {...props}
-  >
-    {children}
-  </div>
-);
 
 // ---- helpers ----
 const formatPostDateTime = (date) =>
@@ -126,36 +111,16 @@ const ExportPostCard = ({ post }) => (
   </div>
 );
 
-const Anonymous = () => {
-  const { userInfo } = useSelector((state) => state.auth);
-  const [page, setPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [generatingImage, setGeneratingImage] = useState(null);
-
-  // ---- modal & form state ----
-  const [isModalOpen, setIsModalOpen] = useState(false);
+// ---- ComposerModal component (manages its own state) ----
+const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
   const [content, setContent] = useState("");
   const [media, setMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaType, setMediaType] = useState(null);
   const [tags, setTags] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const textareaRef = useRef(null);
 
-  // ---- API ----
-  const {
-    data: postsData,
-    isLoading,
-    refetch,
-  } = useGetAllAnonymousPostsQuery({
-    page,
-    limit: 10,
-    date: selectedDate,
-  });
-
-  const [createAnonymousPost, { isLoading: isCreating }] =
-    useCreateAnonymousPostMutation();
-
-  // ---- handlers ----
   const handleMediaChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -180,24 +145,242 @@ const Anonymous = () => {
       return;
     }
 
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("content", content);
     if (media) formData.append("media", media);
     if (tags) formData.append("tags", tags);
 
     try {
-      await createAnonymousPost(formData).unwrap();
+      await onSubmit(formData);
+      // Reset form on success
       setContent("");
       setTags("");
       removeMedia();
-      setShowSuccess(true);
-      refetch();
-      setIsModalOpen(false);
-      setTimeout(() => setShowSuccess(false), 3000);
+      onClose();
     } catch (error) {
       console.error("Error creating post:", error);
       alert(error.data?.message || "Failed to create anonymous post");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/70 z-50 transition-opacity duration-300"
+        onClick={onClose}
+      />
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[90vh] overflow-y-auto"
+        style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
+      >
+        <div
+          className="sticky top-0 pt-4 pb-2 px-6 border-b"
+          style={{ backgroundColor: CARD, borderColor: BORDER }}
+        >
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-1 rounded-full" style={{ backgroundColor: MUTED }} />
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Lock size={18} style={{ color: GOLD }} />
+              <h2 className="text-lg font-bold" style={{ color: INK }}>
+                Share Anonymously
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="transition-colors hover:opacity-80"
+              style={{ color: MUTED }}
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                Your message
+              </label>
+              <textarea
+                ref={textareaRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind? Share your thoughts, stories, or questions anonymously..."
+                rows={5}
+                className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 transition-all resize-none"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  color: INK,
+                  border: `1px solid ${BORDER}`,
+                  focusRing: GOLD,
+                }}
+                autoFocus
+              />
+            </div>
+
+            {mediaPreview && (
+              <div
+                className="relative rounded-xl overflow-hidden"
+                style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
+              >
+                {mediaType === "image" ? (
+                  <img
+                    src={mediaPreview}
+                    alt="Preview"
+                    className="w-full h-auto object-cover max-h-64"
+                  />
+                ) : (
+                  <video src={mediaPreview} controls className="w-full h-auto max-h-64" />
+                )}
+                <button
+                  type="button"
+                  onClick={removeMedia}
+                  className="absolute top-2 right-2 rounded-full p-1.5 transition-colors"
+                  style={{ backgroundColor: RED, color: "#fff" }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                Attach media <span className="text-xs" style={{ color: MUTED }}>(optional)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="cursor-pointer">
+                  <div
+                    className="rounded-xl p-4 text-center transition-colors"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
+                  >
+                    <ImageIcon className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
+                    <span className="text-xs" style={{ color: MUTED }}>Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleMediaChange}
+                      className="hidden"
+                    />
+                  </div>
+                </label>
+                <label className="cursor-pointer">
+                  <div
+                    className="rounded-xl p-4 text-center transition-colors"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
+                  >
+                    <Video className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
+                    <span className="text-xs" style={{ color: MUTED }}>Video</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleMediaChange}
+                      className="hidden"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
+                Tags <span className="text-xs" style={{ color: MUTED }}>(comma separated)</span>
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="e.g., mental health, advice, story"
+                className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  color: INK,
+                  border: `1px solid ${BORDER}`,
+                  focusRing: GOLD,
+                }}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: GOLD,
+                  color: BG,
+                  opacity: isSubmitting ? 0.6 : 1,
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div
+                      className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                      style={{ borderColor: BG, borderTopColor: "transparent" }}
+                    />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Post Anonymously
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-3 rounded-xl transition-colors"
+                style={{ color: MUTED, border: `1px solid ${BORDER}` }}
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-xs" style={{ color: MUTED }}>
+              <Shield size={12} />
+              <span>Your identity is completely protected</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ---- Main Anonymous component ----
+const Anonymous = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const [page, setPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [generatingImage, setGeneratingImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // ---- API ----
+  const {
+    data: postsData,
+    isLoading,
+    refetch,
+  } = useGetAllAnonymousPostsQuery({
+    page,
+    limit: 10,
+    date: selectedDate,
+  });
+
+  const [createAnonymousPost] = useCreateAnonymousPostMutation();
+
+  // ---- submit handler (passed to modal) ----
+  const handleCreatePost = async (formData) => {
+    await createAnonymousPost(formData).unwrap();
+    setShowSuccess(true);
+    refetch();
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
   // ---- share ----
@@ -278,151 +461,6 @@ const Anonymous = () => {
     setSelectedDate(`${year}-${month}-${day}`);
     setPage(1);
   };
-
-  // ---- composer form (used in modal) ----
-  const ComposerForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
-          Your message
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="What's on your mind? Share your thoughts, stories, or questions anonymously..."
-          rows={5}
-          className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 transition-all resize-none"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            color: INK,
-            border: `1px solid ${BORDER}`,
-          }}
-        />
-      </div>
-
-      {mediaPreview && (
-        <div
-          className="relative rounded-xl overflow-hidden"
-          style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
-        >
-          {mediaType === "image" ? (
-            <img
-              src={mediaPreview}
-              alt="Preview"
-              className="w-full h-auto object-cover max-h-64"
-            />
-          ) : (
-            <video src={mediaPreview} controls className="w-full h-auto max-h-64" />
-          )}
-          <button
-            type="button"
-            onClick={removeMedia}
-            className="absolute top-2 right-2 rounded-full p-1.5 transition-colors"
-            style={{ backgroundColor: RED, color: "#fff" }}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
-          Attach media <span className="text-xs" style={{ color: MUTED }}>(optional)</span>
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="cursor-pointer">
-            <div
-              className="rounded-xl p-4 text-center transition-colors"
-              style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
-            >
-              <ImageIcon className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
-              <span className="text-xs" style={{ color: MUTED }}>Image</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleMediaChange}
-                className="hidden"
-              />
-            </div>
-          </label>
-          <label className="cursor-pointer">
-            <div
-              className="rounded-xl p-4 text-center transition-colors"
-              style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
-            >
-              <Video className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
-              <span className="text-xs" style={{ color: MUTED }}>Video</span>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleMediaChange}
-                className="hidden"
-              />
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
-          Tags <span className="text-xs" style={{ color: MUTED }}>(comma separated)</span>
-        </label>
-        <input
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="e.g., mental health, advice, story"
-          className="w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            color: INK,
-            border: `1px solid ${BORDER}`,
-          }}
-        />
-      </div>
-
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={isCreating}
-          className="flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-          style={{
-            backgroundColor: GOLD,
-            color: BG,
-            opacity: isCreating ? 0.6 : 1,
-          }}
-        >
-          {isCreating ? (
-            <>
-              <div
-                className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: BG, borderTopColor: "transparent" }}
-              />
-              Submitting...
-            </>
-          ) : (
-            <>
-              <Send size={18} />
-              Post Anonymously
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(false)}
-          className="px-4 py-3 rounded-xl transition-colors"
-          style={{ color: MUTED, border: `1px solid ${BORDER}` }}
-        >
-          Cancel
-        </button>
-      </div>
-
-      <div className="flex items-center justify-center gap-2 text-xs" style={{ color: MUTED }}>
-        <Shield size={12} />
-        <span>Your identity is completely protected</span>
-      </div>
-    </form>
-  );
 
   // ---- main render ----
   return (
@@ -725,46 +763,12 @@ const Anonymous = () => {
         </div>
       </div>
 
-      {/* ---- Modal for composing ---- */}
-      {isModalOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/70 z-50 transition-opacity duration-300"
-            onClick={() => setIsModalOpen(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
-          >
-            <div
-              className="sticky top-0 pt-4 pb-2 px-6 border-b"
-              style={{ backgroundColor: CARD, borderColor: BORDER }}
-            >
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-1 rounded-full" style={{ backgroundColor: MUTED }} />
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Lock size={18} style={{ color: GOLD }} />
-                  <h2 className="text-lg font-bold" style={{ color: INK }}>
-                    Share Anonymously
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="transition-colors hover:opacity-80"
-                  style={{ color: MUTED }}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <ComposerForm />
-            </div>
-          </div>
-        </>
-      )}
+      {/* ---- Modal (using separate component) ---- */}
+      <ComposerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreatePost}
+      />
 
       {/* ---- Hidden export elements ---- */}
       <div className="fixed -left-[99999px] top-0 pointer-events-none">
