@@ -17,8 +17,6 @@ import {
   Loader,
   Calendar,
   Plus,
-  FileText,
-  Sparkles,
   Shield,
 } from "lucide-react";
 import { toBlob, toJpeg } from "html-to-image";
@@ -35,12 +33,9 @@ const GOLD_TINT = "rgba(244,168,37,0.12)";
 const GOLD_GLOW = "rgba(244,168,37,0.25)";
 const GREEN = "#22c55e";
 const RED = "#ef4444";
-const BLUE = "#3b82f6";
-const PURPLE = "#8b5cf6";
-const AMBER = "#f59e0b";
 
 // ---- styled components ----
-const CardShell = ({ children, className = "", glow = false }) => (
+const CardShell = ({ children, className = "", glow = false, ...props }) => (
   <div
     className={`rounded-2xl p-4 sm:p-5 transition-all duration-300 ${glow ? "hover:border-gold/30" : ""} ${className}`}
     style={{
@@ -48,11 +43,13 @@ const CardShell = ({ children, className = "", glow = false }) => (
       border: `1px solid ${BORDER}`,
       boxShadow: glow ? `0 0 40px -8px ${GOLD_GLOW}` : "0 4px 24px rgba(0,0,0,0.3)",
     }}
+    {...props}
   >
     {children}
   </div>
 );
 
+// ---- helpers ----
 const formatPostDateTime = (date) =>
   new Date(date).toLocaleString("en-US", {
     day: "2-digit",
@@ -135,7 +132,7 @@ const Anonymous = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [generatingImage, setGeneratingImage] = useState(null);
 
-  // ---- composer modal state ----
+  // ---- modal & form state ----
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
   const [media, setMedia] = useState(null);
@@ -144,7 +141,7 @@ const Anonymous = () => {
   const [tags, setTags] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // ---- API hooks ----
+  // ---- API ----
   const {
     data: postsData,
     isLoading,
@@ -158,18 +155,15 @@ const Anonymous = () => {
   const [createAnonymousPost, { isLoading: isCreating }] =
     useCreateAnonymousPostMutation();
 
-  // ---- Handlers ----
+  // ---- handlers ----
   const handleMediaChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setMedia(file);
       const previewUrl = URL.createObjectURL(file);
       setMediaPreview(previewUrl);
-      if (file.type.startsWith("image/")) {
-        setMediaType("image");
-      } else if (file.type.startsWith("video/")) {
-        setMediaType("video");
-      }
+      if (file.type.startsWith("image/")) setMediaType("image");
+      else if (file.type.startsWith("video/")) setMediaType("video");
     }
   };
 
@@ -206,7 +200,7 @@ const Anonymous = () => {
     }
   };
 
-  // ---- Share ----
+  // ---- share ----
   const downloadPostAsImage = async (postId, post) => {
     const exportNode = document.getElementById(`post-export-${postId}`);
     if (!exportNode) return;
@@ -226,10 +220,7 @@ const Anonymous = () => {
               type: "image/jpeg",
             });
             if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                files: [file],
-                title: "Anonymous Post",
-              });
+              await navigator.share({ files: [file], title: "Anonymous Post" });
               setGeneratingImage(null);
               return;
             }
@@ -251,9 +242,7 @@ const Anonymous = () => {
       link.href = dataUrl;
       link.click();
 
-      setTimeout(() => {
-        window.open("https://wa.me", "_blank");
-      }, 500);
+      setTimeout(() => window.open("https://wa.me", "_blank"), 500);
     } catch (error) {
       console.error("Error generating image:", error);
       alert("Failed to generate image");
@@ -290,7 +279,7 @@ const Anonymous = () => {
     setPage(1);
   };
 
-  // ---- Composer form (used inside modal) ----
+  // ---- composer form (used in modal) ----
   const ComposerForm = () => (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
@@ -307,7 +296,6 @@ const Anonymous = () => {
             backgroundColor: "rgba(255,255,255,0.04)",
             color: INK,
             border: `1px solid ${BORDER}`,
-            focusRing: GOLD,
           }}
         />
       </div>
@@ -348,9 +336,7 @@ const Anonymous = () => {
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
             >
               <ImageIcon className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
-              <span className="text-xs" style={{ color: MUTED }}>
-                Image
-              </span>
+              <span className="text-xs" style={{ color: MUTED }}>Image</span>
               <input
                 type="file"
                 accept="image/*"
@@ -365,9 +351,7 @@ const Anonymous = () => {
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
             >
               <Video className="w-6 h-6 mx-auto mb-2" style={{ color: MUTED }} />
-              <span className="text-xs" style={{ color: MUTED }}>
-                Video
-              </span>
+              <span className="text-xs" style={{ color: MUTED }}>Video</span>
               <input
                 type="file"
                 accept="video/*"
@@ -393,7 +377,6 @@ const Anonymous = () => {
             backgroundColor: "rgba(255,255,255,0.04)",
             color: INK,
             border: `1px solid ${BORDER}`,
-            focusRing: GOLD,
           }}
         />
       </div>
@@ -441,7 +424,7 @@ const Anonymous = () => {
     </form>
   );
 
-  // ---- Render ----
+  // ---- main render ----
   return (
     <div className="min-h-screen" style={{ backgroundColor: BG }}>
       <DashboardSidebar />
@@ -493,8 +476,16 @@ const Anonymous = () => {
         )}
 
         <div className="px-3 sm:px-6 py-4 sm:py-6">
-          {/* ---- Slim composer button ---- */}
-          <CardShell glow className="mb-4 p-3 cursor-pointer hover:border-gold/30" onClick={() => setIsModalOpen(true)}>
+          {/* ---- Slim composer button (opens modal) ---- */}
+          <div
+            className="rounded-2xl p-3 mb-4 cursor-pointer transition-all hover:border-gold/30"
+            style={{
+              backgroundColor: CARD,
+              border: `1px solid ${BORDER}`,
+              boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+            }}
+            onClick={() => setIsModalOpen(true)}
+          >
             <div className="flex items-center gap-3">
               <AnonymousAvatar />
               <span className="text-sm" style={{ color: MUTED }}>
@@ -505,9 +496,9 @@ const Anonymous = () => {
                 <Video size={16} style={{ color: MUTED }} />
               </div>
             </div>
-          </CardShell>
+          </div>
 
-          {/* ---- Date filters ---- */}
+          {/* ---- date filters ---- */}
           <div className="flex flex-wrap gap-2 mb-4">
             {[
               { label: "Today", value: 0 },
