@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import DashboardSidebar from "../components/DashbordSidebar";
 import {
@@ -111,7 +111,7 @@ const ExportPostCard = ({ post }) => (
   </div>
 );
 
-// ---- ComposerModal component (manages its own state) ----
+// ---- ComposerModal component (manages its own state, NO auto-focus) ----
 const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
   const [content, setContent] = useState("");
   const [media, setMedia] = useState(null);
@@ -119,7 +119,6 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
   const [mediaType, setMediaType] = useState(null);
   const [tags, setTags] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const textareaRef = useRef(null);
 
   const handleMediaChange = (e) => {
     const file = e.target.files?.[0];
@@ -153,7 +152,6 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
 
     try {
       await onSubmit(formData);
-      // Reset form on success
       setContent("");
       setTags("");
       removeMedia();
@@ -177,6 +175,8 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
       <div
         className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl transform transition-transform duration-300 animate-slide-up max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
+        // Prevent touch events from bubbling up and causing focus loss
+        onTouchStart={(e) => e.stopPropagation()}
       >
         <div
           className="sticky top-0 pt-4 pb-2 px-6 border-b"
@@ -208,7 +208,7 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
                 Your message
               </label>
               <textarea
-                ref={textareaRef}
+                // No autoFocus, no ref – keyboard opens only on tap
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind? Share your thoughts, stories, or questions anonymously..."
@@ -220,7 +220,6 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
                   border: `1px solid ${BORDER}`,
                   focusRing: GOLD,
                 }}
-                autoFocus
               />
             </div>
 
