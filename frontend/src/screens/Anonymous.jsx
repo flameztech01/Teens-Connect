@@ -80,7 +80,7 @@ const AnonymousAvatar = () => (
   </div>
 );
 
-// ---- Export card for sharing (same as admin) ----
+// ---- Export card for sharing ----
 const ExportPostCard = ({ post }) => (
   <div className="w-[380px] max-w-full bg-white rounded-2xl overflow-hidden shadow-lg">
     <div className="p-4 border-b border-gray-100">
@@ -135,14 +135,14 @@ const Anonymous = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [generatingImage, setGeneratingImage] = useState(null);
 
-  // ---- composer state ----
+  // ---- composer modal state ----
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
   const [media, setMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaType, setMediaType] = useState(null);
   const [tags, setTags] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ---- API hooks ----
   const {
@@ -153,7 +153,6 @@ const Anonymous = () => {
     page,
     limit: 10,
     date: selectedDate,
-    // no isRead filter – show all approved posts
   });
 
   const [createAnonymousPost, { isLoading: isCreating }] =
@@ -207,7 +206,7 @@ const Anonymous = () => {
     }
   };
 
-  // ---- Share (download image + WhatsApp) ----
+  // ---- Share ----
   const downloadPostAsImage = async (postId, post) => {
     const exportNode = document.getElementById(`post-export-${postId}`);
     if (!exportNode) return;
@@ -291,8 +290,8 @@ const Anonymous = () => {
     setPage(1);
   };
 
-  // ---- Composer component (used inline and in modal) ----
-  const ComposerForm = ({ onSuccess, onCancel }) => (
+  // ---- Composer form (used inside modal) ----
+  const ComposerForm = () => (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block text-sm font-medium mb-2" style={{ color: MUTED }}>
@@ -425,16 +424,14 @@ const Anonymous = () => {
             </>
           )}
         </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-3 rounded-xl transition-colors"
-            style={{ color: MUTED, border: `1px solid ${BORDER}` }}
-          >
-            Cancel
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(false)}
+          className="px-4 py-3 rounded-xl transition-colors"
+          style={{ color: MUTED, border: `1px solid ${BORDER}` }}
+        >
+          Cancel
+        </button>
       </div>
 
       <div className="flex items-center justify-center gap-2 text-xs" style={{ color: MUTED }}>
@@ -496,17 +493,21 @@ const Anonymous = () => {
         )}
 
         <div className="px-3 sm:px-6 py-4 sm:py-6">
-          {/* ---- Composer (inline) ---- */}
-          <CardShell glow className="mb-6">
-            <div className="flex items-start gap-3">
+          {/* ---- Slim composer button ---- */}
+          <CardShell glow className="mb-4 p-3 cursor-pointer hover:border-gold/30" onClick={() => setIsModalOpen(true)}>
+            <div className="flex items-center gap-3">
               <AnonymousAvatar />
-              <div className="flex-1 min-w-0">
-                <ComposerForm />
+              <span className="text-sm" style={{ color: MUTED }}>
+                What's on your mind?
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <ImageIcon size={16} style={{ color: MUTED }} />
+                <Video size={16} style={{ color: MUTED }} />
               </div>
             </div>
           </CardShell>
 
-          {/* ---- Filters (date presets) ---- */}
+          {/* ---- Date filters ---- */}
           <div className="flex flex-wrap gap-2 mb-4">
             {[
               { label: "Today", value: 0 },
@@ -768,7 +769,7 @@ const Anonymous = () => {
               </div>
             </div>
             <div className="p-6">
-              <ComposerForm onCancel={() => setIsModalOpen(false)} />
+              <ComposerForm />
             </div>
           </div>
         </>
