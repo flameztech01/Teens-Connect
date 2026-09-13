@@ -11,6 +11,7 @@ import {
   getUnreadCount,
   deleteAnonymousPost
 } from "../controllers/anonymousController.js";
+import { getPublicAnonymousFeed } from "../controllers/anonymousController.js";
 import { protect } from "../Middleware/authMiddleware.js";   // only protect now
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // All routes use protect – no admin-only distinction
 router.post("/post", protect, upload.single("media"), createAnonymousPost);
 router.get("/my-posts", protect, getMyAnonymousPosts);
+router.get("/feed", protect, getPublicAnonymousFeed);
 
 // Previously admin-only, now accessible to any logged-in user
 router.get("/admin/all", protect, getAllAnonymousPosts);

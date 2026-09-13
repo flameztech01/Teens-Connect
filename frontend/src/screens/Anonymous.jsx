@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import DashboardSidebar from "../components/DashbordSidebar";
 import {
   useCreateAnonymousPostMutation,
-  useGetAllAnonymousPostsQuery,
+  useGetAnonymousFeedQuery,
 } from "../slices/anonymousApiSlice";
 import {
   Lock,
@@ -19,6 +19,7 @@ import {
   Plus,
   Shield,
   MessageCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { toBlob, toJpeg } from "html-to-image";
 
@@ -366,8 +367,11 @@ const Anonymous = () => {
   const {
     data: postsData,
     isLoading,
+    isFetching,
+    isError,
+    error,
     refetch,
-  } = useGetAllAnonymousPostsQuery({
+  } = useGetAnonymousFeedQuery({
     page,
     limit: 10,
     date: selectedDate,
@@ -597,6 +601,33 @@ const Anonymous = () => {
               <p className="text-sm" style={{ color: MUTED }}>
                 Loading posts...
               </p>
+            </div>
+          ) : isError ? (
+            <div
+              className="text-center py-12 px-4"
+              style={{
+                backgroundColor: CARD,
+                border: `1px solid ${BORDER}`,
+                borderRadius: "1rem",
+              }}
+            >
+              <AlertTriangle className="w-10 h-10 mx-auto mb-3" style={{ color: RED }} />
+              <p className="text-sm font-medium mb-1" style={{ color: INK }}>
+                Couldn't load posts
+              </p>
+              <p className="text-xs mb-4" style={{ color: MUTED }}>
+                {error?.data?.message ||
+                  (error?.status
+                    ? `Server responded with ${error.status}`
+                    : "Check your connection and try again")}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                style={{ backgroundColor: GOLD, color: BG }}
+              >
+                Try again
+              </button>
             </div>
           ) : !postsData?.postsByDate ||
             Object.keys(postsData.postsByDate).length === 0 ? (

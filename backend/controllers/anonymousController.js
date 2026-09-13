@@ -7,7 +7,7 @@ import { notifyNewAnonymousPost } from "../controllers/notificationsController.j
 // Helper function to upload media to Cloudinary
 const uploadMediaToCloudinary = async (file, type = "image") => {
   if (!file) return null;
-  
+
   return new Promise((resolve, reject) => {
     const uploadOptions = {
       folder: "anonymous_posts",
@@ -107,6 +107,62 @@ const getMyAnonymousPosts = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get PUBLIC anonymous feed for the "Anonymous Corner" page.
+//          Any logged-in user can call this. No user PII is ever
+//          populated or returned here — only what's safe to show
+//          in a fully anonymous feed. This is what Anonymous.jsx
+//          should call, NOT getAllAnonymousPosts (that one is
+//          admin-only and leaks name/email/phone).
+// @route   GET /api/anonymous/feed
+// @access  Private (any authenticated user)
+const getPublicAnonymousFeed = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const { date } = req.query;
+
+  const query = {};
+
+  if (date) {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    query.createdAt = { $gte: startDate, $lt: endDate };
+  }
+
+  const posts = await Anonymous.find(query)
+    .select("anonymousId content media mediaType tags sharedToWhatsApp createdAt")
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .skip(skip);
+
+  const total = await Anonymous.countDocuments(query);
+
+  const postsByDate = {};
+  posts.forEach(post => {
+    const dateKey = post.createdAt.toISOString().split('T')[0];
+    if (!postsByDate[dateKey]) {
+      postsByDate[dateKey] = [];
+    }
+    postsByDate[dateKey].push({
+      id: post.anonymousId,
+      content: post.content,
+      media: post.media,
+      mediaType: post.mediaType,
+      tags: post.tags,
+      sharedToWhatsApp: post.sharedToWhatsApp,
+      createdAt: post.createdAt
+    });
+  });
+
+  res.status(200).json({
+    postsByDate,
+    page,
+    pages: Math.ceil(total / limit),
+    total
+  });
+});
+
 // @desc    Get all anonymous posts (Admin only)
 // @route   GET /api/anonymous/admin/all
 // @access  Private/Admin
@@ -117,9 +173,9 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
   const { date, isRead } = req.query;
 
   const query = {};
-  
+
   if (isRead !== undefined) query.isRead = isRead === "true";
-  
+
   if (date) {
     const startDate = new Date(date);
     const endDate = new Date(date);
@@ -190,7 +246,7 @@ const getAllAnonymousPosts = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const markAsRead = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   // FIX: Use req.user instead of req.admin
   const adminId = req.user._id;
   const adminName = req.user.name;
@@ -204,7 +260,7 @@ const markAsRead = asyncHandler(async (req, res) => {
 
   // Check if already read by this admin
   const alreadyRead = post.readBy.some(read => read.adminId.toString() === adminId.toString());
-  
+
   if (alreadyRead) {
     res.status(400);
     throw new Error("You have already marked this post as read");
@@ -215,7 +271,7 @@ const markAsRead = asyncHandler(async (req, res) => {
     adminId: adminId,
     readAt: new Date()
   });
-  
+
   await post.save();
 
   res.status(200).json({
@@ -263,7 +319,7 @@ const viewPoster = asyncHandler(async (req, res) => {
 const shareToWhatsApp = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { whatsappGroupLink, customMessage } = req.body;
-  
+
   // FIX: Use req.user instead of req.admin
   const adminId = req.user._id;
   const adminName = req.user.name;
@@ -281,11 +337,11 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
   }
 
   const message = customMessage || `📢 *New Anonymous Message from TeensConnect Community*\n\n${post.content}\n\n👤 From: Anonymous Community Member\n📅 Date: ${new Date(post.createdAt).toLocaleDateString()}\n\nReply in the group to help! 🙏`;
-  
+
   const encodedMessage = encodeURIComponent(message);
-  
+
   const groupLink = whatsappGroupLink || process.env.WHATSAPP_GROUP_LINK;
-  
+
   if (!groupLink) {
     res.status(400);
     throw new Error("WhatsApp group link is required");
@@ -297,7 +353,7 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
   post.sharedToWhatsApp = true;
   post.sharedAt = new Date();
   post.sharedBy = adminId;
-  
+
   // ALSO mark as read when shared
   const alreadyRead = post.readBy.some(read => read.adminId.toString() === adminId.toString());
   if (!alreadyRead) {
@@ -307,7 +363,7 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
       readAt: new Date()
     });
   }
-  
+
   await post.save();
 
   res.status(200).json({
@@ -325,7 +381,7 @@ const shareToWhatsApp = asyncHandler(async (req, res) => {
 const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { whatsappGroupLink, customMessage } = req.body;
-  
+
   // FIX: Use req.user instead of req.admin
   const adminId = req.user._id;
   const adminName = req.user.name;
@@ -338,11 +394,11 @@ const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
   }
 
   const message = customMessage || `📢 *Anonymous Poster Information - TeensConnect*\n\n📝 *Original Post:*\n${post.content}\n\n👤 *Poster Details:*\nName: ${post.user.name}\nEmail: ${post.user.email}\nUsername: ${post.user.username}\nPhone: ${post.user.phone || "Not provided"}\nLocation: ${post.user.location || "Not provided"}\nSkills: ${post.user.skills?.join(", ") || "Not specified"}\n\n📅 Posted on: ${new Date(post.createdAt).toLocaleDateString()}\n\nYou can now reach out to help! 🤝`;
-  
+
   const encodedMessage = encodeURIComponent(message);
-  
+
   const groupLink = whatsappGroupLink || process.env.WHATSAPP_GROUP_LINK;
-  
+
   if (!groupLink) {
     res.status(400);
     throw new Error("WhatsApp group link is required");
@@ -379,7 +435,7 @@ const sharePosterToWhatsApp = asyncHandler(async (req, res) => {
 const getUnreadCount = asyncHandler(async (req, res) => {
   // FIX: Use req.user instead of req.admin
   const adminId = req.user._id;
-  
+
   const unreadPosts = await Anonymous.countDocuments({
     isRead: false
   });
@@ -419,6 +475,7 @@ const deleteAnonymousPost = asyncHandler(async (req, res) => {
 export {
   createAnonymousPost,
   getMyAnonymousPosts,
+  getPublicAnonymousFeed,
   getAllAnonymousPosts,
   markAsRead,
   viewPoster,
