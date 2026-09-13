@@ -22,8 +22,6 @@ import {
   AlertTriangle,
   Copy,
   Download,
-  Mail,
-  AtSign,
   Check,
 } from "lucide-react";
 import { toCanvas } from "html-to-image";
@@ -60,45 +58,18 @@ const formatGroupDate = (date) =>
     year: "numeric",
   });
 
-// ---- share targets ----
-// NOTE ON WHY THESE ARE TEXT-ONLY LINKS:
-// wa.me / t.me / twitter intent / mailto are plain URL schemes — none of
-// them accept a binary file as a query param, so there is no way (on the
-// web, from any browser) to force a specific app to open pre-loaded with
-// an image. The only web-standard way to hand a real image file to
-// another app is the Web Share API (navigator.share with `files`), which
-// opens the OS's native share sheet and lets the user pick the app —
-// that's what handleShareTarget below tries first, on every tap.
-const SHARE_TARGETS = [
-  {
-    key: "whatsapp",
-    label: "WhatsApp",
-    color: "#22c55e",
-    icon: MessageCircle,
-    getUrl: (text) => `https://wa.me/?text=${encodeURIComponent(text)}`,
-  },
-  {
-    key: "telegram",
-    label: "Telegram",
-    color: "#0ea5e9",
-    icon: Send,
-    getUrl: (text) => `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`,
-  },
-  {
-    key: "x",
-    label: "X",
-    color: "#ffffff",
-    icon: AtSign,
-    getUrl: (text) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
-  },
-  {
-    key: "email",
-    label: "Email",
-    color: "#6b7280",
-    icon: Mail,
-    getUrl: (text) => `mailto:?body=${encodeURIComponent(text)}`,
-  },
-];
+// ---- fixed WhatsApp destination ----
+// The image itself can't be attached into this URL (no web API supports
+// that for chat.whatsapp.com links) — the flow is: copy the image, tap
+// this button to land in the group, then paste it in.
+const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/JCt6i1i9G5o1tfCXzWfB4J";
+
+// Official WhatsApp glyph (current flat mark), not a generic chat-bubble icon.
+const WhatsAppIcon = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12.017 2.002c-5.522 0-9.999 4.477-9.999 9.999 0 1.762.46 3.484 1.334 5.003l-1.418 5.176 5.309-1.394c1.463.802 3.113 1.224 4.774 1.224h.004c5.522 0 9.997-4.477 9.997-9.999 0-2.669-1.037-5.176-2.922-7.062-1.885-1.885-4.392-2.947-7.079-2.947zm.001 1.8c2.198 0 4.262.858 5.816 2.415 1.554 1.554 2.41 3.62 2.409 5.816-.001 4.533-3.692 8.222-8.228 8.222h-.003c-1.371 0-2.719-.344-3.911-.997l-.28-.166-2.909.763.777-2.835-.183-.291a8.194 8.194 0 0 1-1.257-4.393c.001-4.535 3.693-8.224 8.229-8.224zm4.552 5.909c-.075-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.148-.669.149-.198.297-.767.966-.94 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.058-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.148-.174.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51-.173-.008-.372-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.073.148.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.693.626.711.226 1.359.194 1.87.118.57-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z" />
+  </svg>
+);
 
 const AnonymousAvatar = () => (
   <div
@@ -415,7 +386,6 @@ const ShareModal = ({ post, onClose }) => {
   const [canvas, setCanvas] = useState(null); // kept for on-demand PNG export (clipboard)
   const [previewUrl, setPreviewUrl] = useState("");
   const [copyState, setCopyState] = useState("idle"); // idle | copied | unsupported | error
-  const [canShareFiles, setCanShareFiles] = useState(false);
 
   const clipboardSupported =
     typeof navigator !== "undefined" &&
@@ -460,11 +430,6 @@ const ShareModal = ({ post, onClose }) => {
         setFile(generatedFile);
         setCanvas(canvas);
         setPreviewUrl(objectUrl);
-        setCanShareFiles(
-          typeof navigator !== "undefined" &&
-            !!navigator.canShare &&
-            navigator.canShare({ files: [generatedFile] })
-        );
         setStatus("ready");
       } catch (err) {
         console.error("Error generating share image:", err);
@@ -518,34 +483,6 @@ const ShareModal = ({ post, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Hands the real .jpg file to the OS share sheet — the user picks
-  // WhatsApp/Telegram/whatever from there, image already attached.
-  const handleNativeShare = async () => {
-    if (!file) return;
-    try {
-      await navigator.share({
-        files: [file],
-        text: post.content || "",
-        title: "Anonymous Post",
-      });
-    } catch (err) {
-      // AbortError just means the user closed the native sheet — not a bug.
-      if (err?.name !== "AbortError") {
-        console.error("Native share failed:", err);
-      }
-    }
-  };
-
-  const handleShareTarget = async (target) => {
-    if (canShareFiles) {
-      await handleNativeShare();
-      return;
-    }
-    // No file-sharing support here (typically desktop): text-only link,
-    // Copy/Download above remain the only way to move the image itself.
-    window.open(target.getUrl(post.content || ""), "_blank");
-  };
-
   return (
     <>
       <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
@@ -597,18 +534,6 @@ const ShareModal = ({ post, onClose }) => {
                 </div>
               )}
 
-              {/* Primary action on browsers that can share real files */}
-              {canShareFiles && (
-                <button
-                  onClick={handleNativeShare}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all"
-                  style={{ backgroundColor: GOLD, color: BG }}
-                >
-                  <Share2 size={18} />
-                  Share Image
-                </button>
-              )}
-
               <div>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -640,7 +565,7 @@ const ShareModal = ({ post, onClose }) => {
 
                 {copyState === "copied" && (
                   <p className="text-xs mt-2 text-center" style={{ color: GREEN }}>
-                    Image copied. Open an app below and paste it into the chat.
+                    Image copied — open the group below and paste it in.
                   </p>
                 )}
                 {copyState === "unsupported" && (
@@ -655,38 +580,19 @@ const ShareModal = ({ post, onClose }) => {
                 )}
               </div>
 
-              <div>
-                <p className="text-xs font-medium mb-3" style={{ color: MUTED }}>
-                  Share to
-                </p>
-                <div className="grid grid-cols-4 gap-3">
-                  {SHARE_TARGETS.map((target) => {
-                    const Icon = target.icon;
-                    return (
-                      <button
-                        key={target.key}
-                        onClick={() => handleShareTarget(target)}
-                        className="flex flex-col items-center gap-1.5"
-                      >
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: target.color }}
-                        >
-                          <Icon size={20} color={target.key === "x" ? "#000" : "#fff"} />
-                        </div>
-                        <span className="text-[11px]" style={{ color: MUTED }}>
-                          {target.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[11px] mt-3 text-center" style={{ color: MUTED }}>
-                  {canShareFiles
-                    ? "Tap an app to open the share sheet with the image attached — no download needed."
-                    : "This browser can't attach the image automatically. These open with your message text — copy the image above first, then paste it into the chat."}
-                </p>
-              </div>
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-semibold transition-all hover:opacity-90"
+                style={{ backgroundColor: "#25D366", color: "#ffffff" }}
+              >
+                <WhatsAppIcon size={20} />
+                Open WhatsApp Group
+              </a>
+              <p className="text-[11px] -mt-2 text-center" style={{ color: MUTED }}>
+                Copy the image above first, then tap here and paste it into the chat.
+              </p>
             </>
           )}
         </div>
