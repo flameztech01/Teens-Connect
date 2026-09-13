@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import DashboardSidebar from "../components/DashbordSidebar";
 import {
@@ -20,8 +20,13 @@ import {
   Shield,
   MessageCircle,
   AlertTriangle,
+  Copy,
+  Download,
+  Mail,
+  AtSign,
+  Check,
 } from "lucide-react";
-import { toBlob, toJpeg } from "html-to-image";
+import { toBlob } from "html-to-image";
 
 // ---- design tokens ----
 const BG = "#0c0c0d";
@@ -54,6 +59,39 @@ const formatGroupDate = (date) =>
     day: "numeric",
     year: "numeric",
   });
+
+// ---- share targets (text-only links — no web API can auto-attach a
+// binary image into these apps, hence the copy-then-paste flow) ----
+const SHARE_TARGETS = [
+  {
+    key: "whatsapp",
+    label: "WhatsApp",
+    color: "#22c55e",
+    icon: MessageCircle,
+    getUrl: (text) => `https://wa.me/?text=${encodeURIComponent(text)}`,
+  },
+  {
+    key: "telegram",
+    label: "Telegram",
+    color: "#0ea5e9",
+    icon: Send,
+    getUrl: (text) => `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`,
+  },
+  {
+    key: "x",
+    label: "X",
+    color: "#ffffff",
+    icon: AtSign,
+    getUrl: (text) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+  },
+  {
+    key: "email",
+    label: "Email",
+    color: "#6b7280",
+    icon: Mail,
+    getUrl: (text) => `mailto:?body=${encodeURIComponent(text)}`,
+  },
+];
 
 const AnonymousAvatar = () => (
   <div
@@ -355,14 +393,235 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
   );
 };
 
+// ---- ShareModal component: custom share sheet ----
+// Flow: generate a PNG snapshot of the post -> user can Copy it to the
+// clipboard (real image bytes, via the Clipboard API) or Download it,
+// then tap a target app below to open it with the post text pre-filled
+// so they can paste the image into the chat. No browser API can attach
+// a file into these apps automatically, so we're explicit about the
+// copy-then-paste step instead of silently trying and failing.
+const ShareModal = ({ post, onClose }) => {
+  const [status, setStatus] = useState("generating"); // generating | ready | error
+  const [blob, setBlob] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [copyState, setCopyState] = useState("idle"); // idle | copied | unsupported | error
+  const clipboardSupported =
+    typeof navigator !== "undefined" &&
+    !!navigator.clipboard &&
+    typeof window !== "undefined" &&
+    "ClipboardItem" in window;
+
+  useEffect(() => {
+    let cancelled = false;
+    let objectUrl = "";
+
+    const generate = async () => {
+      const node = document.getElementById(`post-export-${post.id}`);
+      if (!node) {
+        if (!cancelled) setStatus("error");
+        return;
+      }
+      try {
+        const generatedBlob = await toBlob(node, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#ffffff",
+        });
+        if (!generatedBlob) throw new Error("Image generation returned nothing");
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(generatedBlob);
+        setBlob(generatedBlob);
+        setPreviewUrl(objectUrl);
+        setStatus("ready");
+      } catch (err) {
+        console.error("Error generating share image:", err);
+        if (!cancelled) setStatus("error");
+      }
+    };
+
+    generate();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [post.id]);
+
+  const handleCopyImage = async () => {
+    if (!blob) return;
+    if (!clipboardSupported) {
+      setCopyState("unsupported");
+      return;
+    }
+    try {
+      await navigator.clipboard.write([
+        new window.ClipboardItem({ [blob.type]: blob }),
+      ]);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 3000);
+    } catch (err) {
+      console.error("Copy to clipboard failed:", err);
+      setCopyState("error");
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `anonymous-post-${post.id}.png`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleOpenTarget = (target) => {
+    window.open(target.getUrl(post.content || ""), "_blank");
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto"
+        style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}
+      >
+        <div
+          className="sticky top-0 pt-4 pb-3 px-6 border-b"
+          style={{ backgroundColor: CARD, borderColor: BORDER }}
+        >
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-1 rounded-full" style={{ backgroundColor: MUTED }} />
+          </div>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-bold" style={{ color: INK }}>
+              Share Post
+            </h2>
+            <button onClick={onClose} style={{ color: MUTED }}>
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {status === "generating" && (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader className="w-7 h-7 animate-spin mb-2" style={{ color: GOLD }} />
+              <p className="text-sm" style={{ color: MUTED }}>Preparing image...</p>
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <AlertTriangle className="w-8 h-8 mb-2" style={{ color: RED }} />
+              <p className="text-sm" style={{ color: INK }}>Couldn't generate the image</p>
+              <p className="text-xs mt-1" style={{ color: MUTED }}>Please close this and try again</p>
+            </div>
+          )}
+
+          {status === "ready" && (
+            <>
+              {previewUrl && (
+                <div
+                  className="rounded-xl overflow-hidden border"
+                  style={{ borderColor: BORDER }}
+                >
+                  <img src={previewUrl} alt="Post preview" className="w-full h-auto max-h-56 object-contain bg-white" />
+                </div>
+              )}
+
+              <div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handleCopyImage}
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-colors"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
+                  >
+                    {copyState === "copied" ? (
+                      <Check size={20} style={{ color: GREEN }} />
+                    ) : (
+                      <Copy size={20} style={{ color: GOLD }} />
+                    )}
+                    <span className="text-xs font-medium" style={{ color: INK }}>
+                      {copyState === "copied" ? "Copied!" : "Copy Image"}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={handleDownloadImage}
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-colors"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
+                  >
+                    <Download size={20} style={{ color: GOLD }} />
+                    <span className="text-xs font-medium" style={{ color: INK }}>
+                      Download Image
+                    </span>
+                  </button>
+                </div>
+
+                {copyState === "copied" && (
+                  <p className="text-xs mt-2 text-center" style={{ color: GREEN }}>
+                    Image copied. Open an app below and paste it into the chat.
+                  </p>
+                )}
+                {copyState === "unsupported" && (
+                  <p className="text-xs mt-2 text-center" style={{ color: MUTED }}>
+                    Copying images isn't supported in this browser — use Download instead.
+                  </p>
+                )}
+                {copyState === "error" && (
+                  <p className="text-xs mt-2 text-center" style={{ color: RED }}>
+                    Couldn't copy the image — try Download instead.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-medium mb-3" style={{ color: MUTED }}>
+                  Share to
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {SHARE_TARGETS.map((target) => {
+                    const Icon = target.icon;
+                    return (
+                      <button
+                        key={target.key}
+                        onClick={() => handleOpenTarget(target)}
+                        className="flex flex-col items-center gap-1.5"
+                      >
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: target.color }}
+                        >
+                          <Icon size={20} color={target.key === "x" ? "#000" : "#fff"} />
+                        </div>
+                        <span className="text-[11px]" style={{ color: MUTED }}>
+                          {target.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] mt-3 text-center" style={{ color: MUTED }}>
+                  These open with your message text — copy the image above first, then paste it into the chat.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
 // ---- Main Anonymous component ----
 const Anonymous = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [page, setPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState("");
-  const [generatingImage, setGeneratingImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [shareTarget, setShareTarget] = useState(null); // the post being shared, or null
 
   // ---- API ----
   const {
@@ -386,72 +645,6 @@ const Anonymous = () => {
     setShowSuccess(true);
     refetch();
     setTimeout(() => setShowSuccess(false), 3000);
-  };
-
-  // ---- share ----
-  const downloadPostAsImage = async (postId, post) => {
-    const exportNode = document.getElementById(`post-export-${postId}`);
-    if (!exportNode) return;
-
-    setGeneratingImage(postId);
-
-    // Path 1: native share sheet (lets the user pick WhatsApp themselves
-    // and hands the actual image file to it — this is the only path that
-    // can attach the image directly into a chat).
-    if (navigator.share && navigator.canShare) {
-      try {
-        const blob = await toBlob(exportNode, {
-          cacheBust: true,
-          pixelRatio: 2,
-          backgroundColor: "#ffffff",
-        });
-
-        if (blob) {
-          const file = new File([blob], `anonymous-post-${postId}.jpg`, {
-            type: "image/jpeg",
-          });
-
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: "Anonymous Post" });
-            setGeneratingImage(null);
-            return;
-          }
-        }
-      } catch (shareError) {
-        // User backed out of the share sheet on purpose — do nothing,
-        // don't fall back into an automatic flow they didn't ask for.
-        if (shareError?.name === "AbortError") {
-          setGeneratingImage(null);
-          return;
-        }
-        console.log("Native share failed, falling back to manual download:", shareError);
-      }
-    }
-
-    // Path 2: no Web Share support, or it genuinely failed above.
-    // There is no URL or API that can auto-attach a downloaded file into
-    // WhatsApp, so don't try — just get the image to the user and tell
-    // them to attach it themselves.
-    try {
-      const dataUrl = await toJpeg(exportNode, {
-        cacheBust: true,
-        pixelRatio: 2,
-        quality: 0.95,
-        backgroundColor: "#ffffff",
-      });
-
-      const link = document.createElement("a");
-      link.download = `anonymous-post-${postId}.jpg`;
-      link.href = dataUrl;
-      link.click();
-
-      alert("Image saved. Open WhatsApp and attach it from your photos to share.");
-    } catch (error) {
-      console.error("Error generating image:", error);
-      alert("Failed to generate image");
-    } finally {
-      setGeneratingImage(null);
-    }
   };
 
   // ---- date presets ----
@@ -714,19 +907,14 @@ const Anonymous = () => {
                             </div>
                           </div>
 
-                          {/* Share button only */}
+                          {/* Share button — opens the custom ShareModal */}
                           <button
-                            onClick={() => downloadPostAsImage(post.id, post)}
-                            disabled={generatingImage === post.id}
-                            className="p-1.5 rounded-lg transition-colors hover:bg-white/5 disabled:opacity-50"
+                            onClick={() => setShareTarget(post)}
+                            className="p-1.5 rounded-lg transition-colors hover:bg-white/5"
                             style={{ color: GREEN }}
-                            title="Share to WhatsApp"
+                            title="Share post"
                           >
-                            {generatingImage === post.id ? (
-                              <Loader size={16} className="animate-spin" />
-                            ) : (
-                              <Share2 size={16} />
-                            )}
+                            <Share2 size={16} />
                           </button>
                         </div>
                       </div>
@@ -816,6 +1004,11 @@ const Anonymous = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreatePost}
       />
+
+      {/* ---- Custom share modal ---- */}
+      {shareTarget && (
+        <ShareModal post={shareTarget} onClose={() => setShareTarget(null)} />
+      )}
 
       {/* ---- Hidden export elements ---- */}
       <div className="fixed -left-[99999px] top-0 pointer-events-none">
