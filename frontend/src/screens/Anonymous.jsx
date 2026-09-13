@@ -412,6 +412,7 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
 const ShareModal = ({ post, onClose }) => {
   const [status, setStatus] = useState("generating"); // generating | ready | error
   const [file, setFile] = useState(null);
+  const [canvas, setCanvas] = useState(null); // kept for on-demand PNG export (clipboard)
   const [previewUrl, setPreviewUrl] = useState("");
   const [copyState, setCopyState] = useState("idle"); // idle | copied | unsupported | error
   const [canShareFiles, setCanShareFiles] = useState(false);
@@ -457,6 +458,7 @@ const ShareModal = ({ post, onClose }) => {
 
         objectUrl = URL.createObjectURL(jpegBlob);
         setFile(generatedFile);
+        setCanvas(canvas);
         setPreviewUrl(objectUrl);
         setCanShareFiles(
           typeof navigator !== "undefined" &&
@@ -479,14 +481,24 @@ const ShareModal = ({ post, onClose }) => {
   }, [post.id]);
 
   const handleCopyImage = async () => {
-    if (!file) return;
+    if (!canvas) return;
     if (!clipboardSupported) {
       setCopyState("unsupported");
       return;
     }
     try {
+      // Browsers (Chrome, Safari, etc.) reliably support only image/png
+      // for ClipboardItem — writing a jpeg blob here silently/loudly fails
+      // in most of them — so we render a fresh PNG from the canvas just
+      // for this action, separate from the jpg used for share/download.
+      const pngBlob = await new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("Canvas produced no image data"))),
+          "image/png"
+        );
+      });
       await navigator.clipboard.write([
-        new window.ClipboardItem({ [file.type]: file }),
+        new window.ClipboardItem({ "image/png": pngBlob }),
       ]);
       setCopyState("copied");
       setTimeout(() => setCopyState("idle"), 3000);
