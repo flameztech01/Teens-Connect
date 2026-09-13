@@ -18,6 +18,7 @@ import {
   Calendar,
   Plus,
   Shield,
+  MessageCircle,
 } from "lucide-react";
 import { toBlob, toJpeg } from "html-to-image";
 

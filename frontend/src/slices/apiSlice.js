@@ -36,9 +36,17 @@ const baseQuery = async (args, api, extraOptions) => {
   return rawBaseQuery(modifiedArgs, api, extraOptions);
 };
 
+// ✅ Correct tagTypes for all modules
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['User', 'Anonymous', 'Talent', 'Admin'],
+  tagTypes: [
+    'User',          // user info, profiles, students
+    'Bunk',          // hostel bunks & allocation
+    'Transaction',   // payment history
+    'CheckIn',       // check‑in/out records
+    'QR',            // QR codes (invalidation on reset)
+    'Complaint',     // complaints
+  ],
   endpoints: (builder) => ({}),
 });
