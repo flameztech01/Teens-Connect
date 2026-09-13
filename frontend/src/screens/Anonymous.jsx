@@ -87,6 +87,7 @@ const ExportPostCard = ({ post }) => (
           <img
             src={post.media}
             alt="Post media"
+            crossOrigin="anonymous"
             className="w-full h-auto max-h-[300px] object-contain bg-gray-50"
           />
         </div>
@@ -392,31 +393,46 @@ const Anonymous = () => {
     const exportNode = document.getElementById(`post-export-${postId}`);
     if (!exportNode) return;
 
-    try {
-      setGeneratingImage(postId);
+    setGeneratingImage(postId);
 
-      if (navigator.share && navigator.canShare) {
-        try {
-          const blob = await toBlob(exportNode, {
-            cacheBust: true,
-            pixelRatio: 2,
-            backgroundColor: "#ffffff",
+    // Path 1: native share sheet (lets the user pick WhatsApp themselves
+    // and hands the actual image file to it — this is the only path that
+    // can attach the image directly into a chat).
+    if (navigator.share && navigator.canShare) {
+      try {
+        const blob = await toBlob(exportNode, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#ffffff",
+        });
+
+        if (blob) {
+          const file = new File([blob], `anonymous-post-${postId}.jpg`, {
+            type: "image/jpeg",
           });
-          if (blob) {
-            const file = new File([blob], `anonymous-post-${postId}.jpg`, {
-              type: "image/jpeg",
-            });
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({ files: [file], title: "Anonymous Post" });
-              setGeneratingImage(null);
-              return;
-            }
-          }
-        } catch (shareError) {
-          console.log("Share cancelled or failed, falling back to download");
-        }
-      }
 
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: "Anonymous Post" });
+            setGeneratingImage(null);
+            return;
+          }
+        }
+      } catch (shareError) {
+        // User backed out of the share sheet on purpose — do nothing,
+        // don't fall back into an automatic flow they didn't ask for.
+        if (shareError?.name === "AbortError") {
+          setGeneratingImage(null);
+          return;
+        }
+        console.log("Native share failed, falling back to manual download:", shareError);
+      }
+    }
+
+    // Path 2: no Web Share support, or it genuinely failed above.
+    // There is no URL or API that can auto-attach a downloaded file into
+    // WhatsApp, so don't try — just get the image to the user and tell
+    // them to attach it themselves.
+    try {
       const dataUrl = await toJpeg(exportNode, {
         cacheBust: true,
         pixelRatio: 2,
@@ -429,7 +445,7 @@ const Anonymous = () => {
       link.href = dataUrl;
       link.click();
 
-      setTimeout(() => window.open("https://wa.me", "_blank"), 500);
+      alert("Image saved. Open WhatsApp and attach it from your photos to share.");
     } catch (error) {
       console.error("Error generating image:", error);
       alert("Failed to generate image");
