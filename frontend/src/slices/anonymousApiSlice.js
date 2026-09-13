@@ -30,6 +30,22 @@ export const anonymousApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Anonymous"],
     }),
 
+    // Public anonymous feed (any logged-in user) — used by the Anonymous Corner page
+    getAnonymousFeed: builder.query({
+      query: ({ page = 1, limit = 10, date = "" } = {}) => {
+        const params = new URLSearchParams();
+        if (page) params.append("page", page);
+        if (limit) params.append("limit", limit);
+        if (date) params.append("date", date);
+
+        return {
+          url: `${ANONYMOUS_URL}/feed?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["Anonymous"],
+    }),
+
     // Get all anonymous posts (Admin only)
     getAllAnonymousPosts: builder.query({
       query: ({ page = 1, limit = 20, date = "", isRead = "" } = {}) => {
@@ -102,14 +118,6 @@ export const anonymousApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Anonymous", "AdminAnonymous"],
     }),
-
-    getAnonymousFeed: builder.query({
-      query: ({ page, limit, date }) => ({
-        url: "/api/anonymous/feed",
-        params: { page, limit, date },
-      }),
-      providesTags: ["AnonymousPost"],
-    }),
   }),
 });
 
@@ -117,6 +125,7 @@ export const anonymousApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateAnonymousPostMutation,
   useGetMyAnonymousPostsQuery,
+  useGetAnonymousFeedQuery,
   useGetAllAnonymousPostsQuery,
   useGetUnreadCountQuery,
   useMarkAsReadMutation,
@@ -124,5 +133,4 @@ export const {
   useShareToWhatsAppMutation,
   useSharePosterToWhatsAppMutation,
   useDeleteAnonymousPostMutation,
-  useGetAnonymousFeedQuery,
 } = anonymousApiSlice;
