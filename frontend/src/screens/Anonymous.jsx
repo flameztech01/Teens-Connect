@@ -26,7 +26,7 @@ import {
   AtSign,
   Check,
 } from "lucide-react";
-import { toBlob } from "html-to-image";
+import { toCanvas } from "html-to-image";
 
 // ---- design tokens ----
 const BG = "#0c0c0d";
@@ -60,8 +60,15 @@ const formatGroupDate = (date) =>
     year: "numeric",
   });
 
-// ---- share targets (text-only links — no web API can auto-attach a
-// binary image into these apps, hence the copy-then-paste flow) ----
+// ---- share targets ----
+// NOTE ON WHY THESE ARE TEXT-ONLY LINKS:
+// wa.me / t.me / twitter intent / mailto are plain URL schemes — none of
+// them accept a binary file as a query param, so there is no way (on the
+// web, from any browser) to force a specific app to open pre-loaded with
+// an image. The only web-standard way to hand a real image file to
+// another app is the Web Share API (navigator.share with `files`), which
+// opens the OS's native share sheet and lets the user pick the app —
+// that's what handleShareTarget below tries first, on every tap.
 const SHARE_TARGETS = [
   {
     key: "whatsapp",
@@ -394,17 +401,21 @@ const ComposerModal = ({ isOpen, onClose, onSubmit }) => {
 };
 
 // ---- ShareModal component: custom share sheet ----
-// Flow: generate a PNG snapshot of the post -> user can Copy it to the
-// clipboard (real image bytes, via the Clipboard API) or Download it,
-// then tap a target app below to open it with the post text pre-filled
-// so they can paste the image into the chat. No browser API can attach
-// a file into these apps automatically, so we're explicit about the
-// copy-then-paste step instead of silently trying and failing.
+// Flow: render the post to a canvas, encode it as a real .jpg File, then:
+//   1. If the browser supports the Web Share API with files (nearly all
+//      mobile browsers), tapping ANY target — the big "Share Image"
+//      button or one of the app icons — hands the .jpg straight to the
+//      OS share sheet. No download, no clipboard step, no manual paste.
+//   2. If the browser can't share files (mostly desktop), we fall back
+//      to Copy Image / Download Image + text-only app links, since no
+//      web API can force a file into those URL schemes.
 const ShareModal = ({ post, onClose }) => {
   const [status, setStatus] = useState("generating"); // generating | ready | error
-  const [blob, setBlob] = useState(null);
+  const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [copyState, setCopyState] = useState("idle"); // idle | copied | unsupported | error
+  const [canShareFiles, setCanShareFiles] = useState(false);
+
   const clipboardSupported =
     typeof navigator !== "undefined" &&
     !!navigator.clipboard &&
@@ -422,16 +433,36 @@ const ShareModal = ({ post, onClose }) => {
         return;
       }
       try {
-        const generatedBlob = await toBlob(node, {
+        const canvas = await toCanvas(node, {
           cacheBust: true,
           pixelRatio: 2,
           backgroundColor: "#ffffff",
         });
-        if (!generatedBlob) throw new Error("Image generation returned nothing");
+
+        const jpegBlob = await new Promise((resolve, reject) => {
+          canvas.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("Canvas produced no image data"))),
+            "image/jpeg",
+            0.92
+          );
+        });
+
         if (cancelled) return;
-        objectUrl = URL.createObjectURL(generatedBlob);
-        setBlob(generatedBlob);
+
+        const generatedFile = new File(
+          [jpegBlob],
+          `anonymous-post-${post.id}.jpg`,
+          { type: "image/jpeg" }
+        );
+
+        objectUrl = URL.createObjectURL(jpegBlob);
+        setFile(generatedFile);
         setPreviewUrl(objectUrl);
+        setCanShareFiles(
+          typeof navigator !== "undefined" &&
+            !!navigator.canShare &&
+            navigator.canShare({ files: [generatedFile] })
+        );
         setStatus("ready");
       } catch (err) {
         console.error("Error generating share image:", err);
@@ -448,14 +479,14 @@ const ShareModal = ({ post, onClose }) => {
   }, [post.id]);
 
   const handleCopyImage = async () => {
-    if (!blob) return;
+    if (!file) return;
     if (!clipboardSupported) {
       setCopyState("unsupported");
       return;
     }
     try {
       await navigator.clipboard.write([
-        new window.ClipboardItem({ [blob.type]: blob }),
+        new window.ClipboardItem({ [file.type]: file }),
       ]);
       setCopyState("copied");
       setTimeout(() => setCopyState("idle"), 3000);
@@ -466,16 +497,40 @@ const ShareModal = ({ post, onClose }) => {
   };
 
   const handleDownloadImage = () => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
+    if (!file) return;
+    const url = URL.createObjectURL(file);
     const link = document.createElement("a");
-    link.download = `anonymous-post-${post.id}.png`;
+    link.download = file.name;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
   };
 
-  const handleOpenTarget = (target) => {
+  // Hands the real .jpg file to the OS share sheet — the user picks
+  // WhatsApp/Telegram/whatever from there, image already attached.
+  const handleNativeShare = async () => {
+    if (!file) return;
+    try {
+      await navigator.share({
+        files: [file],
+        text: post.content || "",
+        title: "Anonymous Post",
+      });
+    } catch (err) {
+      // AbortError just means the user closed the native sheet — not a bug.
+      if (err?.name !== "AbortError") {
+        console.error("Native share failed:", err);
+      }
+    }
+  };
+
+  const handleShareTarget = async (target) => {
+    if (canShareFiles) {
+      await handleNativeShare();
+      return;
+    }
+    // No file-sharing support here (typically desktop): text-only link,
+    // Copy/Download above remain the only way to move the image itself.
     window.open(target.getUrl(post.content || ""), "_blank");
   };
 
@@ -528,6 +583,18 @@ const ShareModal = ({ post, onClose }) => {
                 >
                   <img src={previewUrl} alt="Post preview" className="w-full h-auto max-h-56 object-contain bg-white" />
                 </div>
+              )}
+
+              {/* Primary action on browsers that can share real files */}
+              {canShareFiles && (
+                <button
+                  onClick={handleNativeShare}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all"
+                  style={{ backgroundColor: GOLD, color: BG }}
+                >
+                  <Share2 size={18} />
+                  Share Image
+                </button>
               )}
 
               <div>
@@ -586,7 +653,7 @@ const ShareModal = ({ post, onClose }) => {
                     return (
                       <button
                         key={target.key}
-                        onClick={() => handleOpenTarget(target)}
+                        onClick={() => handleShareTarget(target)}
                         className="flex flex-col items-center gap-1.5"
                       >
                         <div
@@ -603,7 +670,9 @@ const ShareModal = ({ post, onClose }) => {
                   })}
                 </div>
                 <p className="text-[11px] mt-3 text-center" style={{ color: MUTED }}>
-                  These open with your message text — copy the image above first, then paste it into the chat.
+                  {canShareFiles
+                    ? "Tap an app to open the share sheet with the image attached — no download needed."
+                    : "This browser can't attach the image automatically. These open with your message text — copy the image above first, then paste it into the chat."}
                 </p>
               </div>
             </>
